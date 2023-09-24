@@ -17,11 +17,13 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
-    // https://mvnrepository.com/artifact/org.springframework.data/spring-data-r2dbc
     implementation 'org.springframework.data:spring-data-r2dbc:3.1.4'
-// https://mvnrepository.com/artifact/io.r2dbc/r2dbc-postgresql
     implementation 'io.r2dbc:r2dbc-postgresql:0.8.13.RELEASE'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+//    implementation 'org.springframework.security:spring-security-crypto:6.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+ //   implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

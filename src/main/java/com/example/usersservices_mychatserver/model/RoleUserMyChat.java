@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.entity;
+package com.example.usersservices_mychatserver.model;
 
 import org.springframework.data.annotation.Id;
 
