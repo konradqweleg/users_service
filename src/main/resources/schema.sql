@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users_services_scheme.user_my_chat(
                                                    email TEXT NOT NULL,
                                                    password TEXT NOT NULL,
                                                    id_role SERIAL NOT NULL,
+                                                   is_active_account BOOLEAN NOT NULL,
                                                    CONSTRAINT FK_role FOREIGN KEY(id_role)
                                                    REFERENCES users_services_scheme.role_user_my_chat(id)
 );
@@ -17,4 +18,9 @@ CREATE TABLE IF NOT EXISTS users_services_scheme.role_user_my_chat(
 );
 
 
+CREATE TABLE IF NOT EXISTS users_services_scheme.code_verfication(
+                                                                      id SERIAL PRIMARY KEY,
+                                                                      id_user SERIAL NOT NULL,
+                                                                      code TEXT NOT NULL
+);
 
