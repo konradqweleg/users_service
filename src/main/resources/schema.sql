@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS users_services_scheme.user_my_chat(
 
 
 
-CREATE TABLE IF NOT EXISTS users_services_scheme.code_verfication(
+CREATE TABLE IF NOT EXISTS users_services_scheme.code_verification(
                                                                       id SERIAL PRIMARY KEY,
                                                                       id_user SERIAL NOT NULL,
                                                                       code TEXT NOT NULL
