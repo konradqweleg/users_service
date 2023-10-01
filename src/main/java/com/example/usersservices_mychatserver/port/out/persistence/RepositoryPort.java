@@ -9,5 +9,9 @@ public interface RepositoryPort {
 
     Mono<UserMyChat> findUserWithEmail(String email);
 
+    Mono<Boolean> saveActiveUserAccount(Integer idUser, String code);
+
+    Mono<CodeVerification> checkIsActiveAccountCodeSend(Integer idUser);
+
 
 }

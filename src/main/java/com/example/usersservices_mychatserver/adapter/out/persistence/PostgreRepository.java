@@ -36,4 +36,26 @@ public class PostgreRepository implements RepositoryPort {
     }
 
 
+
+    @Override
+    public Mono<Boolean> saveActiveUserAccount(Integer idUser, String code) {
+        return codeVerificationRepository.findById(idUser).flatMap(
+                codeVerification -> {
+                    if(codeVerification.code().equals(code)){
+                        return userRepository.activeUserAccount(idUser).flatMap(
+                                aVoid -> codeVerificationRepository.delete(codeVerification).thenReturn(true)
+                        );
+                    }else{
+                        return Mono.just(false);
+                    }
+                }
+        );
+    }
+
+    @Override
+    public Mono<CodeVerification> checkIsActiveAccountCodeSend(Integer idUser) {
+      return codeVerificationRepository.findById(idUser);
+    }
+
+
 }
