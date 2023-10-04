@@ -5,5 +5,5 @@ import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Mono;
 
 public interface CodeVerificationRepository extends ReactiveCrudRepository<CodeVerification, Long> {
-    Mono<CodeVerification> findById(Integer id);
+    Mono<CodeVerification> findByIdUser(Long id);
 }

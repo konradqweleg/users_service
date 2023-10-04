@@ -1,6 +1,7 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
 import com.example.usersservices_mychatserver.model.UserMyChat;
+import com.example.usersservices_mychatserver.port.in.ActivateUserAccountUseCase;
 import com.example.usersservices_mychatserver.port.in.RegisterUserUseCase;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +14,6 @@ public class RegisterController {
 
     public RegisterController(RegisterUserUseCase registerUserUseCase) {
         this.registerUserUseCase = registerUserUseCase;
-
     }
 
     @PostMapping("")
