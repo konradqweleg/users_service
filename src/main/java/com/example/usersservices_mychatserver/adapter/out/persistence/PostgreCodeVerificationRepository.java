@@ -19,8 +19,8 @@ public class PostgreCodeVerificationRepository implements CodeVerificationReposi
     }
 
     @Override
-    public Mono<CodeVerification> checkIsActiveAccountCodeSend(Long idUser) {
-        return codeVerificationRepository.findById(idUser);
+    public Mono<CodeVerification> findUserActiveAccountCodeById(Long idUser) {
+        return codeVerificationRepository.findByIdUser(idUser);
     }
 
     @Override
@@ -33,7 +33,6 @@ public class PostgreCodeVerificationRepository implements CodeVerificationReposi
 
         return codeVerificationRepository.findByIdUser(code.idUser()).flatMap(
                 codeVerification -> {
-                    System.out.println(codeVerification.code() + " " + code.code());
                     if(codeVerification.code().equals(code.code())){
                         return userRepository.activeUserAccount(code.idUser()).then(Mono.defer(() -> codeVerificationRepository.delete(codeVerification).thenReturn(true)));
                     }else{
@@ -41,5 +40,10 @@ public class PostgreCodeVerificationRepository implements CodeVerificationReposi
                     }
                 }
         );
+    }
+
+    @Override
+    public Mono<Void> deleteUserActivationCode(CodeVerification codeVerification1) {
+        return codeVerificationRepository.delete(codeVerification1);
     }
 }

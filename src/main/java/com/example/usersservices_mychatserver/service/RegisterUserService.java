@@ -2,6 +2,7 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.UserMyChat;
+import com.example.usersservices_mychatserver.model.UserRegisterData;
 import com.example.usersservices_mychatserver.port.in.RegisterUserUseCase;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCode;
 import com.example.usersservices_mychatserver.port.out.logic.HashPassword;
@@ -32,11 +33,12 @@ public class RegisterUserService implements RegisterUserUseCase {
     }
 
     @Override
-    public Mono<UserMyChat> registerUser(Mono<UserMyChat> user) {
+    public Mono<UserMyChat> registerUser(Mono<UserRegisterData> user) {
         return user.map(
                         userWithoutHashPassword -> {
+                            UserMyChat userMyChat = new UserMyChat(null, userWithoutHashPassword.name(), userWithoutHashPassword.surname(), userWithoutHashPassword.email(), userWithoutHashPassword.password(),1,false);
                             String userPasswordHashed = passwordHashService.cryptPassword(userWithoutHashPassword.password());
-                            return userWithoutHashPassword.withNewPassword(userPasswordHashed);
+                            return userMyChat.withNewPassword(userPasswordHashed);
                         }
                 ).flatMap(postgreUserRepository::saveUser)
                 .doOnNext(createdUser -> {

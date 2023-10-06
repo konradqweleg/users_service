@@ -7,5 +7,7 @@ public interface UserRepositoryPort {
     Mono<UserMyChat> saveUser(UserMyChat user);
     Mono<UserMyChat> findUserWithEmail(String email);
 
+    Mono<UserMyChat> activeUserAccount(Long idUser);
+
 
 }

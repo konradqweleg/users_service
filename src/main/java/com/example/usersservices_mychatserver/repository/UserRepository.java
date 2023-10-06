@@ -10,6 +10,6 @@ public interface UserRepository extends ReactiveCrudRepository<UserMyChat, Long>
     Mono<UserMyChat> findByEmail(String email);
 
     @Query("update users_services_scheme.user_my_chat set is_active_account = true where id = :idUser")
-    Mono<Void> activeUserAccount(Long idUser);
+    Mono<UserMyChat> activeUserAccount(Long idUser);
 
 }
