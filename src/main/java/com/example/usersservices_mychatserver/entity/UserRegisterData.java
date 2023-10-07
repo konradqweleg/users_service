@@ -1,8 +1,7 @@
-package com.example.usersservices_mychatserver.model;
+package com.example.usersservices_mychatserver.entity;
 
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
 

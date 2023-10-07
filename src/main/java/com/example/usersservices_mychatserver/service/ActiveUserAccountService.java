@@ -1,6 +1,8 @@
 package com.example.usersservices_mychatserver.service;
 
+import com.example.usersservices_mychatserver.entity.ActiveUserAccountData;
 import com.example.usersservices_mychatserver.model.CodeVerification;
+import com.example.usersservices_mychatserver.entity.Result;
 import com.example.usersservices_mychatserver.port.in.ActivateUserAccountUseCase;
 import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
@@ -18,19 +20,19 @@ public class ActiveUserAccountService implements ActivateUserAccountUseCase {
     }
 
     @Override
-    public Mono<Boolean> activateUserAccount(Mono<CodeVerification> codeVerificationMono) {
+    public Mono<Result<ActiveUserAccountData>> activateUserAccount(Mono<CodeVerification> codeVerificationMono) {
           return codeVerificationMono.flatMap(
                 codeVerificationProvidedByUser -> postgreCodeVerificationRepository.findUserActiveAccountCodeById(codeVerificationProvidedByUser.idUser()).flatMap(
                         codeVerificationSaved -> {
                             if(codeVerificationSaved.code().equals(codeVerificationProvidedByUser.code())){
                                 return userRepository.activeUserAccount(codeVerificationProvidedByUser.idUser()).
                                         then(Mono.defer(() -> postgreCodeVerificationRepository.deleteUserActivationCode(codeVerificationSaved).
-                                                thenReturn(true)));
+                                                thenReturn(Result.success(new ActiveUserAccountData(true)))));
                             }else{
-                                return Mono.just(false);
+                                return Mono.just(Result.<ActiveUserAccountData>error("Code is not correct"));
                             }
                         }
-                )
+                ).switchIfEmpty(Mono.just(Result.error("Not found code for this user")))
 
         );
 

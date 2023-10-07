@@ -1,16 +1,15 @@
 package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.model.CodeVerification;
-import com.example.usersservices_mychatserver.model.Result;
+import com.example.usersservices_mychatserver.entity.Result;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.model.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.UserRegisterData;
 import com.example.usersservices_mychatserver.port.in.RegisterUserUseCase;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCode;
 import com.example.usersservices_mychatserver.port.out.logic.HashPassword;
 import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailWithVerificationCodePort;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -37,10 +36,7 @@ public class RegisterUserService implements RegisterUserUseCase {
     @Override
     public Mono<Result<UserMyChat>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
        return   userRegisterDataMono.flatMap(userRegisterData -> postgreUserRepository.findUserWithEmail(userRegisterData.email())
-               .flatMap(userWithSameEmailInDatabase -> {
-                   Result<UserMyChat> error = Result.error("User with this email already exists");
-                   return Mono.just(error);
-               })
+               .flatMap(userWithSameEmailInDatabase -> Mono.just(Result.<UserMyChat>error("User with this email already exists")))
                .switchIfEmpty(
                        Mono.just(Result.success(userRegisterData))
                                .map(newRegisteredUser -> new UserMyChat(

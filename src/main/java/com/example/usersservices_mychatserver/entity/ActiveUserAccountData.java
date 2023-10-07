@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.model;
+package com.example.usersservices_mychatserver.entity;
 
 public record ActiveUserAccountData(Boolean isActivatedUserAccount) {
 }

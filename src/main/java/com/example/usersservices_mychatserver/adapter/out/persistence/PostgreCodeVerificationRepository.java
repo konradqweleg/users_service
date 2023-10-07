@@ -28,19 +28,7 @@ public class PostgreCodeVerificationRepository implements CodeVerificationReposi
         return codeVerificationRepository.save(code);
     }
 
-    @Override
-    public Mono<Boolean> saveActiveUserAccount(CodeVerification code) {
 
-        return codeVerificationRepository.findByIdUser(code.idUser()).flatMap(
-                codeVerification -> {
-                    if(codeVerification.code().equals(code.code())){
-                        return userRepository.activeUserAccount(code.idUser()).then(Mono.defer(() -> codeVerificationRepository.delete(codeVerification).thenReturn(true)));
-                    }else{
-                        return Mono.just(false);
-                    }
-                }
-        );
-    }
 
     @Override
     public Mono<Void> deleteUserActivationCode(CodeVerification codeVerification1) {

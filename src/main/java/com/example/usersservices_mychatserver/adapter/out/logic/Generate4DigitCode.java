@@ -10,7 +10,6 @@ public class Generate4DigitCode implements GenerateRandomCode {
     private static final Random random = new Random();
     @Override
     public String generateCode() {
-        String generatedCode = String.format("%04d", random.nextInt(10000));
-        return generatedCode;
+        return String.format("%04d", random.nextInt(10000));
     }
 }

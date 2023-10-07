@@ -7,7 +7,6 @@ public interface CodeVerificationRepositoryPort {
     Mono<CodeVerification> findUserActiveAccountCodeById(Long idUser);
 
     Mono<CodeVerification> saveVerificationCode(CodeVerification code);
-    Mono<Boolean> saveActiveUserAccount(CodeVerification code);
 
     Mono<Void> deleteUserActivationCode(CodeVerification codeVerification1);
 }

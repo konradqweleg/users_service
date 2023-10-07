@@ -1,10 +1,8 @@
 package com.example.usersservices_mychatserver.adapter.out.persistence;
 
 
-import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
-import com.example.usersservices_mychatserver.repository.CodeVerificationRepository;
 import com.example.usersservices_mychatserver.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
