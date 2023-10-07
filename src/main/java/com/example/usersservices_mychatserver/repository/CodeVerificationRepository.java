@@ -6,4 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface CodeVerificationRepository extends ReactiveCrudRepository<CodeVerification, Long> {
     Mono<CodeVerification> findByIdUser(Long id);
+
+    Mono<Void> deleteByIdUser(Long idUser);
 }

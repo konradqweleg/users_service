@@ -8,5 +8,7 @@ public interface UserRepositoryPort {
 
     Mono<UserMyChat> activeUserAccount(Long idUser);
 
+    Mono<UserMyChat> findUserById(Long idUser);
+
 
 }

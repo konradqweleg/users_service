@@ -35,5 +35,10 @@ public class PostgreUserRepository implements UserRepositoryPort {
         return  userRepository.activeUserAccount(idUser);
     }
 
+    @Override
+    public Mono<UserMyChat> findUserById(Long idUser) {
+        return userRepository.findById(idUser);
+    }
+
 
 }

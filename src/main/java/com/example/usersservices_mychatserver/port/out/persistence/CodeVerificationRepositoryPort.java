@@ -8,5 +8,7 @@ public interface CodeVerificationRepositoryPort {
 
     Mono<CodeVerification> saveVerificationCode(CodeVerification code);
 
+    Mono<Void> deleteUserActivationCode(Long idUser);
+
     Mono<Void> deleteUserActivationCode(CodeVerification codeVerification1);
 }

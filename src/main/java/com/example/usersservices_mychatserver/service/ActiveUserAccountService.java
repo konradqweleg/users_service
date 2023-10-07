@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.service;
 
-import com.example.usersservices_mychatserver.entity.ActiveUserAccountData;
+import com.example.usersservices_mychatserver.entity.ActiveUserAccountDataResponse;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.entity.Result;
 import com.example.usersservices_mychatserver.port.in.ActivateUserAccountUseCase;
@@ -20,16 +20,16 @@ public class ActiveUserAccountService implements ActivateUserAccountUseCase {
     }
 
     @Override
-    public Mono<Result<ActiveUserAccountData>> activateUserAccount(Mono<CodeVerification> codeVerificationMono) {
+    public Mono<Result<ActiveUserAccountDataResponse>> activateUserAccount(Mono<CodeVerification> codeVerificationMono) {
           return codeVerificationMono.flatMap(
                 codeVerificationProvidedByUser -> postgreCodeVerificationRepository.findUserActiveAccountCodeById(codeVerificationProvidedByUser.idUser()).flatMap(
                         codeVerificationSaved -> {
                             if(codeVerificationSaved.code().equals(codeVerificationProvidedByUser.code())){
                                 return userRepository.activeUserAccount(codeVerificationProvidedByUser.idUser()).
                                         then(Mono.defer(() -> postgreCodeVerificationRepository.deleteUserActivationCode(codeVerificationSaved).
-                                                thenReturn(Result.success(new ActiveUserAccountData(true)))));
+                                                thenReturn(Result.success(new ActiveUserAccountDataResponse(true)))));
                             }else{
-                                return Mono.just(Result.<ActiveUserAccountData>error("Code is not correct"));
+                                return Mono.just(Result.<ActiveUserAccountDataResponse>error("Code is not correct"));
                             }
                         }
                 ).switchIfEmpty(Mono.just(Result.error("Not found code for this user")))

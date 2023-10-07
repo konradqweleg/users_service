@@ -28,6 +28,10 @@ public class PostgreCodeVerificationRepository implements CodeVerificationReposi
         return codeVerificationRepository.save(code);
     }
 
+    @Override
+    public Mono<Void> deleteUserActivationCode(Long idUser) {
+        return codeVerificationRepository.deleteByIdUser(idUser);
+    }
 
 
     @Override
