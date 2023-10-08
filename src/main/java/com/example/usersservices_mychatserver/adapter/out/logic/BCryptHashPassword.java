@@ -13,5 +13,10 @@ public class BCryptHashPassword implements HashPassword {
         return bCryptPasswordEncoder.encode(password);
     }
 
+    @Override
+    public Boolean checkPassword(String password, String hashedPassword) {
+      return   bCryptPasswordEncoder.matches(password, hashedPassword);
+    }
+
 
 }

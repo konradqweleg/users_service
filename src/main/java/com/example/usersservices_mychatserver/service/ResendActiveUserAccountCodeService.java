@@ -38,35 +38,17 @@ public class ResendActiveUserAccountCodeService implements ResendActiveUserAccou
             return userData.map(userMyChat -> {
                 postgreCodeVerificationRepository.deleteUserActivationCode(userMyChat.id()).subscribeOn(Schedulers.immediate()).subscribe();
                 return userMyChat;
-            }).map(x-> {
-
+            }).map(userFromDb-> {
                 String generatedCode = generateCode.generateCode();
-                sendEmail.sendVerificationCode(x,generatedCode);
-                postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null,x.id(),generatedCode))
+                sendEmail.sendVerificationCode(userFromDb,generatedCode);
+                postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null,userFromDb.id(),generatedCode))
                         .subscribeOn(Schedulers.immediate())
                         .subscribe();
                return Result.success(new ResendUserActiveAccountCodeDataResponse(true));
 
-
             }  ).switchIfEmpty(Mono.just(Result.<ResendUserActiveAccountCodeDataResponse>error("User not found")));
         });
 
-//    @Override
-//    public Mono<Result<ResendUserActiveAccountCodeDataResponse>> resendActiveUserAccountCode(Mono<IdUserData> idUserMono) {
-//        return idUserMono.flatMap(idUserData -> {
-//            Mono<UserMyChat> userData = userRepositoryPort.findUserById(idUserData.idUser());
-//            return userData.map(userMyChat -> {
-//                postgreCodeVerificationRepository.deleteUserActivationCode(userMyChat.id()).subscribeOn(Schedulers.immediate()).subscribe();
-//
-//                String generatedCode = generateCode.generateCode();
-//                sendEmail.sendVerificationCode(userMyChat,generatedCode);
-//                postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null,userMyChat.id(),generatedCode))
-//                        .subscribeOn(Schedulers.boundedElastic())
-//                        .subscribe();
-//
-//                return Result.success(new ResendUserActiveAccountCodeDataResponse(true));
-//            }).switchIfEmpty(Mono.just(Result.<ResendUserActiveAccountCodeDataResponse>error("User not found")));
-//        });
 
 
     }
