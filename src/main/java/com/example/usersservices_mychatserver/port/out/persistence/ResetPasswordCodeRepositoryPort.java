@@ -7,4 +7,6 @@ import reactor.core.publisher.Mono;
 public interface ResetPasswordCodeRepositoryPort {
     Mono<Void> insertResetPasswordCode(ResetPasswordCode resetPasswordCode);
     Mono<Void> deleteResetPasswordCodeForUser(IdUserData idUser);
+
+    Mono<ResetPasswordCode> findResetPasswordCodeForUser(IdUserData idUser);
 }

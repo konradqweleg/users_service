@@ -23,4 +23,9 @@ public class PostgresResetPasswordCodeRepository implements ResetPasswordCodeRep
     public Mono<Void> deleteResetPasswordCodeForUser(IdUserData idUser) {
        return resetPasswordCodeRepository.deleteByIdUser(idUser.idUser());
     }
+
+    @Override
+    public Mono<ResetPasswordCode> findResetPasswordCodeForUser(IdUserData idUser) {
+        return resetPasswordCodeRepository.findResetPasswordCodeByIdUser(idUser.idUser());
+    }
 }
