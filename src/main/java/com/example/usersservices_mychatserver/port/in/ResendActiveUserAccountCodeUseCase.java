@@ -1,11 +1,10 @@
 package com.example.usersservices_mychatserver.port.in;
 
-import com.example.usersservices_mychatserver.entity.ActiveUserAccountDataResponse;
-import com.example.usersservices_mychatserver.entity.IdUserData;
-import com.example.usersservices_mychatserver.entity.ResendUserActiveAccountCodeDataResponse;
-import com.example.usersservices_mychatserver.entity.Result;
+import com.example.usersservices_mychatserver.entity.request.IdUserData;
+import com.example.usersservices_mychatserver.entity.response.Result;
+import com.example.usersservices_mychatserver.entity.response.Status;
 import reactor.core.publisher.Mono;
 
 public interface ResendActiveUserAccountCodeUseCase {
-    Mono<Result<ResendUserActiveAccountCodeDataResponse>> resendActiveUserAccountCode(Mono<IdUserData> user);
+    Mono<Result<Status>> resendActiveUserAccountCode(Mono<IdUserData> user);
 }

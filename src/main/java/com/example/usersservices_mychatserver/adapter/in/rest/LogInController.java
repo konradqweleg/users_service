@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.entity.LoginAndPasswordData;
+import com.example.usersservices_mychatserver.entity.request.LoginAndPasswordData;
 import com.example.usersservices_mychatserver.port.in.LogInUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

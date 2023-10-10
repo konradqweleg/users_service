@@ -1,8 +1,8 @@
 package com.example.usersservices_mychatserver.port.in;
 
-import com.example.usersservices_mychatserver.entity.ChangePasswordData;
-import com.example.usersservices_mychatserver.entity.Result;
-import com.example.usersservices_mychatserver.entity.Status;
+import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
+import com.example.usersservices_mychatserver.entity.response.Result;
+import com.example.usersservices_mychatserver.entity.response.Status;
 import reactor.core.publisher.Mono;
 
 public interface ChangePasswordUseCase {

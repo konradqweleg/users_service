@@ -1,5 +1,5 @@
 package com.example.usersservices_mychatserver.port.out.logic;
 
-public interface GenerateRandomCode {
+public interface GenerateRandomCodePort {
     String generateCode();
 }

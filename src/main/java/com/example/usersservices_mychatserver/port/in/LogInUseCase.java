@@ -1,10 +1,10 @@
 package com.example.usersservices_mychatserver.port.in;
 
-import com.example.usersservices_mychatserver.entity.LoginAndPasswordData;
-import com.example.usersservices_mychatserver.entity.Result;
-import com.example.usersservices_mychatserver.entity.Status;
+import com.example.usersservices_mychatserver.entity.request.LoginAndPasswordData;
+import com.example.usersservices_mychatserver.entity.response.IsCorrectCredentials;
+import com.example.usersservices_mychatserver.entity.response.Result;
 import reactor.core.publisher.Mono;
 
 public interface LogInUseCase {
-    Mono<Result<Status>> logIn(Mono<LoginAndPasswordData> user);
+    Mono<Result<IsCorrectCredentials>> logIn(Mono<LoginAndPasswordData> user);
 }

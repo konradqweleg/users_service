@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.entity;
+package com.example.usersservices_mychatserver.entity.response;
 
 public class Result<T> {
     private final T value;

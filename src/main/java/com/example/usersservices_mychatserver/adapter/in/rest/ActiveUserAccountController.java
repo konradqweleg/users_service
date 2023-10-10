@@ -1,8 +1,8 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.entity.ActiveUserAccountDataResponse;
-import com.example.usersservices_mychatserver.entity.IdUserData;
-import com.example.usersservices_mychatserver.entity.ResendUserActiveAccountCodeDataResponse;
+
+import com.example.usersservices_mychatserver.entity.request.IdUserData;
+import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.port.in.ActivateUserAccountUseCase;
 import com.example.usersservices_mychatserver.port.in.ResendActiveUserAccountCodeUseCase;
@@ -31,7 +31,7 @@ public class ActiveUserAccountController {
                         return Mono.just(ResponseEntity.badRequest().body(response.getError()));
                     } else {
                         try {
-                            ResendUserActiveAccountCodeDataResponse resendCodeResponse = response.getValue();
+                            Status resendCodeResponse = response.getValue();
                             String activeUserAccountDataJSON = objectMapper.writeValueAsString(resendCodeResponse);
                             return Mono.just(ResponseEntity.ok(activeUserAccountDataJSON));
                         } catch (Exception e) {
@@ -52,7 +52,7 @@ public class ActiveUserAccountController {
                         return Mono.just(ResponseEntity.badRequest().body(response.getError()));
                     } else {
                         try {
-                            ActiveUserAccountDataResponse activateUserAccount = response.getValue();
+                            Status activateUserAccount = response.getValue();
                             String activeUserAccountDataJSON = objectMapper.writeValueAsString(activateUserAccount);
                             return Mono.just(ResponseEntity.ok(activeUserAccountDataJSON));
                         } catch (Exception e) {

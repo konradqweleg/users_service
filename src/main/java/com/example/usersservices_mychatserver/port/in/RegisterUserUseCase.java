@@ -1,10 +1,10 @@
 package com.example.usersservices_mychatserver.port.in;
 
-import com.example.usersservices_mychatserver.entity.Result;
-import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.entity.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.response.Result;
+import com.example.usersservices_mychatserver.entity.response.Status;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import reactor.core.publisher.Mono;
 
 public interface RegisterUserUseCase {
-    Mono<Result<UserMyChat>> registerUser(Mono<UserRegisterData> user);
+    Mono<Result<Status>> registerUser(Mono<UserRegisterData> user);
 }

@@ -1,16 +1,16 @@
 package com.example.usersservices_mychatserver.service;
 
-import com.example.usersservices_mychatserver.entity.ActiveUserAccountDataResponse;
-import com.example.usersservices_mychatserver.entity.IdUserData;
-import com.example.usersservices_mychatserver.entity.ResendUserActiveAccountCodeDataResponse;
-import com.example.usersservices_mychatserver.entity.Result;
+import com.example.usersservices_mychatserver.entity.request.IdUserData;
+import com.example.usersservices_mychatserver.entity.response.Result;
+import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.ResendActiveUserAccountCodeUseCase;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCode;
+import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailWithVerificationCodePort;
+import com.example.usersservices_mychatserver.service.message.UserErrorMessage;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -21,9 +21,9 @@ public class ResendActiveUserAccountCodeService implements ResendActiveUserAccou
     private final CodeVerificationRepositoryPort postgreCodeVerificationRepository;
 
     private final UserRepositoryPort userRepositoryPort;
-    private final GenerateRandomCode generateCode;
+    private final GenerateRandomCodePort generateCode;
 
-    public ResendActiveUserAccountCodeService(SendEmailWithVerificationCodePort sendEmail, CodeVerificationRepositoryPort postgreCodeVerificationRepository, UserRepositoryPort userRepositoryPort, GenerateRandomCode generateCode) {
+    public ResendActiveUserAccountCodeService(SendEmailWithVerificationCodePort sendEmail, CodeVerificationRepositoryPort postgreCodeVerificationRepository, UserRepositoryPort userRepositoryPort, GenerateRandomCodePort generateCode) {
         this.sendEmail = sendEmail;
         this.postgreCodeVerificationRepository = postgreCodeVerificationRepository;
         this.userRepositoryPort = userRepositoryPort;
@@ -32,7 +32,7 @@ public class ResendActiveUserAccountCodeService implements ResendActiveUserAccou
 
 
     @Override
-    public Mono<Result<ResendUserActiveAccountCodeDataResponse>> resendActiveUserAccountCode(Mono<IdUserData> idUserMono) {
+    public Mono<Result<Status>> resendActiveUserAccountCode(Mono<IdUserData> idUserMono) {
         return idUserMono.flatMap(idUserData -> {
             Mono<UserMyChat> userData = userRepositoryPort.findUserById(idUserData.idUser());
             return userData.map(userMyChat -> {
@@ -44,9 +44,9 @@ public class ResendActiveUserAccountCodeService implements ResendActiveUserAccou
                 postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null,userFromDb.id(),generatedCode))
                         .subscribeOn(Schedulers.immediate())
                         .subscribe();
-               return Result.success(new ResendUserActiveAccountCodeDataResponse(true));
+               return Result.success(new Status(true));
 
-            }  ).switchIfEmpty(Mono.just(Result.<ResendUserActiveAccountCodeDataResponse>error("User not found")));
+            }  ).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
         });
 
 

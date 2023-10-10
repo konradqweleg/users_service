@@ -1,33 +1,36 @@
 package com.example.usersservices_mychatserver.service;
 
-import com.example.usersservices_mychatserver.entity.LoginAndPasswordData;
-import com.example.usersservices_mychatserver.entity.Result;
-import com.example.usersservices_mychatserver.entity.Status;
+import com.example.usersservices_mychatserver.entity.request.LoginAndPasswordData;
+import com.example.usersservices_mychatserver.entity.response.IsCorrectCredentials;
+import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.port.in.LogInUseCase;
-import com.example.usersservices_mychatserver.port.out.logic.HashPassword;
+import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
+import com.example.usersservices_mychatserver.service.message.UserErrorMessage;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 public class LogInService implements LogInUseCase {
-    private final HashPassword passwordHashService;
+    private final HashPasswordPort passwordHashService;
     private final UserRepositoryPort postgreUserRepository;
-    public LogInService(HashPassword passwordHashService, UserRepositoryPort postgreUserRepository) {
+
+    private final static String BAD_CREDENTIALS = "Bad credentials";
+    public LogInService(HashPasswordPort passwordHashService, UserRepositoryPort postgreUserRepository) {
         this.passwordHashService = passwordHashService;
         this.postgreUserRepository = postgreUserRepository;
     }
 
     @Override
-    public Mono<Result<Status>> logIn(Mono<LoginAndPasswordData> userLoginDataMono) {
+    public Mono<Result<IsCorrectCredentials>> logIn(Mono<LoginAndPasswordData> userLoginDataMono) {
         return userLoginDataMono.flatMap(userLoginData -> postgreUserRepository.findUserWithEmail(userLoginData.login())
                 .flatMap(userFromDb -> {
                     if (passwordHashService.checkPassword(userLoginData.password(), userFromDb.password())) {
-                        return Mono.just(Result.<Status>success(new Status(true)));
+                        return Mono.just(Result.<IsCorrectCredentials>success(new IsCorrectCredentials(true)));
                     } else {
-                        return Mono.just(Result.<Status>error("Bad credentials"));
+                        return Mono.just(Result.<IsCorrectCredentials>success(new IsCorrectCredentials(false)));
                     }
                 })
-                .switchIfEmpty(Mono.just(Result.<Status>error("User not found"))));
+                .switchIfEmpty(Mono.just(Result.<IsCorrectCredentials>error(UserErrorMessage.USER_NOT_FOUND.getMessage()))));
     }
 }

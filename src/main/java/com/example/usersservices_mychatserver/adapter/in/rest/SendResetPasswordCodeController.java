@@ -1,8 +1,8 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.entity.ChangePasswordData;
-import com.example.usersservices_mychatserver.entity.UserEmailAndCode;
-import com.example.usersservices_mychatserver.entity.UserEmailData;
+import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.port.in.ChangePasswordUseCase;
 import com.example.usersservices_mychatserver.port.in.CheckIsCorrectResetPasswordCodeUseCase;
 import com.example.usersservices_mychatserver.port.in.SendResetPasswordCodeUseCase;
@@ -52,7 +52,7 @@ public class SendResetPasswordCodeController {
 
         }
     @PostMapping("/isCorrectCode")
-    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCode> userEmailAndCodeMono) {
+    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
 
         return checkIsCorrectResetPasswordCodeUseCase.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(isCorrectCode->
         {

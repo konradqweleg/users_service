@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.entity.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.port.in.RegisterUserUseCase;
 //import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonProcessingException;

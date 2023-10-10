@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.out.persistence;
 
-import com.example.usersservices_mychatserver.entity.IdUserData;
+import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.port.out.persistence.ResetPasswordCodeRepositoryPort;
 import com.example.usersservices_mychatserver.repository.ResetPasswordCodeRepository;
