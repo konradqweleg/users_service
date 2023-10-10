@@ -1,7 +1,9 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
+import com.example.usersservices_mychatserver.entity.ChangePasswordData;
 import com.example.usersservices_mychatserver.entity.UserEmailAndCode;
 import com.example.usersservices_mychatserver.entity.UserEmailData;
+import com.example.usersservices_mychatserver.port.in.ChangePasswordUseCase;
 import com.example.usersservices_mychatserver.port.in.CheckIsCorrectResetPasswordCodeUseCase;
 import com.example.usersservices_mychatserver.port.in.SendResetPasswordCodeUseCase;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,10 +22,13 @@ public class SendResetPasswordCodeController {
 
     final private SendResetPasswordCodeUseCase sendResetPasswordCodeUseCase;
     final private CheckIsCorrectResetPasswordCodeUseCase checkIsCorrectResetPasswordCodeUseCase;
+
+    final private ChangePasswordUseCase changePasswordUseCase;
     private final ObjectMapper objectMapper ;
-    public SendResetPasswordCodeController(SendResetPasswordCodeUseCase sendResetPasswordCodeUseCase, CheckIsCorrectResetPasswordCodeUseCase checkIsCorrectResetPasswordCodeUseCase, ObjectMapper objectMapper) {
+    public SendResetPasswordCodeController(SendResetPasswordCodeUseCase sendResetPasswordCodeUseCase, CheckIsCorrectResetPasswordCodeUseCase checkIsCorrectResetPasswordCodeUseCase, ChangePasswordUseCase changePasswordUseCase, ObjectMapper objectMapper) {
         this.sendResetPasswordCodeUseCase = sendResetPasswordCodeUseCase;
         this.checkIsCorrectResetPasswordCodeUseCase = checkIsCorrectResetPasswordCodeUseCase;
+        this.changePasswordUseCase = changePasswordUseCase;
         this.objectMapper = objectMapper;
     }
 
@@ -64,6 +69,24 @@ public class SendResetPasswordCodeController {
             }
         });
 
+    }
+
+    @PostMapping("/changePassword")
+    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono){
+        return changePasswordUseCase.changePassword(changePasswordDataMono).flatMap(isOk->
+        {
+            if(isOk.isError()){
+                return Mono.just(ResponseEntity.badRequest().body(isOk.getError()));
+            }else{
+                try {
+                    String isOkJSON  = objectMapper.writeValueAsString(isOk.getValue());
+                    return Mono.just(ResponseEntity.ok(isOkJSON));
+                } catch (JsonProcessingException e) {
+                    return Mono.error(new RuntimeException("Error"));
+                }
+
+            }
+        });
     }
 
 

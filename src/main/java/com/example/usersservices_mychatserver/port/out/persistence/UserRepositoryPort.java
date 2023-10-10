@@ -10,5 +10,7 @@ public interface UserRepositoryPort {
 
     Mono<UserMyChat> findUserById(Long idUser);
 
+    Mono<Void> changePassword(Long idUser, String newPassword);
+
 
 }

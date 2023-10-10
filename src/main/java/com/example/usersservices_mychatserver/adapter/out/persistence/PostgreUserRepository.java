@@ -40,5 +40,10 @@ public class PostgreUserRepository implements UserRepositoryPort {
         return userRepository.findById(idUser);
     }
 
+    @Override
+    public Mono<Void> changePassword(Long idUser, String newPassword) {
+        return userRepository.changePassword(idUser, newPassword);
+    }
+
 
 }
