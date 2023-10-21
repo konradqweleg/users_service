@@ -33,22 +33,18 @@ public class ResendActiveUserAccountCodeService implements ResendActiveUserAccou
 
     @Override
     public Mono<Result<Status>> resendActiveUserAccountCode(Mono<IdUserData> idUserMono) {
+
         return idUserMono.flatMap(idUserData -> {
             Mono<UserMyChat> userData = userRepositoryPort.findUserById(idUserData.idUser());
-            return userData.map(userMyChat -> {
-                postgreCodeVerificationRepository.deleteUserActivationCode(userMyChat.id()).subscribeOn(Schedulers.immediate()).subscribe();
-                return userMyChat;
-            }).map(userFromDb-> {
-                String generatedCode = generateCode.generateCode();
-                sendEmail.sendVerificationCode(userFromDb,generatedCode);
-                postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null,userFromDb.id(),generatedCode))
-                        .subscribeOn(Schedulers.immediate())
-                        .subscribe();
-               return Result.success(new Status(true));
-
-            }  ).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
+            return userData.flatMap(userMyChat -> postgreCodeVerificationRepository.deleteUserActivationCode(userMyChat.id()).
+                            thenReturn(userMyChat)).
+                    flatMap(userFromDb -> {
+                        String generatedCode = generateCode.generateCode();
+                        sendEmail.sendVerificationCode(userFromDb, generatedCode);
+                        return postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode))
+                                .thenReturn(Result.success(new Status(true)));
+                    }).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
         });
-
 
 
     }

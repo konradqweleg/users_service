@@ -53,14 +53,18 @@ public class RegisterUserService implements RegisterUserUseCase {
                                         DEFAULT_ACTIVE_IS_NOT_ACTIVE
                                 ))
                                 .flatMap(userPreparedToSaveInDb -> postgreUserRepository.saveUser(userPreparedToSaveInDb)
-                                        .map(newlyCreatedUser -> {
+                                        .flatMap(newlyCreatedUser -> {
                                             String registerCode = generateCode.generateCode();
                                             CodeVerification codeVerification = new CodeVerification(null, newlyCreatedUser.id(), registerCode);
-                                            postgreCodeVerificationRepository.saveVerificationCode(codeVerification)
-                                                    .subscribeOn(Schedulers.boundedElastic())
-                                                    .subscribe();
-                                            sendEmail.sendVerificationCode(newlyCreatedUser, registerCode);
-                                            return Result.success(newlyCreatedUser);
+                                            return postgreCodeVerificationRepository.saveVerificationCode(codeVerification).
+                                                    flatMap(sendSavedVerificationCode ->
+                                                            {
+                                                                sendEmail.sendVerificationCode(newlyCreatedUser, registerCode);
+                                                                return Mono.just(sendSavedVerificationCode);
+                                                            }
+
+                                                    ).thenReturn(Result.success(newlyCreatedUser));
+
                                         })).flatMap(result -> Mono.just(Result.success(new Status(true)))
                                 )));
 

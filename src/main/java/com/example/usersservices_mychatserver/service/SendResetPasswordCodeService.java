@@ -34,19 +34,17 @@ public class SendResetPasswordCodeService implements SendResetPasswordCodeUseCas
 
     @Override
     public Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono) {
-        return emailDataMono.flatMap(emailData->{
+
+        return emailDataMono.flatMap(emailData -> {
             Mono<UserMyChat> userData = userRepositoryPort.findUserWithEmail(emailData.email());
-            return userData.map(user->{
-                resetPasswordCodeRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id())).subscribeOn(Schedulers.immediate()).subscribe();
-                return user;
-            }).map(user->{
-                String generatedCode = generateRandomCodePort.generateCode();
-                sendEmailWithResetPasswordCodePort.sendResetPasswordCode(user.email(),generatedCode);
-                resetPasswordCodeRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null,user.id(),generatedCode))
-                        .subscribeOn(Schedulers.immediate())
-                        .subscribe();
-                return Result.success(new Status(true));
-            }).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
+            return userData.flatMap(user -> resetPasswordCodeRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id())).
+                            thenReturn(user)).
+                    flatMap(user -> {
+                        String generatedCode = generateRandomCodePort.generateCode();
+                        sendEmailWithResetPasswordCodePort.sendResetPasswordCode(user.email(), generatedCode);
+                        return resetPasswordCodeRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode)).
+                                thenReturn(Result.success(new Status(true)));
+                    }).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
         });
 
     }
