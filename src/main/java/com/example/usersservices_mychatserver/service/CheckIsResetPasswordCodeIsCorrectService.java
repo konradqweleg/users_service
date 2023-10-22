@@ -7,7 +7,7 @@ import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeDat
 import com.example.usersservices_mychatserver.port.in.CheckIsCorrectResetPasswordCodeUseCase;
 import com.example.usersservices_mychatserver.port.out.persistence.ResetPasswordCodeRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
-import com.example.usersservices_mychatserver.service.message.UserErrorMessage;
+import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -30,8 +30,9 @@ public class CheckIsResetPasswordCodeIsCorrectService implements CheckIsCorrectR
                     } else {
                         return Mono.just(Result.<IsCorrectResetPasswordCode>success(new IsCorrectResetPasswordCode(false)));
                     }
-                }).switchIfEmpty(Mono.just(Result.<IsCorrectResetPasswordCode>error(UserErrorMessage.USER_NOT_FOUND.getMessage()))))).
-                switchIfEmpty(Mono.just(Result.<IsCorrectResetPasswordCode>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
+                }).switchIfEmpty(Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.USER_NOT_FOUND.getMessage())))))
+                .onErrorResume(RuntimeException.class,ex -> Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+
 
     }
 }

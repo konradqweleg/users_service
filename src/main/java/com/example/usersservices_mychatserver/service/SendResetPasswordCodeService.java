@@ -11,10 +11,9 @@ import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodeP
 import com.example.usersservices_mychatserver.port.out.persistence.ResetPasswordCodeRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailWithResetPasswordCodePort;
-import com.example.usersservices_mychatserver.service.message.UserErrorMessage;
+import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Service
 public class SendResetPasswordCodeService implements SendResetPasswordCodeUseCase {
@@ -44,8 +43,8 @@ public class SendResetPasswordCodeService implements SendResetPasswordCodeUseCas
                         sendEmailWithResetPasswordCodePort.sendResetPasswordCode(user.email(), generatedCode);
                         return resetPasswordCodeRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode)).
                                 thenReturn(Result.success(new Status(true)));
-                    }).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
-        });
+                    }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
+        }).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
     }
 }

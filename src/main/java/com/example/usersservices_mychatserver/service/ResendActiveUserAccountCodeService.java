@@ -10,10 +10,9 @@ import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodeP
 import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailWithVerificationCodePort;
-import com.example.usersservices_mychatserver.service.message.UserErrorMessage;
+import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 @Service
 public class ResendActiveUserAccountCodeService implements ResendActiveUserAccountCodeUseCase {
@@ -43,8 +42,8 @@ public class ResendActiveUserAccountCodeService implements ResendActiveUserAccou
                         sendEmail.sendVerificationCode(userFromDb, generatedCode);
                         return postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode))
                                 .thenReturn(Result.success(new Status(true)));
-                    }).switchIfEmpty(Mono.just(Result.<Status>error(UserErrorMessage.USER_NOT_FOUND.getMessage())));
-        });
+                    }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
+        }).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
 
     }
