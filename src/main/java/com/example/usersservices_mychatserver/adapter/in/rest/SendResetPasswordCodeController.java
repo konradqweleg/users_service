@@ -22,13 +22,12 @@ public class SendResetPasswordCodeController {
     final private SendResetPasswordCodeUseCase sendResetPasswordCodeUseCase;
     final private CheckIsCorrectResetPasswordCodeUseCase checkIsCorrectResetPasswordCodeUseCase;
 
-    final private ChangePasswordUseCase changePasswordUseCase;
+
     private final PrepareResultPort convertObjectToJsonResponse;
 
-    public SendResetPasswordCodeController(SendResetPasswordCodeUseCase sendResetPasswordCodeUseCase, CheckIsCorrectResetPasswordCodeUseCase checkIsCorrectResetPasswordCodeUseCase, ChangePasswordUseCase changePasswordUseCase, PrepareResultPort convertObjectToJsonResponse) {
+    public SendResetPasswordCodeController(SendResetPasswordCodeUseCase sendResetPasswordCodeUseCase, CheckIsCorrectResetPasswordCodeUseCase checkIsCorrectResetPasswordCodeUseCase, PrepareResultPort convertObjectToJsonResponse) {
         this.sendResetPasswordCodeUseCase = sendResetPasswordCodeUseCase;
         this.checkIsCorrectResetPasswordCodeUseCase = checkIsCorrectResetPasswordCodeUseCase;
-        this.changePasswordUseCase = changePasswordUseCase;
         this.convertObjectToJsonResponse = convertObjectToJsonResponse;
     }
 
@@ -42,10 +41,7 @@ public class SendResetPasswordCodeController {
         return checkIsCorrectResetPasswordCodeUseCase.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(convertObjectToJsonResponse::convert);
     }
 
-    @PostMapping("/changePassword")
-    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono) {
-        return changePasswordUseCase.changePassword(changePasswordDataMono).flatMap(convertObjectToJsonResponse::convert);
-    }
+
 
 
 }
