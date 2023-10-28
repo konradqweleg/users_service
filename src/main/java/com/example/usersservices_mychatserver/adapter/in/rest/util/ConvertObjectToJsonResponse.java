@@ -1,16 +1,15 @@
 package com.example.usersservices_mychatserver.adapter.in.rest.util;
 
-import com.example.usersservices_mychatserver.adapter.in.rest.util.PrepareResultPort;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
-public class ConvertObjectToJsonResponse implements PrepareResultPort {
+
+public  class ConvertObjectToJsonResponse implements PrepareResultPort {
     private final ObjectMapper objectMapper ;
 
     public ConvertObjectToJsonResponse(ObjectMapper objectMapper) {
