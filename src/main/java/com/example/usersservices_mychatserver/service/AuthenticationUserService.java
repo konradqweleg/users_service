@@ -67,7 +67,11 @@ public class AuthenticationUserService implements com.example.usersservices_mych
         return userLoginDataMono.flatMap(userLoginData -> userRepositoryPort.findUserWithEmail(userLoginData.login())
                         .flatMap(userFromDb -> {
                             if (hashPasswordPort.checkPassword(userLoginData.password(), userFromDb.password())) {
-                                return Mono.just(Result.<IsCorrectCredentials>success(new IsCorrectCredentials(true)));
+                                if(userFromDb.isActiveAccount()) {
+                                    return Mono.just(Result.<IsCorrectCredentials>success(new IsCorrectCredentials(true)));
+                                } else {
+                                    return Mono.just(Result.<IsCorrectCredentials>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+                                }
                             } else {
                                 return Mono.just(Result.<IsCorrectCredentials>success(new IsCorrectCredentials(false)));
                             }

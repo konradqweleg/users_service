@@ -4,6 +4,7 @@ public enum ErrorMessage {
     USER_NOT_FOUND("User not found"),
     USER_ALREADY_EXISTS("User already exists"),
     RESPONSE_NOT_AVAILABLE("Response not available"),
+    ACCOUNT_NOT_ACTIVE("Account not active"),
 
     CODE_NOT_FOUND_FOR_THIS_USER ("Code not found for this user"),
 
