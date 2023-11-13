@@ -27,7 +27,7 @@ public class AuthenticationUserController {
 
     @PostMapping("/login")
     public Mono<ResponseEntity<String>> logIn(@RequestBody @Valid Mono<LoginAndPasswordData> user) {
-        return authenticationUserPort.logIn(user).flatMap(convertObjectToJsonResponse::convert);
+        return authenticationUserPort.isCorrectCredentials(user).flatMap(convertObjectToJsonResponse::convert);
     }
 
     @PostMapping("/register")

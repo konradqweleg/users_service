@@ -2,6 +2,7 @@ package com.example.usersservices_mychatserver.adapter.in.rest;
 
 
 import com.example.usersservices_mychatserver.adapter.in.rest.util.PrepareResultPort;
+import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.port.in.ActiveUserAccountPort;
@@ -28,7 +29,7 @@ public class ActiveUserAccountController {
     }
 
     @PostMapping("")
-    public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<CodeVerification> codeVerificationMono) {
+    public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
         return activeUserAccountPort.activateUserAccount(codeVerificationMono).flatMap(convertObjectToJsonResponse::convert);
     }
 }

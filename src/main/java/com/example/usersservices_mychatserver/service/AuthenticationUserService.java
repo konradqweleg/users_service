@@ -63,7 +63,7 @@ public class AuthenticationUserService implements com.example.usersservices_mych
                 onErrorResume(RuntimeException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
     }
 
-    public Mono<Result<IsCorrectCredentials>> logIn(Mono<LoginAndPasswordData> userLoginDataMono) {
+    public Mono<Result<IsCorrectCredentials>> isCorrectCredentials(Mono<LoginAndPasswordData> userLoginDataMono) {
         return userLoginDataMono.flatMap(userLoginData -> userRepositoryPort.findUserWithEmail(userLoginData.login())
                         .flatMap(userFromDb -> {
                             if (hashPasswordPort.checkPassword(userLoginData.password(), userFromDb.password())) {

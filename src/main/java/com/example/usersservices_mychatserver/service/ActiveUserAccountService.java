@@ -1,5 +1,6 @@
 package com.example.usersservices_mychatserver.service;
 
+import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.CodeVerification;
@@ -30,7 +31,7 @@ public class ActiveUserAccountService implements ActiveUserAccountPort {
     }
 
     @Override
-    public Mono<Result<Status>> activateUserAccount(Mono<CodeVerification> codeVerificationMono) {
+    public Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono) {
         return codeVerificationMono.flatMap(
                 codeVerificationProvidedByUser -> postgreCodeVerificationRepository.findUserActiveAccountCodeById(codeVerificationProvidedByUser.idUser()).flatMap(
                                 codeVerificationSaved -> {
