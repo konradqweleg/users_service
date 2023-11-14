@@ -17,6 +17,8 @@ import com.example.usersservices_mychatserver.port.out.persistence.UserRepositor
 
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.service.message.ErrorMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -37,6 +39,8 @@ public class AuthenticationUserService implements com.example.usersservices_mych
     private static final Integer ROLE_USER = 1;
     private static final Boolean DEFAULT_ACTIVE_IS_NOT_ACTIVE = false;
 
+
+    private static final Logger log = LogManager.getLogger(AuthenticationUserService.class);
 
     AuthenticationUserService(UserRepositoryPort userRepositoryPort, ResetPasswordCodeRepositoryPort resetPasswordCodeRepositoryPort, HashPasswordPort hashPasswordPort, CodeVerificationRepositoryPort postgreCodeVerificationRepository, GenerateRandomCodePort generateCode, SendEmailToUserPort sendEmail) {
         this.userRepositoryPort = userRepositoryPort;
@@ -89,6 +93,7 @@ public class AuthenticationUserService implements com.example.usersservices_mych
                     try {
                         return registerNewUser(userRegisterData);
                     } catch (Exception e) {
+                        log.error(e.getMessage());
                         return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
                     }
                 })));
@@ -108,8 +113,12 @@ public class AuthenticationUserService implements com.example.usersservices_mych
                                 })
                                 .thenReturn(Result.success(new Status(true)));
                     })
-                    .onErrorResume(DataAccessException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+                    .onErrorResume(DataAccessException.class, ex ->{
+                       log.error(ex.getMessage());
+                       return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+                    });
         } catch (Exception e) {
+            log.error(e.getMessage());
             return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
         }
     }
