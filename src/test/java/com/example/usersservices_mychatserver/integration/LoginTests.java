@@ -5,7 +5,6 @@ import com.example.usersservices_mychatserver.entity.request.LoginAndPasswordDat
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.integration.dbUtils.DatabaseActionUtilService;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
-import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,18 +56,20 @@ public class LoginTests {
     @BeforeEach
     public void clearAllDatabaseInDatabaseBeforeRunTest() {
         databaseActionUtilService.clearAllUsersInDatabase();
+        databaseActionUtilService.clearAllVerificationCodesInDatabase();
     }
 
     @AfterEach
     public void clearAllDataInDatabaseAfterRunTest() {
         databaseActionUtilService.clearAllDataInDatabase();
+        databaseActionUtilService.clearAllVerificationCodesInDatabase();
     }
 
     @MockBean
     private GenerateRandomCodePort randomCodePort;
 
 
-    private LoginAndPasswordData userLOginData = new LoginAndPasswordData("correctMail@format.eu", "password");
+    private LoginAndPasswordData userLoginData = new LoginAndPasswordData("correctMail@format.eu", "password");
     private static final UserRegisterData correctUserRegisterData = new UserRegisterData("John", "Walker", "correctMail@format.eu", "password");
 
     @Test
@@ -78,7 +79,7 @@ public class LoginTests {
         //then
         webTestClient.post().uri(createRequestLogin())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(userLOginData))
+                .body(BodyInserters.fromValue(userLoginData))
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
@@ -92,6 +93,9 @@ public class LoginTests {
     public void whenLoginCredentialsAreCorrectButUserAccountIsInactiveSystemShouldReturnError4xx() throws URISyntaxException {
 
         //given
+
+        when(randomCodePort.generateCode()).thenReturn("000000");
+
         webTestClient.post().uri(createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(correctUserRegisterData))
@@ -104,7 +108,7 @@ public class LoginTests {
         //then
         webTestClient.post().uri(createRequestLogin())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(userLOginData))
+                .body(BodyInserters.fromValue(userLoginData))
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
@@ -143,7 +147,7 @@ public class LoginTests {
         //then
         webTestClient.post().uri(createRequestLogin())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(userLOginData))
+                .body(BodyInserters.fromValue(userLoginData))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
