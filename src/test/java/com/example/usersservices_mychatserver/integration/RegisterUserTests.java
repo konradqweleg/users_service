@@ -30,7 +30,6 @@ import java.util.List;
 @AutoConfigureWebTestClient
 
 
-//Check duplicated email
 class RegisterUserTests {
     @Autowired
     private WebTestClient webTestClient;
@@ -65,9 +64,46 @@ class RegisterUserTests {
         databaseActionUtilService.clearAllDataInDatabase();
     }
 
+
+    @Test
+    public void whenUserRegistrationDataContainsAlreadyUsedEmailRequestShouldReturn4xxResponse() throws URISyntaxException {
+
+        //given
+        webTestClient.post().uri(createRequestRegister())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(correctUserRegisterData))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.correctResponse").isEqualTo("true");
+
+        //when
+        webTestClient.post().uri(createRequestRegister())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(correctUserRegisterData))
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.ErrorMessage").isEqualTo(" User already exists ");
+
+        //then
+
+        Flux<Long> userIdDataFlux = databaseClient.sql("SELECT id FROM users_services_scheme.user_my_chat")
+                .map((row, metadata) ->
+                        row.get("id", Long.class)
+                )
+                .all();
+
+        StepVerifier.create(userIdDataFlux)
+                .expectNextCount(1)
+                .expectComplete()
+                .verify();
+
+
+    }
+
     @Test
     public void whenUserRegistrationDataIsValidSystemShouldSendActiveAccountCodeToUser() throws URISyntaxException {
-
 
         //when
         //then
@@ -97,7 +133,7 @@ class RegisterUserTests {
                 .expectComplete()
                 .verify();
 
-        databaseActionUtilService.clearAllDataInDatabase();
+
     }
 
 

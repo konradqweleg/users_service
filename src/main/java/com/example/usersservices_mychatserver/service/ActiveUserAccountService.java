@@ -32,20 +32,23 @@ public class ActiveUserAccountService implements ActiveUserAccountPort {
 
     @Override
     public Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono) {
-        return codeVerificationMono.flatMap(
-                codeVerificationProvidedByUser -> postgreCodeVerificationRepository.findUserActiveAccountCodeById(codeVerificationProvidedByUser.idUser()).flatMap(
-                                codeVerificationSaved -> {
-                                    if (codeVerificationSaved.code().equals(codeVerificationProvidedByUser.code())) {
-                                        return userRepository.activeUserAccount(codeVerificationProvidedByUser.idUser()).
-                                                then(Mono.defer(() -> postgreCodeVerificationRepository.deleteUserActivationCode(codeVerificationSaved).
-                                                        thenReturn(Result.success(new Status(true)))));
-                                    } else {
-                                        return Mono.just(Result.<Status>error(ErrorMessage.BAD_CODE.getMessage()));
-                                    }
 
-                                }
-                        ).switchIfEmpty(Mono.just(Result.error(ErrorMessage.CODE_NOT_FOUND_FOR_THIS_USER.getMessage()))).
-                        onErrorResume(RuntimeException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
+        Mono<ActiveAccountCodeData> cacheActiveAccountCodeDataMono = codeVerificationMono.cache();
+
+        return cacheActiveAccountCodeDataMono.flatMap(codeActiveAccount -> userRepository.findUserWithEmail(codeActiveAccount.userEmail()).flatMap(
+                        userActiveAccountData -> postgreCodeVerificationRepository.findUserActiveAccountCodeById(userActiveAccountData.id()).flatMap(
+                                codeVerificationSavedInDb -> cacheActiveAccountCodeDataMono.flatMap(userActiveAccountCodeFromRequest -> {
+                                            if (codeVerificationSavedInDb.code().equals(userActiveAccountCodeFromRequest.code())) {
+                                                return userRepository.activeUserAccount(codeVerificationSavedInDb.idUser()).
+                                                        then(Mono.defer(() -> postgreCodeVerificationRepository.deleteUserActivationCode(codeVerificationSavedInDb).
+                                                                thenReturn(Result.success(new Status(true)))));
+                                            } else {
+                                                return Mono.just(Result.<Status>error(ErrorMessage.BAD_CODE.getMessage()));
+                                            }
+                                        }
+                                )
+                        )).switchIfEmpty(Mono.just(Result.error(ErrorMessage.CODE_NOT_FOUND_FOR_THIS_USER.getMessage()))).
+                onErrorResume(RuntimeException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
     }
 
     @Override
