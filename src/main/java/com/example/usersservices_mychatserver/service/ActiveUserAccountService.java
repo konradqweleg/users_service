@@ -55,17 +55,23 @@ public class ActiveUserAccountService implements ActiveUserAccountPort {
     public Mono<Result<Status>> resendActiveUserAccountCode(Mono<IdUserData> idUserMono) {
 
         return idUserMono.flatMap(idUserData -> {
-            Mono<UserMyChat> userData = userRepository.findUserById(idUserData.idUser());
-            return userData.flatMap(userMyChat -> postgreCodeVerificationRepository.deleteUserActivationCode(userMyChat.id()).
-                            thenReturn(userMyChat)).
-                    flatMap(userFromDb -> {
-                        String generatedCode = generateCode.generateCode();
-                        sendEmail.sendVerificationCode(userFromDb, generatedCode);
-                        return postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode))
-                                .thenReturn(Result.success(new Status(true)));
-                    }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
-        }).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
-
-
+                    Mono<UserMyChat> userData = userRepository.findUserById(idUserData.idUser());
+                    return userData.flatMap(user -> {
+                                if (user.isActiveAccount()) {
+                                    return Mono.error(new RuntimeException(ErrorMessage.USER_ALREADY_ACTIVE.getMessage()));
+                                } else {
+                                    return Mono.just(user);
+                                }
+                            }).flatMap(userMyChat -> postgreCodeVerificationRepository.deleteUserActivationCode(userMyChat.id())
+                                    .thenReturn(userMyChat))
+                            .flatMap(userFromDb -> {
+                                String generatedCode = generateCode.generateCode();
+                                sendEmail.sendVerificationCode(userFromDb, generatedCode);
+                                return postgreCodeVerificationRepository.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode))
+                                        .thenReturn(Result.success(new Status(true)));
+                            })
+                            .switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
+                })
+                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
     }
 }

@@ -23,7 +23,7 @@ import java.net.URISyntaxException;
 
 import static org.mockito.Mockito.when;
 
-//Testy na nulle, puste dane, poprawka metody sprawdzania kodu na obsluge złego maila
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 public class LoginTests {
@@ -31,8 +31,6 @@ public class LoginTests {
     @Autowired
     private WebTestClient webTestClient;
 
-    @Autowired
-    private DatabaseClient databaseClient;
 
     @Autowired
     private DatabaseActionUtilService databaseActionUtilService;
@@ -71,6 +69,38 @@ public class LoginTests {
 
     private LoginAndPasswordData userLoginData = new LoginAndPasswordData("correctMail@format.eu", "password");
     private static final UserRegisterData correctUserRegisterData = new UserRegisterData("John", "Walker", "correctMail@format.eu", "password");
+
+
+
+
+    @Test
+    public void whenUserLoginDataContainsNullElementsSystemShouldReturnError4xx() throws URISyntaxException {
+
+        //given
+        LoginAndPasswordData userLoginDataWithNullPassword = new LoginAndPasswordData("correctMail@format.eu", null);
+        LoginAndPasswordData userLoginDataWithNullLogin = new LoginAndPasswordData(null, "password");
+        //when
+        //then
+        webTestClient.post().uri(createRequestLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userLoginDataWithNullPassword))
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.ErrorMessage").isEqualTo(" Response not available ");
+
+        webTestClient.post().uri(createRequestLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userLoginDataWithNullLogin))
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.ErrorMessage").isEqualTo(" Response not available ");
+
+
+    }
+
+
 
     @Test
     public void whenUserWithGivenLoginDoesNotExistSystemShouldReturnError4xx() throws URISyntaxException {
@@ -118,6 +148,8 @@ public class LoginTests {
     }
 
 
+
+
     @Test
     public void whenLoginCredentialsAreValidAndAccountIsActiveSystemShouldReturnCorrectCredentialsResponse() throws URISyntaxException{
 
@@ -152,6 +184,45 @@ public class LoginTests {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.isCorrectCredentials").isEqualTo(true);
+
+    }
+
+    @Test
+    public void whenUserExistsButLoginDataContainsWrongPasswordSystemShouldReturnLoginCredentialsError() throws URISyntaxException{
+
+        //given
+        LoginAndPasswordData userLoginDataWithBadPassword = new LoginAndPasswordData("correctMail@format.eu", "badPassword");
+
+        when(randomCodePort.generateCode()).thenReturn("000000");
+
+        webTestClient.post().uri(createRequestRegister())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(correctUserRegisterData))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.correctResponse").isEqualTo("true");
+
+
+        ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", correctUserRegisterData.email());
+
+        webTestClient.post().uri(createRequestActiveUserAccount())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(activeAccountCodeData))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.correctResponse").isEqualTo("true");
+        //when
+        //then
+        webTestClient.post().uri(createRequestLogin())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userLoginDataWithBadPassword))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.isCorrectCredentials").isEqualTo(false);
+
 
     }
 

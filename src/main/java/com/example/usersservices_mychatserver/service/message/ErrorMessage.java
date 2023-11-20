@@ -7,7 +7,7 @@ public enum ErrorMessage {
     ACCOUNT_NOT_ACTIVE("Account not active"),
 
     CODE_NOT_FOUND_FOR_THIS_USER ("Code not found for this user"),
-
+    USER_ALREADY_ACTIVE ("User already active"),
     BAD_CODE ("Bad code"),
     USER_OR_RESET_PASSWORD_CODE_NOT_FOUND ("User or reset password code not found"),
 
