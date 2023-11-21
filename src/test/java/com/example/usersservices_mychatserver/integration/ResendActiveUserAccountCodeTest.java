@@ -1,6 +1,7 @@
 package com.example.usersservices_mychatserver.integration;
 
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
+import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.integration.dbUtils.DatabaseActionUtilService;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -19,7 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.mockito.Mockito.when;
-
+@AutoConfigureWebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ResendActiveUserAccountCodeTest {
 
@@ -47,7 +49,7 @@ public class ResendActiveUserAccountCodeTest {
 
     private static final UserRegisterData correctUserRegisterData = new UserRegisterData("John", "Walker", "correctMail@format.eu", "password");
 
-    private static final ActiveAccountCodeData CorrectResendIdUserData = new ActiveAccountCodeData("000000", correctUserRegisterData.email());
+    private static final ActiveAccountCodeData correctResendActiveAccountCode = new ActiveAccountCodeData("000000", correctUserRegisterData.email());
 
     private URI createRequestResendActiveUserAccountCode() throws URISyntaxException {
         return new URI("http://localhost:" + serverPort + "/activeAccount/resendCode");
@@ -64,6 +66,8 @@ public class ResendActiveUserAccountCodeTest {
     @Test
     public void whenUserAccountHasBeenActivatedRequestShouldReturn4xxError() throws URISyntaxException {
         //given
+        when(randomCodePort.generateCode()).thenReturn("000000");
+
         webTestClient.post().uri(createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(correctUserRegisterData))
@@ -73,7 +77,6 @@ public class ResendActiveUserAccountCodeTest {
                 .jsonPath("$.correctResponse").isEqualTo("true");
 
 
-        when(randomCodePort.generateCode()).thenReturn("000000");
         ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", correctUserRegisterData.email());
         webTestClient.post().uri(createRequestActiveUserAccount())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -87,15 +90,147 @@ public class ResendActiveUserAccountCodeTest {
 
         //when
         //then
-        //Zamiana ID na maila
-//        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
-//                .contentType(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromValue(correctActiveAccountCodeData))
-//                .exchange()
-//                .expectStatus().isOk()
-//                .expectBody()
-//                .jsonPath("$.correctResponse").isEqualTo("true");
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(correctResendActiveAccountCode))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+
     }
+
+    @Test
+    public void whenUserFillRegisterDataButNotActivateAccountResendActiveAccountCodeShouldSendCode() throws URISyntaxException {
+        //given
+        String generatedCode = "123456";
+
+
+        when(randomCodePort.generateCode()).thenReturn(generatedCode);
+
+
+        webTestClient.post().uri(createRequestRegister())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(correctUserRegisterData))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.correctResponse").isEqualTo("true");
+
+
+
+        UserLoginData userLoginData = new UserLoginData(correctUserRegisterData.email());
+
+
+        //when
+        //then
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userLoginData))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.correctResponse").isEqualTo("true");
+    }
+
+
+    @Test
+    public void whenUserDidNotRegisterResendActiveAccountCodeShouldFail() throws URISyntaxException {
+        //when
+        //then
+        UserLoginData userLoginData = new UserLoginData("nonexistent@example.com");
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+    }
+
+    @Test
+    public void whenEmptyOrNullDataSentResendActiveAccountCodeShouldFail() throws URISyntaxException {
+
+        //given
+        when(randomCodePort.generateCode()).thenReturn("000000");
+
+        webTestClient.post().uri(createRequestRegister())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(correctUserRegisterData))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.correctResponse").isEqualTo("true");
+
+
+        //when
+        //then
+        UserLoginData emptyUserLoginData = new UserLoginData("");
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(emptyUserLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+
+
+        UserLoginData nullUserLoginData = new UserLoginData(null);
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(nullUserLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+    }
+
+
+    @Test
+    public void whenUserDidNotRegisterAndResendActiveAccountCodeWithInvalidEmailFormatShouldFail() throws URISyntaxException {
+        //when
+        UserLoginData invalidUserLoginData = new UserLoginData("invalid_email_format");
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(invalidUserLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+    }
+
+    @Test
+    public void whenUserDidNotRegisterAndResendActiveAccountCodeWithValidEmailFormatShouldFail() throws URISyntaxException {
+        //when
+        UserLoginData validUserLoginData = new UserLoginData("valid_email@example.com");
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(validUserLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+    }
+
+    @Test
+    public void whenUserDidNotRegisterAndResendActiveAccountCodeWithEmptyDataShouldFail() throws URISyntaxException {
+        //when
+        UserLoginData emptyUserLoginData = new UserLoginData("");
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(emptyUserLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+    }
+
+    @Test
+    public void whenUserDidNotRegisterAndResendActiveAccountCodeWithNullDataShouldFail() throws URISyntaxException {
+        //when
+        UserLoginData nullUserLoginData = new UserLoginData(null);
+        webTestClient.post().uri(createRequestResendActiveUserAccountCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(nullUserLoginData))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody();
+    }
+
+
 
 
 }

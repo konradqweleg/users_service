@@ -4,6 +4,7 @@ package com.example.usersservices_mychatserver.adapter.in.rest;
 import com.example.usersservices_mychatserver.adapter.in.rest.util.PrepareResultPort;
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
+import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.port.in.ActiveUserAccountPort;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +25,8 @@ public class ActiveUserAccountController {
     }
 
     @PostMapping("/resendCode")
-    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody Mono<IdUserData> idUserDataMono) {
-        return activeUserAccountPort.resendActiveUserAccountCode(idUserDataMono).flatMap(convertObjectToJsonResponse::convert);
+    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody Mono<UserLoginData> loginDataMono) {
+        return activeUserAccountPort.resendActiveUserAccountCode(loginDataMono).flatMap(convertObjectToJsonResponse::convert);
     }
 
     @PostMapping("")

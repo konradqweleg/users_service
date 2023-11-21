@@ -2,6 +2,7 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
+import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.entity.response.Result;
@@ -52,10 +53,10 @@ public class ActiveUserAccountService implements ActiveUserAccountPort {
     }
 
     @Override
-    public Mono<Result<Status>> resendActiveUserAccountCode(Mono<IdUserData> idUserMono) {
+    public Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserLoginData> loginUserMono) {
 
-        return idUserMono.flatMap(idUserData -> {
-                    Mono<UserMyChat> userData = userRepository.findUserById(idUserData.idUser());
+        return loginUserMono.flatMap(loginUserData -> {
+                    Mono<UserMyChat> userData = userRepository.findUserWithEmail(loginUserData.login());
                     return userData.flatMap(user -> {
                                 if (user.isActiveAccount()) {
                                     return Mono.error(new RuntimeException(ErrorMessage.USER_ALREADY_ACTIVE.getMessage()));
