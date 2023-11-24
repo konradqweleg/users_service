@@ -2,7 +2,7 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
-import com.example.usersservices_mychatserver.entity.request.LoginAndPasswordData;
+import com.example.usersservices_mychatserver.entity.request.EmailAndPasswordData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.entity.response.IsCorrectCredentials;
 import com.example.usersservices_mychatserver.entity.response.Result;
@@ -67,8 +67,8 @@ public class AuthenticationUserService implements com.example.usersservices_mych
                 onErrorResume(RuntimeException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
     }
 
-    public Mono<Result<IsCorrectCredentials>> isCorrectCredentials(Mono<LoginAndPasswordData> userLoginDataMono) {
-        return userLoginDataMono.flatMap(userLoginData -> userRepositoryPort.findUserWithEmail(userLoginData.login())
+    public Mono<Result<IsCorrectCredentials>> isCorrectCredentials(Mono<EmailAndPasswordData> userLoginDataMono) {
+        return userLoginDataMono.flatMap(userLoginData -> userRepositoryPort.findUserWithEmail(userLoginData.email())
                         .flatMap(userFromDb -> {
                             if (hashPasswordPort.checkPassword(userLoginData.password(), userFromDb.password())) {
                                 if(userFromDb.isActiveAccount()) {

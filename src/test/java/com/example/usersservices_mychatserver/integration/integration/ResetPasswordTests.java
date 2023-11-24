@@ -1,10 +1,10 @@
-package com.example.usersservices_mychatserver.integration;
+package com.example.usersservices_mychatserver.integration.integration;
 
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
-import com.example.usersservices_mychatserver.integration.dbUtils.DatabaseActionUtilService;
+import com.example.usersservices_mychatserver.integration.integration.dbUtils.DatabaseActionUtilService;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import org.junit.jupiter.api.AfterEach;

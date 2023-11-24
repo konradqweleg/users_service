@@ -3,7 +3,7 @@ package com.example.usersservices_mychatserver.adapter.in.rest;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.util.PrepareResultPort;
 import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
-import com.example.usersservices_mychatserver.entity.request.LoginAndPasswordData;
+import com.example.usersservices_mychatserver.entity.request.EmailAndPasswordData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.port.in.AuthenticationUserPort;
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ public class AuthenticationUserController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<String>> logIn(@RequestBody @Valid Mono<LoginAndPasswordData> user) {
+    public Mono<ResponseEntity<String>> logIn(@RequestBody @Valid Mono<EmailAndPasswordData> user) {
         return authenticationUserPort.isCorrectCredentials(user).flatMap(convertObjectToJsonResponse::convert);
     }
 

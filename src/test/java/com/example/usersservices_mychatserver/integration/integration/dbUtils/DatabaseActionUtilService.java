@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.integration.dbUtils;
+package com.example.usersservices_mychatserver.integration.integration.dbUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.r2dbc.core.DatabaseClient;

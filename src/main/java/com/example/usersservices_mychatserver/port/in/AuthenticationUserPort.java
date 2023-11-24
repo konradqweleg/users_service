@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 public interface AuthenticationUserPort {
     Mono<Result<Status>> changePassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono);
 
-    Mono<Result<IsCorrectCredentials>> isCorrectCredentials(Mono<LoginAndPasswordData> user);
+    Mono<Result<IsCorrectCredentials>> isCorrectCredentials(Mono<EmailAndPasswordData> user);
 
     Mono<Result<Status>> registerUser(Mono<UserRegisterData> user);
 
