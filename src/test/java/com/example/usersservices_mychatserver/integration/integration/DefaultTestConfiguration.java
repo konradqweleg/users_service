@@ -1,6 +1,7 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.integration.integration.dbUtils.DatabaseActionUtilService;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
 import com.example.usersservices_mychatserver.integration.integration.request_util.RequestUtil;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
+import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
@@ -32,8 +34,11 @@ public class DefaultTestConfiguration {
     @LocalServerPort
     protected int serverPort;
 
+    @Autowired
+    DatabaseClient databaseClient;
+
     @MockBean
-    private GenerateRandomCodePort randomCodePort;
+    public GenerateRandomCodePort randomCodePort;
 
     protected RequestUtil createRequestUtil() {
         return new RequestUtil(serverPort);
@@ -52,12 +57,12 @@ public class DefaultTestConfiguration {
     }
 
 
-    void createUserAccount(boolean isActiveAccount) throws URISyntaxException {
+    private void createUserAccount(UserRegisterData userRegisterData, boolean isActiveAccount) throws URISyntaxException {
         when(randomCodePort.generateCode()).thenReturn("000000");
 
         webTestClient.post().uri(createRequestUtil().createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(CorrectRequestData.USER_REGISTER_DATA))
+                .body(BodyInserters.fromValue(userRegisterData))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -77,12 +82,12 @@ public class DefaultTestConfiguration {
     }
 
 
-    void createActivatedUserAccount() throws URISyntaxException {
-        createUserAccount(true);
+    void createActivatedUserAccount(UserRegisterData userRegisterData) throws URISyntaxException {
+        createUserAccount(userRegisterData,true);
     }
 
-    void createUserAccountWithNotActiveAccount() throws URISyntaxException {
-        createUserAccount(false);
+    void createUserAccountWithNotActiveAccount(UserRegisterData userRegisterData) throws URISyntaxException {
+        createUserAccount(userRegisterData,false);
     }
 
 

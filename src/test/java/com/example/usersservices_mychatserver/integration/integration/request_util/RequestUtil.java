@@ -21,5 +21,10 @@ public class RequestUtil {
         return new URI("http://localhost:" + serverPort + "/activeAccount");
     }
 
+    public URI createRequestResendActiveUserAccountCode() throws URISyntaxException {
+        return new URI("http://localhost:" + serverPort + "/activeAccount/resendCode");
+    }
+
+
 
 }

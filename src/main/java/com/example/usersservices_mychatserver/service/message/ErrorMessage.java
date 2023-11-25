@@ -2,7 +2,7 @@ package com.example.usersservices_mychatserver.service.message;
 
 public enum ErrorMessage {
     USER_NOT_FOUND("User not found"),
-    USER_ALREADY_EXISTS("User already exists"),
+    USER_ALREADY_EXIST("User already exist"),
     RESPONSE_NOT_AVAILABLE("Response not available"),
     ACCOUNT_NOT_ACTIVE("Account not active"),
 

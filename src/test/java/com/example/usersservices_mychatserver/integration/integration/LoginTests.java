@@ -2,17 +2,13 @@ package com.example.usersservices_mychatserver.integration.integration;
 
 import com.example.usersservices_mychatserver.entity.request.EmailAndPasswordData;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
+import com.example.usersservices_mychatserver.integration.integration.responseUtil.ResponseMessageUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 import java.net.URISyntaxException;
 
 public class LoginTests extends DefaultTestConfiguration {
-
-    private static final String RESPONSE_NOT_AVAILABLE = " Response not available ";
-    private static final String USER_NOT_FOUND = " User not found ";
-
-    private static final String USER_ACCOUNT_NOT_ACTIVE = " Account not active ";
 
     @Test
     public void whenUserEmailIsNullMethodRequestShouldReturnError() throws URISyntaxException {
@@ -27,7 +23,7 @@ public class LoginTests extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo(RESPONSE_NOT_AVAILABLE);
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getResponseNotAvailable());
 
     }
 
@@ -45,7 +41,7 @@ public class LoginTests extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo(RESPONSE_NOT_AVAILABLE);
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getResponseNotAvailable());
 
     }
 
@@ -61,7 +57,7 @@ public class LoginTests extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo(USER_NOT_FOUND);
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getUserNotFound());
 
 
     }
@@ -71,7 +67,7 @@ public class LoginTests extends DefaultTestConfiguration {
     public void whenLoginCredentialsAreCorrectButUserAccountIsInactiveMethodShouldReturnError4xx() throws URISyntaxException {
 
         //given
-        createUserAccountWithNotActiveAccount();
+        createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
 
         //when
         //then
@@ -81,7 +77,7 @@ public class LoginTests extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo(USER_ACCOUNT_NOT_ACTIVE);
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getUserAccountNotActive());
 
 
     }
@@ -91,7 +87,7 @@ public class LoginTests extends DefaultTestConfiguration {
     public void whenLoginCredentialsAreValidAndAccountIsActiveSystemShouldReturnCorrectCredentialsResponse() throws URISyntaxException {
 
         //given
-        createActivatedUserAccount();
+        createActivatedUserAccount(CorrectRequestData.USER_REGISTER_DATA);
 
         //when
         //then
@@ -109,7 +105,7 @@ public class LoginTests extends DefaultTestConfiguration {
     public void whenUserExistsButLoginDataContainsWrongPasswordSystemShouldReturnLoginCredentialsError() throws URISyntaxException {
 
         //given
-        createActivatedUserAccount();
+        createActivatedUserAccount(CorrectRequestData.USER_REGISTER_DATA);
         EmailAndPasswordData userLoginDataWithBadPassword = new EmailAndPasswordData(CorrectRequestData.USER_REGISTER_DATA.email(), "badPassword");
 
         //when
@@ -138,7 +134,7 @@ public class LoginTests extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo(RESPONSE_NOT_AVAILABLE);
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getResponseNotAvailable());
     }
 
 

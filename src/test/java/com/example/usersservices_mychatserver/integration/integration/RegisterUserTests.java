@@ -2,100 +2,58 @@ package com.example.usersservices_mychatserver.integration.integration;
 
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 
-import com.example.usersservices_mychatserver.integration.integration.dbUtils.DatabaseActionUtilService;
+import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
+import com.example.usersservices_mychatserver.integration.integration.responseUtil.ResponseMessageUtil;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.r2dbc.core.DatabaseClient;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Flux;
 
 import reactor.test.StepVerifier;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureWebTestClient
 
-
-class RegisterUserTests {
-    @Autowired
-    private WebTestClient webTestClient;
-
-    @Autowired
-    private DatabaseClient databaseClient;
-
-    @Autowired
-    private DatabaseActionUtilService databaseActionUtilService;
-
-    @LocalServerPort
-    private int serverPort;
-
-    private URI createRequestRegister() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/authentication/register");
-    }
+class RegisterUserTests extends DefaultTestConfiguration {
 
 
     @MockBean
     private SendEmailToUserPort sendEmailToUserPort;
 
-    private static final UserRegisterData correctUserRegisterData = new UserRegisterData("John", "Walker", "correctMail@format.eu", "password");
+    String sqlSelectIdsAllUsers = "SELECT id FROM users_services_scheme.user_my_chat";
 
-
-    @BeforeEach
-    public void clearAllDatabaseInDatabaseBeforeRunTest() {
-        databaseActionUtilService.clearAllUsersInDatabase();
-    }
-
-    @AfterEach
-    public void clearAllDataInDatabaseAfterRunTest() {
-        databaseActionUtilService.clearAllDataInDatabase();
-    }
-
+    int expectZeroUsersInDatabase = 0;
 
     @Test
     public void whenUserRegistrationDataContainsAlreadyUsedEmailRequestShouldReturn4xxResponse() throws URISyntaxException {
 
         //given
-        webTestClient.post().uri(createRequestRegister())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(correctUserRegisterData))
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.correctResponse").isEqualTo("true");
-
+        createActivatedUserAccount(CorrectRequestData.USER_REGISTER_DATA);
         //when
-        webTestClient.post().uri(createRequestRegister())
+        webTestClient.post().uri(createRequestUtil().createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(correctUserRegisterData))
+                .body(BodyInserters.fromValue(CorrectRequestData.USER_REGISTER_DATA))
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo(" User already exists ");
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getUserAlreadyExist());
 
         //then
-
-        Flux<Long> userIdDataFlux = databaseClient.sql("SELECT id FROM users_services_scheme.user_my_chat")
+        Flux<Long> userIdDataFlux = databaseClient.sql(sqlSelectIdsAllUsers)
                 .map((row, metadata) ->
                         row.get("id", Long.class)
                 )
                 .all();
 
+
+        int systemShouldCreateOnlyOneUser = 1;
         StepVerifier.create(userIdDataFlux)
-                .expectNextCount(1)
+                .expectNextCount(systemShouldCreateOnlyOneUser)
                 .expectComplete()
                 .verify();
 
@@ -106,23 +64,20 @@ class RegisterUserTests {
     public void whenUserRegistrationDataIsValidSystemShouldSendActiveAccountCodeToUser() throws URISyntaxException {
 
         //when
+        createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
+
         //then
-        webTestClient.post().uri(createRequestRegister())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(correctUserRegisterData))
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.correctResponse").isEqualTo("true");
+        int systemShouldSendOneEmailToUser = 1;
+        Mockito.verify(sendEmailToUserPort, Mockito.times(systemShouldSendOneEmailToUser)).sendVerificationCode(Mockito.any(), Mockito.anyString());
 
 
-        Mockito.verify(sendEmailToUserPort, Mockito.times(1)).sendVerificationCode(Mockito.any(), Mockito.anyString());
+        String sqlSelectActiveUserAccountCodeMatchToUserActualRegisterEmail = "SELECT users_services_scheme.code_verification.code" +
+                " FROM users_services_scheme.code_verification INNER JOIN " +
+                " users_services_scheme.user_my_chat ON  " +
+                "users_services_scheme.user_my_chat.email = '" + CorrectRequestData.USER_REGISTER_DATA.email() + "' ";
 
 
-        Flux<String> userActiveAccountCode = databaseClient.sql("SELECT users_services_scheme.code_verification.code" +
-                        " FROM users_services_scheme.code_verification INNER JOIN " +
-                        " users_services_scheme.user_my_chat ON  " +
-                        "users_services_scheme.user_my_chat.email = '" + correctUserRegisterData.email() + "' ")
+        Flux<String> userActiveAccountCode = databaseClient.sql(sqlSelectActiveUserAccountCodeMatchToUserActualRegisterEmail)
                 .map((row, metadata) ->
                         row.get("code", String.class)
                 )
@@ -143,16 +98,11 @@ class RegisterUserTests {
         int USER_ROLE_ID = 1;
 
         //when
-        //then
-        webTestClient.post().uri(createRequestRegister())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(correctUserRegisterData))
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.correctResponse").isEqualTo("true");
+        createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
 
-        Flux<UserMyChat> userDataFlux = databaseClient.sql("SELECT id, name,surname,email,password,id_role,is_active_account FROM users_services_scheme.user_my_chat WHERE email = '" + correctUserRegisterData.email() + "'")
+        //then
+        String sqlSelectAllUsersWithEmail = "SELECT id, name,surname,email,password,id_role,is_active_account FROM users_services_scheme.user_my_chat WHERE email = '" + CorrectRequestData.USER_REGISTER_DATA.email() + "'";
+        Flux<UserMyChat> userWithMatchesEmail = databaseClient.sql(sqlSelectAllUsersWithEmail)
                 .map((row, metadata) -> new UserMyChat(
                         row.get("id", Long.class),
                         row.get("name", String.class),
@@ -165,10 +115,10 @@ class RegisterUserTests {
                 .all();
 
         //check if user is in database
-        StepVerifier.create(userDataFlux)
-                .expectNextMatches(user -> user.name().equals(correctUserRegisterData.name())
-                        && user.surname().equals(correctUserRegisterData.surname())
-                        && user.email().equals(correctUserRegisterData.email())
+        StepVerifier.create(userWithMatchesEmail)
+                .expectNextMatches(user -> user.name().equals(CorrectRequestData.USER_REGISTER_DATA.name())
+                        && user.surname().equals(CorrectRequestData.USER_REGISTER_DATA.surname())
+                        && user.email().equals(CorrectRequestData.USER_REGISTER_DATA.email())
                         && !user.password().isEmpty()
                         && user.idRole() == USER_ROLE_ID
                         && !user.isActiveAccount()
@@ -183,8 +133,6 @@ class RegisterUserTests {
     @Test
     public void IfAnyRegistrationDataElementHasNullValueRequestShouldReturn4xxResponse() throws URISyntaxException {
         //given
-
-
         UserRegisterData userRegisterDataNullName = new UserRegisterData(null, "Walker", "correctMail@format.eu", "password");
         UserRegisterData userRegisterDataNullSurname = new UserRegisterData("John", null, "correctMail@format.eu", "password");
         UserRegisterData userRegisterDataNullEmail = new UserRegisterData("John", "Walker", null, "password");
@@ -192,12 +140,11 @@ class RegisterUserTests {
 
         List<UserRegisterData> usersRegisterDataWithNullElement = List.of(userRegisterDataNullName, userRegisterDataNullSurname, userRegisterDataNullEmail, userRegisterDataNullPassword);
 
+
         //when
         //then
-
-
         for (UserRegisterData nullRegisterData : usersRegisterDataWithNullElement) {
-            webTestClient.post().uri(createRequestRegister())
+            webTestClient.post().uri(createRequestUtil().createRequestRegister())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(nullRegisterData))
                     .exchange()
@@ -206,14 +153,14 @@ class RegisterUserTests {
         }
 
 
-        Flux<Long> userIdDataFlux = databaseClient.sql("SELECT id FROM users_services_scheme.user_my_chat")
+        Flux<Long> userIdDataFlux = databaseClient.sql(sqlSelectIdsAllUsers)
                 .map((row, metadata) ->
                         row.get("id", Long.class)
                 )
                 .all();
 
         StepVerifier.create(userIdDataFlux)
-                .expectNextCount(0)
+                .expectNextCount(expectZeroUsersInDatabase)
                 .expectComplete()
                 .verify();
 
@@ -223,7 +170,6 @@ class RegisterUserTests {
     @Test
     public void IfAnyRegistrationDataElementHasEmptyValueRequestShouldReturn4xxResponse() throws URISyntaxException {
         //given
-
         UserRegisterData userRegisterDataNullName = new UserRegisterData("", "Walker", "correctMail@format.eu", "password");
         UserRegisterData userRegisterDataNullSurname = new UserRegisterData("John", "", "correctMail@format.eu", "password");
         UserRegisterData userRegisterDataNullEmail = new UserRegisterData("John", "Walker", "", "password");
@@ -233,9 +179,8 @@ class RegisterUserTests {
 
         //when
         //then
-
         for (UserRegisterData nullRegisterData : usersRegistrationDataWithEmptyElements) {
-            webTestClient.post().uri(createRequestRegister())
+            webTestClient.post().uri(createRequestUtil().createRequestRegister())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(nullRegisterData))
                     .exchange()
@@ -243,14 +188,16 @@ class RegisterUserTests {
                     .expectBody();
         }
 
-        Flux<Long> userIdDataFlux = databaseClient.sql("SELECT id FROM users_services_scheme.user_my_chat")
+
+        Flux<Long> userIdDataFlux = databaseClient.sql(sqlSelectIdsAllUsers)
                 .map((row, metadata) ->
                         row.get("id", Long.class)
                 )
                 .all();
 
+
         StepVerifier.create(userIdDataFlux)
-                .expectNextCount(0)
+                .expectNextCount(expectZeroUsersInDatabase)
                 .expectComplete()
                 .verify();
 
@@ -259,28 +206,29 @@ class RegisterUserTests {
 
 
     @Test
-    public void IfEmailIsInIncorrectFormatRequestShouldReturn4xx() throws URISyntaxException {
+    public void IfEmailIsInBadFormatRequestShouldReturn4xx() throws URISyntaxException {
         //given
         UserRegisterData userRegisterDataBadEmailFormat = new UserRegisterData("John", "Walker", "badEmailFormat", "password");
 
         //when
-        //then
-
-        webTestClient.post().uri(createRequestRegister())
+        webTestClient.post().uri(createRequestUtil().createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userRegisterDataBadEmailFormat))
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody();
 
-        Flux<Long> userFlux = databaseClient.sql("SELECT id FROM users_services_scheme.user_my_chat")
+        //then
+        String sqlSelectIdsAllUsers = "SELECT id FROM users_services_scheme.user_my_chat";
+        Flux<Long> userFlux = databaseClient.sql(sqlSelectIdsAllUsers)
                 .map((row, metadata) ->
                         row.get("id", Long.class)
                 )
                 .all();
 
+
         StepVerifier.create(userFlux)
-                .expectNextCount(0)
+                .expectNextCount(expectZeroUsersInDatabase)
                 .expectComplete()
                 .verify();
 
@@ -290,21 +238,22 @@ class RegisterUserTests {
     @Test
     public void IfRequestIsSentWithoutBodyResponseCodeShouldBe4xx() throws URISyntaxException {
         //when
-        //then
-        webTestClient.post().uri(createRequestRegister())
+        webTestClient.post().uri(createRequestUtil().createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().is4xxClientError()
                 .expectBody();
 
-        Flux<Long> userIdFlux = databaseClient.sql("SELECT id FROM users_services_scheme.user_my_chat")
+
+        //then
+        Flux<Long> userIdFlux = databaseClient.sql(sqlSelectIdsAllUsers)
                 .map((row, metadata) ->
                         row.get("id", Long.class)
                 )
                 .all();
 
         StepVerifier.create(userIdFlux)
-                .expectNextCount(0)
+                .expectNextCount(expectZeroUsersInDatabase)
                 .expectComplete()
                 .verify();
 

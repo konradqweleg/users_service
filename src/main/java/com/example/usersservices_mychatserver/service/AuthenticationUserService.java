@@ -88,7 +88,7 @@ public class AuthenticationUserService implements com.example.usersservices_mych
     @Override
     public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
         return userRegisterDataMono.flatMap(userRegisterData -> userRepositoryPort.findUserWithEmail(userRegisterData.email())
-                .flatMap(userWithSameEmailInDatabase -> Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXISTS.getMessage())))
+                .flatMap(userWithSameEmailInDatabase -> Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXIST.getMessage())))
                 .switchIfEmpty(Mono.defer(() -> {
                     try {
                         return registerNewUser(userRegisterData);
