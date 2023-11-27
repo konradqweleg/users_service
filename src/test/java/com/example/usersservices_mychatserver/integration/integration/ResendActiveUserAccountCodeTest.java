@@ -3,9 +3,7 @@ package com.example.usersservices_mychatserver.integration.integration;
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 

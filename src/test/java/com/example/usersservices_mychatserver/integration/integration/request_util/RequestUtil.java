@@ -25,6 +25,12 @@ public class RequestUtil {
         return new URI("http://localhost:" + serverPort + "/activeAccount/resendCode");
     }
 
+    public URI createRequestSendResetPasswordCode() throws URISyntaxException {
+        return new URI("http://localhost:" + serverPort + "/resetPasswordCode/sendCode");
+    }
 
+    public URI createRequestResetPassword() throws URISyntaxException {
+        return new URI("http://localhost:" + serverPort + "/authentication/changePassword");
+    }
 
 }
