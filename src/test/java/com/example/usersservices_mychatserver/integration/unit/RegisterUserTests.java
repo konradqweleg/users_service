@@ -87,72 +87,63 @@ public class RegisterUserTests {
 
     }
 
-//    @Test
-//    public void ifDatabaseThrowsExceptionDuringFindUserWithEmailMethodShouldReturnError() {
-//        //given
-//        when(userRepositoryPort.findUserWithEmail(anyString())).thenThrow(new RuntimeException("Repository exception"));
-//
-//        //when
-//        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
-//        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
-//
-//        //then
-//        StepVerifier
-//                .create(registerUserStatus)
-//                .expectNextMatches(Result::isError)
-//                .expectComplete()
-//                .verify();
-//    }
+    @Test
+    public void ifDatabaseThrowsExceptionDuringFindUserWithEmailMethodShouldReturnError() {
+        //given
+        when(userRepositoryPort.findUserWithEmail(anyString())).thenThrow(new RuntimeException("Repository exception"));
+
+        //when
+        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
+        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+
+        //then
+        StepVerifier
+                .create(registerUserStatus)
+                .expectNextMatches(Result::isError)
+                .expectComplete()
+                .verify();
+    }
 
 
+    @Test
+    public void ifDatabaseThrowsExceptionDuringSaveVerificationCodeMethodShouldReturnError() {
+        //given
+        when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.empty());
+        when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
+        when(generateCode.generateCode()).thenReturn("000000");
+        when(codeVerificationRepository.saveVerificationCode(any())).thenThrow(new RuntimeException("Repository exception"));;
 
-//    @Override
-//    public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
-//        return userRegisterDataMono.flatMap(userRegisterData -> userRepositoryPort.findUserWithEmail(userRegisterData.email())
-//                .flatMap(userWithSameEmailInDatabase -> Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXIST.getMessage())))
-//                .switchIfEmpty(Mono.defer(() -> {
-//                    try {
-//                        return registerNewUser(userRegisterData);
-//                    } catch (Exception e) {
-//                        log.error(e.getMessage());
-//                        return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                    }
-//                })));
-//    }
-//
-//    private Mono<Result<Status>> registerNewUser(UserRegisterData userRegisterData) {
-//        try {
-//            UserMyChat newUser = prepareUserForRegistration(userRegisterData);
-//            return userRepositoryPort.saveUser(newUser)
-//                    .flatMap(newlyCreatedUser -> {
-//                        String registerCode = generateCode.generateCode();
-//                        CodeVerification codeVerification = new CodeVerification(null, newlyCreatedUser.id(), registerCode);
-//                        return postgreCodeVerificationRepository.saveVerificationCode(codeVerification)
-//                                .flatMap(sendSavedVerificationCode -> {
-//                                    sendEmail.sendVerificationCode(newlyCreatedUser, registerCode);
-//                                    return Mono.just(Result.success(newlyCreatedUser));
-//                                })
-//                                .thenReturn(Result.success(new Status(true)));
-//                    })
-//                    .onErrorResume(DataAccessException.class, ex ->{
-//                        log.error(ex.getMessage());
-//                        return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                    });
-//        } catch (Exception e) {
-//            log.error(e.getMessage());
-//            return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//        }
-//    }
-//
-//    private UserMyChat prepareUserForRegistration(UserRegisterData userRegisterData) {
-//        return new UserMyChat(
-//                null,
-//                userRegisterData.name(),
-//                userRegisterData.surname(),
-//                userRegisterData.email(),
-//                hashPasswordPort.cryptPassword(userRegisterData.password()),
-//                ROLE_USER,
-//                DEFAULT_ACTIVE_IS_NOT_ACTIVE);
-//
-//    }
+        //when
+        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
+        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+
+        //then
+        StepVerifier
+                .create(registerUserStatus)
+                .expectNextMatches(Result::isError)
+                .expectComplete()
+                .verify();
+    }
+
+    @Test
+    public void ifDatabaseThrowsExceptionDuringSaveUserMethodShouldReturnError() {
+        //given
+        when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.empty());
+        when(userRepositoryPort.saveUser(any())).thenThrow(new RuntimeException("Repository exception"));
+        when(generateCode.generateCode()).thenReturn("000000");
+
+
+        //when
+        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
+        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+
+        //then
+        StepVerifier
+                .create(registerUserStatus)
+                .expectNextMatches(Result::isError)
+                .expectComplete()
+                .verify();
+    }
+
+
 }

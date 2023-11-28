@@ -98,7 +98,7 @@ public class AuthenticationUserService implements com.example.usersservices_mych
                     }
                 }))
 
-        );
+        ).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
     }
 
     private Mono<Result<Status>> registerNewUser(UserRegisterData userRegisterData) {
