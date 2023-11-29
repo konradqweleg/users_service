@@ -30,7 +30,7 @@ class RegisterUserTests extends DefaultTestConfiguration {
     int expectZeroUsersInDatabase = 0;
 
     @Test
-    public void whenUserRegistrationDataContainsAlreadyUsedEmailRequestShouldReturn4xxResponse() throws URISyntaxException {
+    public void wenAUserRegistrationRequestContainsTheEmailAddressOfAnExistingUserTheRequestShouldReturnAnError() throws URISyntaxException {
 
         //given
         createActivatedUserAccount(CorrectRequestData.USER_REGISTER_DATA);
@@ -61,16 +61,16 @@ class RegisterUserTests extends DefaultTestConfiguration {
     }
 
     @Test
-    public void whenUserRegistrationDataIsValidSystemShouldSendActiveAccountCodeToUser() throws URISyntaxException {
+    public void whenAUserRegistrationRequestIsValidTheSystemShouldSendAnEmailWithAnAccountActivationCode() throws URISyntaxException {
 
-        //when
+        //given
         createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
 
-        //then
+        //when
         int systemShouldSendOneEmailToUser = 1;
         Mockito.verify(sendEmailToUserPort, Mockito.times(systemShouldSendOneEmailToUser)).sendVerificationCode(Mockito.any(), Mockito.anyString());
 
-
+        //then
         String sqlSelectActiveUserAccountCodeMatchToUserActualRegisterEmail = "SELECT users_services_scheme.code_verification.code" +
                 " FROM users_services_scheme.code_verification INNER JOIN " +
                 " users_services_scheme.user_my_chat ON  " +
@@ -131,7 +131,7 @@ class RegisterUserTests extends DefaultTestConfiguration {
 
 
     @Test
-    public void IfAnyRegistrationDataElementHasNullValueRequestShouldReturn4xxResponse() throws URISyntaxException {
+    public void ifAnyRegistrationDataElementHasNullValueRequestShouldReturnAnError() throws URISyntaxException {
         //given
         UserRegisterData userRegisterDataNullName = new UserRegisterData(null, "Walker", "correctMail@format.eu", "password");
         UserRegisterData userRegisterDataNullSurname = new UserRegisterData("John", null, "correctMail@format.eu", "password");
@@ -168,7 +168,7 @@ class RegisterUserTests extends DefaultTestConfiguration {
     }
 
     @Test
-    public void IfAnyRegistrationDataElementHasEmptyValueRequestShouldReturn4xxResponse() throws URISyntaxException {
+    public void ifAnyRegistrationDataElementHasEmptyValueRequestShouldReturnAnError() throws URISyntaxException {
         //given
         UserRegisterData userRegisterDataNullName = new UserRegisterData("", "Walker", "correctMail@format.eu", "password");
         UserRegisterData userRegisterDataNullSurname = new UserRegisterData("John", "", "correctMail@format.eu", "password");
@@ -206,7 +206,7 @@ class RegisterUserTests extends DefaultTestConfiguration {
 
 
     @Test
-    public void IfEmailIsInBadFormatRequestShouldReturn4xx() throws URISyntaxException {
+    public void ifEmailIsInBadFormatRequestShouldReturnAnError() throws URISyntaxException {
         //given
         UserRegisterData userRegisterDataBadEmailFormat = new UserRegisterData("John", "Walker", "badEmailFormat", "password");
 
@@ -236,7 +236,7 @@ class RegisterUserTests extends DefaultTestConfiguration {
     }
 
     @Test
-    public void IfRequestIsSentWithoutBodyResponseCodeShouldBe4xx() throws URISyntaxException {
+    public void ifRequestIsSentWithoutBodyResponseCodeShouldReturnAnError() throws URISyntaxException {
         //when
         webTestClient.post().uri(createRequestUtil().createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)

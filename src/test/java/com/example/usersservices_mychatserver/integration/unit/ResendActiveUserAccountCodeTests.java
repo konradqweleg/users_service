@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ResendActiveUserAccountCode {
+public class ResendActiveUserAccountCodeTests {
     @MockBean
     private UserRepositoryPort userRepositoryPort;
 

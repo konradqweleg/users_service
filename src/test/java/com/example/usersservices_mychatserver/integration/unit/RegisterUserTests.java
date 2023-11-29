@@ -49,9 +49,9 @@ public class RegisterUserTests {
     public void ifUserAlreadyExistsRequestShouldFail() {
 
         //given
-        EmailAndPasswordData loginData = new EmailAndPasswordData("mail@mail.pl", "password");
-        when(userRepositoryPort.findUserWithEmail(loginData.email())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
-        UserRegisterData userRegisterDataWithAlreadyExistsEmail = new UserRegisterData("root", "surname", loginData.email(), "");
+        EmailAndPasswordData emailAlreadyExistsUser = new EmailAndPasswordData("mail@mail.pl", "password");
+        when(userRepositoryPort.findUserWithEmail(emailAlreadyExistsUser.email())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
+        UserRegisterData userRegisterDataWithAlreadyExistsEmail = new UserRegisterData("root", "surname", emailAlreadyExistsUser.email(), "");
 
         //when
         Mono<Result<Status>> registerAlreadyExistsUserResult = authenticationUserPort.registerUser(Mono.just(userRegisterDataWithAlreadyExistsEmail));
@@ -74,8 +74,8 @@ public class RegisterUserTests {
         when(codeVerificationRepository.saveVerificationCode(any())).thenReturn(Mono.just(new CodeVerification(1L, 1L, "000000")));
 
         //when
-        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
-        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+        UserRegisterData correctUserRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
+        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(correctUserRegisterData));
 
         //then
         StepVerifier
