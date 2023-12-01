@@ -10,27 +10,27 @@ public class RequestUtil {
     }
 
     public URI createRequestLogin() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/authentication/login");
+        return new URI("http://localhost:" + serverPort + "/userServices/api/v1/user/login");
     }
 
     public URI createRequestRegister() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/authentication/register");
+        return new URI("http://localhost:" + serverPort + "/userServices/api/v1/user/register");
     }
 
     public URI createRequestActiveUserAccount() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/activeAccount");
+        return new URI("http://localhost:" + serverPort + "/userServices/api/v1/user/activeUserAccount");
     }
 
     public URI createRequestResendActiveUserAccountCode() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/activeAccount/resendCode");
+        return new URI("http://localhost:" + serverPort + "/userServices/api/v1/user/resendActiveUserAccountCode");
     }
 
     public URI createRequestSendResetPasswordCode() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/resetPasswordCode/sendCode");
+        return new URI("http://localhost:" + serverPort + "/userServices/api/v1/user/sendResetPasswordCode");
     }
 
     public URI createRequestResetPassword() throws URISyntaxException {
-        return new URI("http://localhost:" + serverPort + "/authentication/changePassword");
+        return new URI("http://localhost:" + serverPort + "/userServices/api/v1/user/resetPassword");
     }
 
 }

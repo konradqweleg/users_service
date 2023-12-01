@@ -4,10 +4,9 @@ import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.ActiveUserAccountPort;
+import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
-import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.service.message.ErrorMessage;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -32,14 +30,13 @@ public class ResendActiveUserAccountCodeTests {
     @MockBean
     GenerateRandomCodePort generateCode;
 
-    @MockBean
-    CodeVerificationRepositoryPort codeVerificationRepository;
+    @Autowired
+    UserPort userPort;
 
     @MockBean
     SendEmailToUserPort sendEmailPort;
 
-    @Autowired
-    private ActiveUserAccountPort activeUserAccountPort;
+
 
     @Test
     void ifUserNotExistsRequestShouldFail() {
@@ -49,7 +46,7 @@ public class ResendActiveUserAccountCodeTests {
 
         //when
         UserLoginData userLoginData = new UserLoginData("noExistsUser");
-        Mono<Result<Status>> resendEmailNoExistsUser = activeUserAccountPort.resendActiveUserAccountCode(Mono.just(userLoginData));
+        Mono<Result<Status>> resendEmailNoExistsUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
         StepVerifier
@@ -67,7 +64,7 @@ public class ResendActiveUserAccountCodeTests {
 
         //when
         UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
-        Mono<Result<Status>> alreadyActivatedUser = activeUserAccountPort.resendActiveUserAccountCode(Mono.just(userLoginData));
+        Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
         StepVerifier
@@ -84,7 +81,7 @@ public class ResendActiveUserAccountCodeTests {
 
         //when
         UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
-        Mono<Result<Status>> alreadyActivatedUser = activeUserAccountPort.resendActiveUserAccountCode(Mono.just(userLoginData));
+        Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
         StepVerifier
@@ -101,11 +98,11 @@ public class ResendActiveUserAccountCodeTests {
         //given
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, false)));
         when(generateCode.generateCode()).thenReturn("000000");
-        when(codeVerificationRepository.deleteUserActivationCode(1L)).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+        when(userRepositoryPort.deleteUserActiveAccountCode(1L)).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
         //when
         UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
-        Mono<Result<Status>> alreadyActivatedUser = activeUserAccountPort.resendActiveUserAccountCode(Mono.just(userLoginData));
+        Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
         StepVerifier
@@ -122,12 +119,12 @@ public class ResendActiveUserAccountCodeTests {
         //given
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, false)));
         when(generateCode.generateCode()).thenReturn("000000");
-        when(codeVerificationRepository.deleteUserActivationCode(1L)).thenReturn(Mono.empty());
-        when(codeVerificationRepository.saveVerificationCode(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+        when(userRepositoryPort.deleteUserActiveAccountCode(1L)).thenReturn(Mono.empty());
+        when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
         //when
         UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
-        Mono<Result<Status>> alreadyActivatedUser = activeUserAccountPort.resendActiveUserAccountCode(Mono.just(userLoginData));
+        Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
         StepVerifier
@@ -143,12 +140,12 @@ public class ResendActiveUserAccountCodeTests {
         //given
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, false)));
         when(generateCode.generateCode()).thenReturn("000000");
-        when(codeVerificationRepository.deleteUserActivationCode(1L)).thenReturn(Mono.empty());
-        when(codeVerificationRepository.saveVerificationCode(any())).thenReturn(Mono.empty());
+        when(userRepositoryPort.deleteUserActiveAccountCode(1L)).thenReturn(Mono.empty());
+        when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.empty());
 
         //when
         UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
-        Mono<Result<Status>> alreadyActivatedUser = activeUserAccountPort.resendActiveUserAccountCode(Mono.just(userLoginData));
+        Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
         StepVerifier

@@ -4,7 +4,7 @@ import com.example.usersservices_mychatserver.entity.request.EmailAndPasswordDat
 import com.example.usersservices_mychatserver.entity.response.IsCorrectCredentials;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.AuthenticationUserPort;
+import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ public class LoginTests {
     HashPasswordPort hashPasswordPort;
 
     @Autowired
-    private AuthenticationUserPort authenticationUserPort;
+    private UserPort userPort;
 
     @Test
     public void ifCorrectCredentialsShouldReturnTrue() {
@@ -37,7 +37,7 @@ public class LoginTests {
         when(userRepositoryPort.findUserWithEmail(correctLoginData.email())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
         when(hashPasswordPort.checkPassword(correctLoginData.password(), "password")).thenReturn(true);
         //when
-        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = authenticationUserPort.isCorrectCredentials(Mono.just(correctLoginData));
+        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(correctLoginData));
 
         //then
         StepVerifier
@@ -56,7 +56,7 @@ public class LoginTests {
         when(userRepositoryPort.findUserWithEmail(correctLoginData.email())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
         when(hashPasswordPort.checkPassword(correctLoginData.password(), "WrongPassword")).thenReturn(false);
         //when
-        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = authenticationUserPort.isCorrectCredentials(Mono.just(correctLoginData));
+        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(correctLoginData));
 
         //then
         StepVerifier
@@ -73,7 +73,7 @@ public class LoginTests {
         when(userRepositoryPort.findUserWithEmail(nonExistingUserData.email())).thenReturn(Mono.empty());
 
         //when
-        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = authenticationUserPort.isCorrectCredentials(Mono.just(nonExistingUserData));
+        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(nonExistingUserData));
 
         //then
         StepVerifier
@@ -91,7 +91,7 @@ public class LoginTests {
         when(userRepositoryPort.findUserWithEmail(anyString())).thenThrow(new RuntimeException("Repository exception"));
 
         //when
-        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = authenticationUserPort.isCorrectCredentials(Mono.just(userData));
+        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(userData));
 
         //then
         StepVerifier

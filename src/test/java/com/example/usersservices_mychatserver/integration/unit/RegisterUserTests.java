@@ -6,10 +6,9 @@ import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.AuthenticationUserPort;
+import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
-import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -36,14 +34,15 @@ public class RegisterUserTests {
     @MockBean
     GenerateRandomCodePort generateCode;
 
-    @MockBean
-    CodeVerificationRepositoryPort codeVerificationRepository;
+
+    @Autowired
+    UserPort userPort;
 
     @MockBean
     SendEmailToUserPort sendEmailPort;
 
-    @Autowired
-    private AuthenticationUserPort authenticationUserPort;
+
+
 
     @Test
     public void ifUserAlreadyExistsRequestShouldFail() {
@@ -54,11 +53,11 @@ public class RegisterUserTests {
         UserRegisterData userRegisterDataWithAlreadyExistsEmail = new UserRegisterData("root", "surname", emailAlreadyExistsUser.email(), "");
 
         //when
-        Mono<Result<Status>> registerAlreadyExistsUserResult = authenticationUserPort.registerUser(Mono.just(userRegisterDataWithAlreadyExistsEmail));
+        Mono<Result<Status>> registerAlreadyExistsUserResult = userPort.registerUser(Mono.just(userRegisterDataWithAlreadyExistsEmail));
         //then
         StepVerifier
                 .create(registerAlreadyExistsUserResult)
-                .expectNextMatches(result -> result.isError())
+                .expectNextMatches(Result::isError)
                 .expectComplete()
                 .verify();
     }
@@ -71,11 +70,12 @@ public class RegisterUserTests {
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.empty());
         when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
         when(generateCode.generateCode()).thenReturn("000000");
-        when(codeVerificationRepository.saveVerificationCode(any())).thenReturn(Mono.just(new CodeVerification(1L, 1L, "000000")));
+
+        when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.just(new CodeVerification(1L, 1L, "000000")));
 
         //when
         UserRegisterData correctUserRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
-        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(correctUserRegisterData));
+        Mono<Result<Status>> registerUserStatus =  userPort.registerUser(Mono.just(correctUserRegisterData));
 
         //then
         StepVerifier
@@ -94,7 +94,7 @@ public class RegisterUserTests {
 
         //when
         UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
-        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+        Mono<Result<Status>> registerUserStatus =  userPort.registerUser(Mono.just(userRegisterData));
 
         //then
         StepVerifier
@@ -111,11 +111,11 @@ public class RegisterUserTests {
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.empty());
         when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
         when(generateCode.generateCode()).thenReturn("000000");
-        when(codeVerificationRepository.saveVerificationCode(any())).thenThrow(new RuntimeException("Repository exception"));;
+        when(userRepositoryPort.saveVerificationCode(any())).thenThrow(new RuntimeException("Repository exception"));;
 
         //when
         UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
-        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+        Mono<Result<Status>> registerUserStatus =  userPort.registerUser(Mono.just(userRegisterData));
 
         //then
         StepVerifier
@@ -135,7 +135,7 @@ public class RegisterUserTests {
 
         //when
         UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "");
-        Mono<Result<Status>> registerUserStatus =  authenticationUserPort.registerUser(Mono.just(userRegisterData));
+        Mono<Result<Status>> registerUserStatus =  userPort.registerUser(Mono.just(userRegisterData));
 
         //then
         StepVerifier

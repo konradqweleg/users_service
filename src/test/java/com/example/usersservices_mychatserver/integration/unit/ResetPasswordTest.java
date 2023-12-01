@@ -6,11 +6,9 @@ import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.AuthenticationUserPort;
+import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
-import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
-import com.example.usersservices_mychatserver.port.out.persistence.ResetPasswordCodeRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import org.junit.jupiter.api.Test;
@@ -34,17 +32,13 @@ public class ResetPasswordTest {
     @MockBean
     GenerateRandomCodePort generateCode;
 
-    @MockBean
-    CodeVerificationRepositoryPort codeVerificationRepository;
 
-    @MockBean
-    ResetPasswordCodeRepositoryPort resetPasswordCodeRepositoryPort;
 
     @MockBean
     SendEmailToUserPort sendEmailPort;
 
     @Autowired
-    private AuthenticationUserPort authenticationUserPort;
+    private UserPort userPort;
 
 
 
@@ -53,7 +47,7 @@ public class ResetPasswordTest {
         //given
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.empty());
         //when
-        Mono<Result<Status>> changePasswordNoExistsUser = authenticationUserPort.changePassword(Mono.just(new ChangePasswordData("email@noexists", "code", "password")));
+        Mono<Result<Status>> changePasswordNoExistsUser = userPort.changeUserPassword(Mono.just(new ChangePasswordData("email@noexists", "code", "password")));
         //then
         StepVerifier
                 .create(changePasswordNoExistsUser)
@@ -67,9 +61,9 @@ public class ResetPasswordTest {
     void whenChangePasswordCodeNoExistsForThisUserRequestShouldFail(){
         //given
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "user", "password", "email@email.eu", "password",1,true)));
-        when(resetPasswordCodeRepositoryPort.findResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
+        when(userRepositoryPort.findResetPasswordCodeForUserById(any())).thenReturn(Mono.empty());
         //when
-        Mono<Result<Status>> changePasswordNoExistsUser = authenticationUserPort.changePassword(Mono.just(new ChangePasswordData("email@email.eu", "code", "password")));
+        Mono<Result<Status>> changePasswordNoExistsUser = userPort.changeUserPassword(Mono.just(new ChangePasswordData("email@email.eu", "code", "password")));
         //then
         StepVerifier
                 .create(changePasswordNoExistsUser)
@@ -83,9 +77,9 @@ public class ResetPasswordTest {
     void whenChangePasswordCodeIsBadForThisUserRequestShouldFail(){
         //given
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "user", "password", "email@email.eu", "password",1,true)));
-        when(resetPasswordCodeRepositoryPort.findResetPasswordCodeForUser(any())).thenReturn(Mono.just(new ResetPasswordCode(1L,1L,"0000")));
+        when(userRepositoryPort.findResetPasswordCodeForUserById(any())).thenReturn(Mono.just(new ResetPasswordCode(1L,1L,"0000")));
         //when
-        Mono<Result<Status>> changePasswordNoExistsUser = authenticationUserPort.changePassword(Mono.just(new ChangePasswordData("email@email.eu", "1111", "password")));
+        Mono<Result<Status>> changePasswordNoExistsUser = userPort.changeUserPassword(Mono.just(new ChangePasswordData("email@email.eu", "1111", "password")));
         //then
         StepVerifier
                 .create(changePasswordNoExistsUser)
@@ -97,12 +91,12 @@ public class ResetPasswordTest {
     @Test void whenChangePasswordDataIsCorrectRequestShouldSuccess() {
         //given
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "user", "password", "email@email.eu", "password",1,true)));
-        when(resetPasswordCodeRepositoryPort.findResetPasswordCodeForUser(any())).thenReturn(Mono.just(new ResetPasswordCode(1L,1L,"0000")));
+        when(userRepositoryPort.findResetPasswordCodeForUserById(any())).thenReturn(Mono.just(new ResetPasswordCode(1L,1L,"0000")));
         when(hashPasswordPort.cryptPassword(any())).thenReturn("password");
         when(userRepositoryPort.changePassword(any(),any())).thenReturn(Mono.empty());
-        when(resetPasswordCodeRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
+        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
         //when
-        Mono<Result<Status>> correctChangePassword = authenticationUserPort.changePassword(Mono.just(new ChangePasswordData("email@email.eu", "0000", "password")));
+        Mono<Result<Status>> correctChangePassword = userPort.changeUserPassword(Mono.just(new ChangePasswordData("email@email.eu", "0000", "password")));
         //then
         StepVerifier
                 .create(correctChangePassword)

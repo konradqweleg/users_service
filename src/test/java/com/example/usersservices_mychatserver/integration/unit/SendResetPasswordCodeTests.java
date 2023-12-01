@@ -4,11 +4,9 @@ import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.ResetPasswordCodePort;
+import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
-import com.example.usersservices_mychatserver.port.out.persistence.CodeVerificationRepositoryPort;
-import com.example.usersservices_mychatserver.port.out.persistence.ResetPasswordCodeRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.service.message.ErrorMessage;
@@ -34,17 +32,13 @@ public class SendResetPasswordCodeTests {
     @MockBean
     GenerateRandomCodePort generateCode;
 
-    @MockBean
-    CodeVerificationRepositoryPort codeVerificationRepository;
 
-    @MockBean
-    ResetPasswordCodeRepositoryPort resetPasswordCodeRepositoryPort;
 
     @MockBean
     SendEmailToUserPort sendEmailPort;
 
     @Autowired
-    private ResetPasswordCodePort resetPasswordCodePort;
+    private UserPort userPort;
 
 
     @Test void ifUserNotExistsRequestShouldFail() {
@@ -53,7 +47,7 @@ public class SendResetPasswordCodeTests {
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.empty());
 
         //when
-        Mono<Result<Status>> resendEmailNoExistsUser = resetPasswordCodePort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
+        Mono<Result<Status>> resendEmailNoExistsUser = userPort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
 
         //then
         StepVerifier
@@ -68,7 +62,7 @@ public class SendResetPasswordCodeTests {
         //given
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
         //when
-        Mono<Result<Status>> resendEmailNoExistsUser = resetPasswordCodePort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
+        Mono<Result<Status>> resendEmailNoExistsUser = userPort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
 
         //then
         StepVerifier
@@ -81,10 +75,10 @@ public class SendResetPasswordCodeTests {
 
     @Test void ifDatabaseNotAvailableForDeleteResetPasswordCodeForUserRequestShouldFail() {
         //given
-        when(resetPasswordCodeRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
         //when
-        Mono<Result<Status>> resendEmailNoExistsUser = resetPasswordCodePort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
+        Mono<Result<Status>> resendEmailNoExistsUser = userPort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
 
         //then
         StepVerifier
@@ -97,11 +91,11 @@ public class SendResetPasswordCodeTests {
 
     @Test void ifDatabaseNotAvailableForInsertResetPasswordCodeRequestShouldFail() {
         //given
-        when(resetPasswordCodeRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
+        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
-        when(resetPasswordCodeRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
         //when
-        Mono<Result<Status>> resendEmailNoExistsUser = resetPasswordCodePort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
+        Mono<Result<Status>> resendEmailNoExistsUser = userPort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
 
         //then
         StepVerifier
@@ -114,11 +108,11 @@ public class SendResetPasswordCodeTests {
 
     @Test void ifCorrectRequestDataRequestShouldSuccess() {
         //given
-        when(resetPasswordCodeRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
+        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
-        when(resetPasswordCodeRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.empty());
+        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.empty());
         //when
-        Mono<Result<Status>> resendEmailNoExistsUser = resetPasswordCodePort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
+        Mono<Result<Status>> resendEmailNoExistsUser = userPort.sendResetPasswordCode(Mono.just(new UserEmailData("email@email.pl")));
 
         //then
         StepVerifier
