@@ -51,7 +51,7 @@ public class ResendActiveUserAccountCodeTests {
         //then
         StepVerifier
                 .create(resendEmailNoExistsUser)
-                .expectNextMatches(Result::isError)
+                .expectNextMatches(response -> response.isError() && response.getError().equals(ErrorMessage.USER_NOT_FOUND.getFullJSON()))
                 .expectComplete()
                 .verify();
 

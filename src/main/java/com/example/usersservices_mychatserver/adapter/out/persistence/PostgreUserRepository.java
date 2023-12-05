@@ -9,8 +9,11 @@ import com.example.usersservices_mychatserver.port.out.persistence.UserRepositor
 import com.example.usersservices_mychatserver.repository.CodeVerificationRepository;
 import com.example.usersservices_mychatserver.repository.ResetPasswordCodeRepository;
 import com.example.usersservices_mychatserver.repository.UserRepository;
+import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.util.NoSuchElementException;
 
 @Service
 public class PostgreUserRepository implements UserRepositoryPort {

@@ -18,6 +18,10 @@ public enum ErrorMessage {
     public String getMessage(){
         return message;
     }
+
+    public String getFullJSON(){
+        return "{\"ErrorMessage\" : \""+message+"\"}";
+    }
     ErrorMessage(String message) {
         this.message = message;
     }

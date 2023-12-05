@@ -35,7 +35,7 @@ public class Result<T> {
 
     public String getError() {
         if (isError()) {
-            return "{ \"ErrorMessage\" : \" "+errorMessage+" \" }";
+            return "{\"ErrorMessage\" : \""+errorMessage+"\"}";
         } else {
             throw new IllegalStateException("Result does not contain an error");
         }

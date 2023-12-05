@@ -18,6 +18,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.NoSuchElementException;
+
 @Service
 public class UserService implements UserPort {
     private final UserRepositoryPort userRepositoryPort;
@@ -73,7 +75,16 @@ public class UserService implements UserPort {
     @Override
     public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
         return userRegisterDataMono.flatMap(userRegisterData -> userRepositoryPort.findUserWithEmail(userRegisterData.email())
-                .flatMap(userWithSameEmailInDatabase -> Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXIST.getMessage())))
+                .flatMap(userWithSameEmailInDatabase -> {
+                            if (userWithSameEmailInDatabase.isActiveAccount()) {
+                                return Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXIST.getMessage()));
+                            } else {
+                                return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+                            }
+
+                        }
+
+                )
                 .switchIfEmpty(Mono.defer(() -> {
                     try {
                         return registerNewUser(userRegisterData);
@@ -179,7 +190,12 @@ public class UserService implements UserPort {
     public Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserLoginData> loginUserMono) {
 
         return loginUserMono.flatMap(loginUserData -> {
+
                     Mono<UserMyChat> userData = userRepositoryPort.findUserWithEmail(loginUserData.login());
+                    if (userData == null) {
+                        return Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage()));
+                    }
+
                     return userData.flatMap(user -> {
                                 if (user.isActiveAccount()) {
                                     return Mono.error(new RuntimeException(ErrorMessage.USER_ALREADY_ACTIVE.getMessage()));
@@ -194,8 +210,9 @@ public class UserService implements UserPort {
                                 return userRepositoryPort.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode))
                                         .thenReturn(Result.success(new Status(true)));
                             })
-                            .switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
+                            .switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+                            .onErrorResume(NoSuchElementException.class, ex -> Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
                 })
-                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage() + " " + ex.getMessage())));
     }
 }
