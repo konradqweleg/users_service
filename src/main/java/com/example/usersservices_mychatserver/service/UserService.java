@@ -170,7 +170,7 @@ public class UserService implements UserPort {
 
         Mono<ActiveAccountCodeData> cacheActiveAccountCodeDataMono = codeVerificationMono.cache();
 
-        return cacheActiveAccountCodeDataMono.flatMap(codeActiveAccount -> userRepositoryPort.findUserWithEmail(codeActiveAccount.userEmail()).flatMap(
+        return cacheActiveAccountCodeDataMono.flatMap(codeActiveAccount -> userRepositoryPort.findUserWithEmail(codeActiveAccount.email()).flatMap(
                         userActiveAccountData -> userRepositoryPort.findActiveUserAccountCodeForUserWithId(userActiveAccountData.id()).flatMap(
                                 codeVerificationSavedInDb -> cacheActiveAccountCodeDataMono.flatMap(userActiveAccountCodeFromRequest -> {
                                             if (codeVerificationSavedInDb.code().equals(userActiveAccountCodeFromRequest.code())) {
