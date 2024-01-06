@@ -1,10 +1,7 @@
 package com.example.usersservices_mychatserver.port.in;
 
 import com.example.usersservices_mychatserver.entity.request.*;
-import com.example.usersservices_mychatserver.entity.response.IsCorrectCredentials;
-import com.example.usersservices_mychatserver.entity.response.IsCorrectResetPasswordCode;
-import com.example.usersservices_mychatserver.entity.response.Result;
-import com.example.usersservices_mychatserver.entity.response.Status;
+import com.example.usersservices_mychatserver.entity.response.*;
 import reactor.core.publisher.Mono;
 
 public interface UserPort {
