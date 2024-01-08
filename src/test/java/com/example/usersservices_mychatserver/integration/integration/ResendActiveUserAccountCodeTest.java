@@ -1,6 +1,7 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
     public void whenUserFillRegisterDataButNotActivateAccountResendActiveAccountCodeShouldSendCode() throws URISyntaxException {
         //given
         createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
-        UserLoginData userResendActiveAccountRequestData = new UserLoginData(CorrectRequestData.USER_REGISTER_DATA.email());
+        UserEmailData userResendActiveAccountRequestData = new UserEmailData(CorrectRequestData.USER_REGISTER_DATA.email());
 
         //when
         //then
@@ -57,7 +58,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
     public void whenUserDidNotRegisterResendActiveAccountCodeShouldFail() throws URISyntaxException {
         //when
         //then
-        UserLoginData userResendActiveCodeNoExsistsUserRequestData = new UserLoginData("nonexistent@example.com");
+        UserEmailData userResendActiveCodeNoExsistsUserRequestData = new UserEmailData("nonexistent@example.com");
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(userResendActiveCodeNoExsistsUserRequestData))
@@ -76,7 +77,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
         createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
 
         //when
-        UserLoginData emptyUserLoginData = new UserLoginData("");
+        UserEmailData emptyUserLoginData = new UserEmailData("");
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(emptyUserLoginData))
@@ -93,7 +94,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
         createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
         //when
         //then
-        UserLoginData nullUserLoginData = new UserLoginData(null);
+        UserEmailData nullUserLoginData = new UserEmailData(null);
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(nullUserLoginData))
@@ -106,7 +107,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
     @Test
     public void whenUserDidNotRegisterAndResendActiveAccountCodeWithInvalidEmailFormatShouldFail() throws URISyntaxException {
         //when
-        UserLoginData invalidUserLoginData = new UserLoginData("invalid_email_format");
+        UserEmailData invalidUserLoginData = new UserEmailData("invalid_email_format");
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(invalidUserLoginData))
@@ -118,7 +119,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
     @Test
     public void whenUserDidNotRegisterAndResendActiveAccountCodeWithValidEmailFormatShouldFail() throws URISyntaxException {
         //when
-        UserLoginData validUserLoginData = new UserLoginData("valid_email@example.com");
+        UserEmailData validUserLoginData = new UserEmailData("valid_email@example.com");
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(validUserLoginData))
@@ -130,7 +131,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
     @Test
     public void whenUserDidNotRegisterAndResendActiveAccountCodeWithEmptyDataShouldFail() throws URISyntaxException {
         //when
-        UserLoginData emptyUserLoginData = new UserLoginData("");
+        UserEmailData emptyUserLoginData = new UserEmailData("");
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(emptyUserLoginData))
@@ -142,7 +143,7 @@ public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
     @Test
     public void whenUserDidNotRegisterAndResendActiveAccountCodeWithNullDataShouldFail() throws URISyntaxException {
         //when
-        UserLoginData nullUserLoginData = new UserLoginData(null);
+        UserEmailData nullUserLoginData = new UserEmailData(null);
         webTestClient.post().uri(createRequestUtil().createRequestResendActiveUserAccountCode())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(nullUserLoginData))

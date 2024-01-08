@@ -97,6 +97,20 @@ public class UserService implements UserPort {
         ).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
     }
 
+    @Override
+    public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> user) {
+        return user.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
+                .flatMap(userFromDb -> {
+                    if (userFromDb.isActiveAccount()) {
+                        return Mono.just(Result.success(new Status(true)));
+                    } else {
+                        return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+                    }
+                })
+                .switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
+    }
+
     private Mono<Result<Status>> registerNewUser(UserRegisterData userRegisterData) {
         try {
             UserMyChat newUser = prepareUserForRegistration(userRegisterData);
@@ -187,11 +201,11 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserLoginData> loginUserMono) {
+    public Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> loginUserMono) {
 
         return loginUserMono.flatMap(loginUserData -> {
 
-                    Mono<UserMyChat> userData = userRepositoryPort.findUserWithEmail(loginUserData.login());
+                    Mono<UserMyChat> userData = userRepositoryPort.findUserWithEmail(loginUserData.email());
                     if (userData == null) {
                         return Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage()));
                     }

@@ -1,4 +1,6 @@
 package com.example.usersservices_mychatserver.entity.request;
 
-public record UserLoginData(String login) {
+import jakarta.validation.constraints.NotNull;
+
+public record UserLoginData(@NotNull String email) {
 }

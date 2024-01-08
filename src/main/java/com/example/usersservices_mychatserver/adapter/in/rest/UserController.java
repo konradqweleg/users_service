@@ -21,6 +21,11 @@ public class UserController {
         this.userPort = userPort;
     }
 
+    @PostMapping("/checkIsUserWithThisEmailExist")
+    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailData> user) {
+        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
+    }
+
     @PostMapping("/sendResetPasswordCode")
     public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
         return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
@@ -47,8 +52,8 @@ public class UserController {
     }
 
     @PostMapping("/resendActiveUserAccountCode")
-    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody Mono<UserLoginData> loginDataMono) {
-        return userPort.resendActiveUserAccountCode(loginDataMono).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {
+        return userPort.resendActiveUserAccountCode(emailDataMono).flatMap(ConvertToJSON::convert);
     }
 
     @PostMapping("/activeUserAccount")

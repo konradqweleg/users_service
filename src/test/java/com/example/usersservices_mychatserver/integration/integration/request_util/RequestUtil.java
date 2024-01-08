@@ -16,6 +16,10 @@ public class RequestUtil {
         return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/login");
     }
 
+    public URI createRequestCheckIsUserWithProvidedEmailExists() throws URISyntaxException {
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/checkIsUserWithThisEmailExist");
+    }
+
     public URI createRequestRegister() throws URISyntaxException {
         return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/register");
     }

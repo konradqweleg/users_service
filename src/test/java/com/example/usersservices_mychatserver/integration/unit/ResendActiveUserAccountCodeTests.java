@@ -1,5 +1,6 @@
 package com.example.usersservices_mychatserver.integration.unit;
 
+import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.request.UserLoginData;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
@@ -45,7 +46,7 @@ public class ResendActiveUserAccountCodeTests {
         when(userRepositoryPort.findUserWithEmail("mail@mail.pl")).thenReturn(Mono.empty());
 
         //when
-        UserLoginData userLoginData = new UserLoginData("noExistsUser");
+        UserEmailData userLoginData = new UserEmailData("noExistsUser");
         Mono<Result<Status>> resendEmailNoExistsUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
@@ -63,7 +64,7 @@ public class ResendActiveUserAccountCodeTests {
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
 
         //when
-        UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
+        UserEmailData userLoginData = new UserEmailData("mail@mail.pl");
         Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
@@ -80,7 +81,7 @@ public class ResendActiveUserAccountCodeTests {
         when(userRepositoryPort.findUserWithEmail(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
         //when
-        UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
+        UserEmailData userLoginData = new UserEmailData("mail@mail.pl");
         Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
@@ -101,7 +102,7 @@ public class ResendActiveUserAccountCodeTests {
         when(userRepositoryPort.deleteUserActiveAccountCode(1L)).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
         //when
-        UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
+        UserEmailData userLoginData = new UserEmailData("mail@mail.pl");
         Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
@@ -123,7 +124,7 @@ public class ResendActiveUserAccountCodeTests {
         when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
         //when
-        UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
+        UserEmailData userLoginData = new UserEmailData("mail@mail.pl");
         Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
@@ -144,7 +145,7 @@ public class ResendActiveUserAccountCodeTests {
         when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.empty());
 
         //when
-        UserLoginData userLoginData = new UserLoginData("mail@mail.pl");
+        UserEmailData userLoginData = new UserEmailData("mail@mail.pl");
         Mono<Result<Status>> alreadyActivatedUser = userPort.resendActiveUserAccountCode(Mono.just(userLoginData));
 
         //then
