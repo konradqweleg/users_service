@@ -9,7 +9,7 @@ public interface UserPort {
     Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> user);
     Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono);
 
-    Mono<Result<IsCorrectResetPasswordCode>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono);
+    Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono);
 
     Mono<Result<Status>> changeUserPassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono);
 

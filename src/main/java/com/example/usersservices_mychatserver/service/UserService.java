@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.util.NoSuchElementException;
+import java.util.function.Function;
 
 @Service
 public class UserService implements UserPort {
@@ -97,6 +98,45 @@ public class UserService implements UserPort {
         ).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
     }
 
+
+    @Override
+    public Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono) {
+
+        return emailDataMono.flatMap( emailData -> userRepositoryPort.findUserWithEmail(emailData.email())).flatMap(userFromDb->{
+            if(userFromDb.isActiveAccount()){
+                return Mono.just(userFromDb).flatMap(user -> userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id())).
+                        thenReturn(user)).
+                        flatMap(user -> {
+                            String generatedCode = generateRandomCodePort.generateCode();
+                            sendEmail.sendResetPasswordCode(user.email(), generatedCode);
+                            return userRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode)).
+                                    thenReturn(Result.success(new Status(true)));
+                        }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
+            } else {
+                return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+            }
+        }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+
+//        return emailDataMono.flatMap(emailData -> {
+//
+//            return userRepositoryPort.findUserWithEmail(emailData.email()).flatMap(user -> {
+//                        if (user.isActiveAccount()) {
+//                            return Mono.just(user);
+//                        } else {
+//                            return Mono.error(new RuntimeException(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+//                        }
+//                    }).flatMap(user -> userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id())).
+//                            thenReturn(user)).
+//                    flatMap(user -> {
+//                        String generatedCode = generateRandomCodePort.generateCode();
+//                        sendEmail.sendResetPasswordCode(user.email(), generatedCode);
+//                        return userRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode)).
+//                                thenReturn(Result.success(new Status(true)));
+//                    }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
+//        }).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+
+    }
     @Override
     public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> user) {
         return user.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
@@ -125,10 +165,7 @@ public class UserService implements UserPort {
                                 })
                                 .thenReturn(Result.success(new Status(true)));
                     })
-                    .onErrorResume(DataAccessException.class, ex ->{
-
-                        return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                    });
+                    .onErrorResume(DataAccessException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
         } catch (Exception e) {
 
             return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
@@ -147,37 +184,48 @@ public class UserService implements UserPort {
 
     }
 
-    @Override
-    public Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono) {
 
-        return emailDataMono.flatMap(emailData -> {
-            Mono<UserMyChat> userData = userRepositoryPort.findUserWithEmail(emailData.email());
-            return userData.flatMap(user -> userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id())).
-                            thenReturn(user)).
-                    flatMap(user -> {
-                        String generatedCode = generateRandomCodePort.generateCode();
-                        sendEmail.sendResetPasswordCode(user.email(), generatedCode);
-                        return userRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode)).
-                                thenReturn(Result.success(new Status(true)));
-                    }).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())));
-        }).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+
+    @Override
+    public Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono) {
+
+        return emailAndCodeMono.flatMap(emailAndCode ->
+                userRepositoryPort.findUserWithEmail(emailAndCode.email())
+                        .flatMap(userFromDb ->
+                                userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
+                                        .flatMap(codeFromDb->{
+                                            if(codeFromDb.code().equals(emailAndCode.code())){
+                                                return Mono.just(Result.<Status>success(new Status(true)));
+                                            } else {
+                                                return Mono.just(Result.<Status>error(ErrorMessage.WRONG_RESET_PASSWORD_CODE.getMessage()));
+                                            }
+                                        })
+
+
+                        )
+        ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESET_PASSWORD_CODE_NOT_FOUND.getMessage())))
+        .onErrorResume(ex -> {
+            System.out.println(ex.getMessage());
+           return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));});
+
+
+
+
 
     }
 
-    @Override
-    public Mono<Result<IsCorrectResetPasswordCode>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono) {
-        return emailAndCodeMono.flatMap(emailAndCode -> userRepositoryPort.findUserWithEmail(emailAndCode.email()).
-                        flatMap(userFromDb -> userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id())).flatMap(codeFromDb -> {
-                            if (codeFromDb.code().equals(emailAndCode.code())) {
-                                return Mono.just(Result.<IsCorrectResetPasswordCode>success(new IsCorrectResetPasswordCode(true)));
-                            } else {
-                                return Mono.just(Result.<IsCorrectResetPasswordCode>success(new IsCorrectResetPasswordCode(false)));
-                            }
-                        }).switchIfEmpty(Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.USER_NOT_FOUND.getMessage())))))
-                .onErrorResume(RuntimeException.class,ex -> Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
-
-    }
+//        return emailAndCodeMono.flatMap(emailAndCode -> userRepositoryPort.findUserWithEmail(emailAndCode.email()).
+//                        flatMap(userFromDb -> userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id())).flatMap(codeFromDb -> {
+//                            if (codeFromDb.code().equals(emailAndCode.code())) {
+//                                return Mono.just(Result.<IsCorrectResetPasswordCode>success(new IsCorrectResetPasswordCode(true)));
+//                            } else {
+//                                return Mono.just(Result.<IsCorrectResetPasswordCode>success(new IsCorrectResetPasswordCode(false)));
+//                            }
+//                        }).switchIfEmpty(Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.RESET_PASSWORD_CODE_NOT_FOUND.getMessage()))))
+//                        .onErrorResume(NoSuchElementException.class, ex -> Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+//                )
+//                .onErrorResume(RuntimeException.class,ex -> Mono.just(Result.<IsCorrectResetPasswordCode>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
     @Override
     public Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono) {

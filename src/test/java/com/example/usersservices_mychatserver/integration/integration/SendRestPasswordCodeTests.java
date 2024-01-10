@@ -5,6 +5,7 @@ import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
 import com.example.usersservices_mychatserver.integration.integration.dbUtils.DatabaseActionUtilService;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
+import com.example.usersservices_mychatserver.integration.integration.responseUtil.ResponseMessageUtil;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,6 +88,23 @@ public class SendRestPasswordCodeTests  extends DefaultTestConfiguration {
                 .exchange()
                 .expectStatus().isBadRequest()
                 .expectBody();
+    }
+
+    @Test
+    public void whenUserAccountIsNotActiveRequestShouldReturnInformationAccountNotActive() throws Exception {
+        //given
+        createUserAccountWithNotActiveAccount(CorrectRequestData.USER_REGISTER_DATA);
+        UserEmailData userEmailData = new UserEmailData(CorrectRequestData.USER_REGISTER_DATA.email());
+        //when
+        //then
+        webTestClient.post().uri(createRequestUtil().createRequestSendResetPasswordCode())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(userEmailData))
+                .exchange()
+                .expectStatus().is4xxClientError()
+                .expectBody()
+                .jsonPath("$.ErrorMessage").isEqualTo(ResponseMessageUtil.getUserAccountNotActive());
+
     }
 
 
