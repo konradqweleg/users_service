@@ -4,6 +4,7 @@ import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserRepositoryPort {
@@ -28,4 +29,6 @@ public interface UserRepositoryPort {
     Mono<UserMyChat> findUserById(Long idUser);
 
     Mono<Void> changePassword(Long idUser, String newPassword);
+
+    Flux<UserMyChat> findAllUsers();
 }

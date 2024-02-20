@@ -5,11 +5,10 @@ import com.example.usersservices_mychatserver.entity.request.*;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+
+
 
 @RestController
 @RequestMapping(value = "/userServices/api/v1/user")
@@ -60,4 +59,17 @@ public class UserController {
     public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
         return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
     }
+
+    @GetMapping("/getUserAboutId/{idUserDataMono}")
+    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long idUserDataMono) {
+        return userPort.getUserAboutId(Mono.just(new IdUserData(idUserDataMono))).flatMap(ConvertToJSON::convert);
+    }
+
+    @GetMapping("/getAllUsers")
+    public
+    Mono<ResponseEntity<String>> getAllUsers() {
+        return ConvertToJSON.convert(userPort.getAllUsers());
+    }
+
+
 }

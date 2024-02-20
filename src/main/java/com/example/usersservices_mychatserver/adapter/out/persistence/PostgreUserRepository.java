@@ -9,11 +9,11 @@ import com.example.usersservices_mychatserver.port.out.persistence.UserRepositor
 import com.example.usersservices_mychatserver.repository.CodeVerificationRepository;
 import com.example.usersservices_mychatserver.repository.ResetPasswordCodeRepository;
 import com.example.usersservices_mychatserver.repository.UserRepository;
-import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.NoSuchElementException;
+
 
 @Service
 public class PostgreUserRepository implements UserRepositoryPort {
@@ -73,6 +73,11 @@ public class PostgreUserRepository implements UserRepositoryPort {
     @Override
     public Mono<Void> changePassword(Long idUser, String newPassword) {
         return userRepository.changePassword(idUser, newPassword);
+    }
+
+    @Override
+    public Flux<UserMyChat> findAllUsers() {
+      return userRepository.findAll();
     }
 
     @Override
