@@ -25,5 +25,6 @@ public interface UserPort {
     Mono<Result<UserData>>  getUserAboutId(Mono<IdUserData> idUserDataMono);
 
     Flux<UserData> getAllUsers();
+    Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono);
 
 }

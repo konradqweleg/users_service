@@ -71,5 +71,11 @@ public class UserController {
         return ConvertToJSON.convert(userPort.getAllUsers());
     }
 
+    @GetMapping("/getUserAboutEmail")
+    public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
+        return userPort.getUserAboutEmail(Mono.just(new UserEmailData(email))).flatMap(ConvertToJSON::convert);
+    }
+
+
 
 }

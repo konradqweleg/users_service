@@ -147,6 +147,17 @@ public class UserService implements UserPort {
         return userRepositoryPort.findAllUsers().map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
     }
 
+    @Override
+    public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono) {
+        return userEmailDataMono.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
+                .flatMap(userFromDb -> Mono.just(Result.success(new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email())))
+                        .onErrorResume(ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
+                )
+                .switchIfEmpty(Mono.just(Result.<UserData>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+                .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
+    }
+
+
     private Mono<Result<Status>> registerNewUser(UserRegisterData userRegisterData) {
         try {
             UserMyChat newUser = prepareUserForRegistration(userRegisterData);
