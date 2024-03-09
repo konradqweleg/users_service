@@ -211,7 +211,6 @@ public class UserService implements UserPort {
                                 )
                 ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESET_PASSWORD_CODE_NOT_FOUND.getMessage())))
                 .onErrorResume(ex -> {
-                    System.out.println(ex.getMessage());
                     return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
                 });
 
