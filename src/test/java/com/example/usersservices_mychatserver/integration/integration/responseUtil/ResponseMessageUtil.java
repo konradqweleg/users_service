@@ -7,6 +7,18 @@ public class ResponseMessageUtil {
 
     private static final String USER_ALREADY_EXIST = "User already exist";
 
+    private static final String WRONG_RESET_PASSWORD_CODE = "Wrong reset password code";
+
+    private static final String RESET_PASSWORD_CODE_NOT_FOUND = "Reset password code not found";
+
+    public static String getWrongResetPasswordCode() {
+        return WRONG_RESET_PASSWORD_CODE;
+    }
+
+    public static String getResetPasswordCodeNotFound() {
+        return RESET_PASSWORD_CODE_NOT_FOUND;
+    }
+
     public static String getResponseNotAvailable() {
         return RESPONSE_NOT_AVAILABLE;
     }

@@ -40,4 +40,20 @@ public class RequestUtil {
         return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/resetPassword");
     }
 
+    public URI createRequestCheckIsCorrectResetPasswordCode() throws URISyntaxException {
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/checkIsCorrectResetPasswordCode");
+    }
+
+    public URI createRequestGetUserAboutId() throws URISyntaxException {
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getUserAboutId/");
+    }
+
+    public URI createRequestGetUserAboutEmail() throws URISyntaxException {
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getUserAboutEmail");
+    }
+
+    public URI createRequestGetAllUsers() throws URISyntaxException {
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getAllUsers");
+    }
+
 }

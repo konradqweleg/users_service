@@ -210,15 +210,9 @@ public class UserService implements UserPort {
 
                                 )
                 ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESET_PASSWORD_CODE_NOT_FOUND.getMessage())))
-                .onErrorResume(ex -> {
-                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                });
-
+                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
 
     }
-
-
-
 
     @Override
     public Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono) {
