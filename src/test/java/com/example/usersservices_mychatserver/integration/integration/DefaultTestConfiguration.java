@@ -70,7 +70,7 @@ public class DefaultTestConfiguration {
 
 
         if (isActiveAccount) {
-            ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", CorrectRequestData.USER_REGISTER_DATA.email());
+            ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", userRegisterData.email());
             webTestClient.post().uri(createRequestUtil().createRequestActiveUserAccount())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(activeAccountCodeData))

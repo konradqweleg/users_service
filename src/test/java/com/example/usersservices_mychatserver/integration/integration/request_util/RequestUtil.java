@@ -49,7 +49,7 @@ public class RequestUtil {
     }
 
     public URI createRequestGetUserAboutEmail() throws URISyntaxException {
-        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getUserAboutEmail");
+        return new URI(prefixHttp + serverPort + prefixServicesApiV1 + "/getUserAboutEmail?email=");
     }
 
     public URI createRequestGetAllUsers() throws URISyntaxException {

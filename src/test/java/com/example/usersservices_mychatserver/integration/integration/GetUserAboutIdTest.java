@@ -1,15 +1,11 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
-import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeData;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.response.UserData;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
+
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,7 +14,6 @@ import reactor.test.StepVerifier;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
-import static org.mockito.Mockito.when;
 
 public class GetUserAboutIdTest extends DefaultTestConfiguration {
 
