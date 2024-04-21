@@ -31,4 +31,8 @@ public interface UserRepositoryPort {
     Mono<Void> changePassword(Long idUser, String newPassword);
 
     Flux<UserMyChat> findAllUsers();
+
+    Flux<UserMyChat> findUserMatchingNameOrSurname(String patternName, String patternSurname);
+
+    Flux<UserMyChat> findUserMatchingNameAndSurname(String patternName, String patternSurname);
 }

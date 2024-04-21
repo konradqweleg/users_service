@@ -81,6 +81,16 @@ public class PostgreUserRepository implements UserRepositoryPort {
     }
 
     @Override
+    public Flux<UserMyChat> findUserMatchingNameOrSurname(String patternName, String patternSurname) {
+        return userRepository.findUsersMatchingNameOrSurname(patternName,patternSurname);
+    }
+
+    @Override
+    public Flux<UserMyChat> findUserMatchingNameAndSurname(String patternName, String patternSurname) {
+        return userRepository.findUsersMatchingNameAndSurname(patternName,patternSurname);
+    }
+
+    @Override
     public Mono<Void> insertResetPasswordCode(ResetPasswordCode resetPasswordCode) {
         return resetPasswordCodeRepository.save(resetPasswordCode).flatMap(resetPasswordCode1 -> Mono.empty());
     }

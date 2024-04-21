@@ -148,6 +148,20 @@ public class UserService implements UserPort {
     }
 
     @Override
+    public Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono) {
+        return patternNameMono.flatMapMany(patternName -> {
+            String[] splitPattern = patternName.split(" ");
+            if (splitPattern.length > 1) {
+                return userRepositoryPort.findUserMatchingNameAndSurname(splitPattern[0].trim(), splitPattern[1].trim())
+                        .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+            } else {
+                return userRepositoryPort.findUserMatchingNameOrSurname(patternName.trim(), patternName.trim())
+                        .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+            }
+        });
+    }
+
+    @Override
     public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono) {
         return userEmailDataMono.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
                 .flatMap(userFromDb -> Mono.just(Result.success(new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email())))
