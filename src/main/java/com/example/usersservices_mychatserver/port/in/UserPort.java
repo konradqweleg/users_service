@@ -29,4 +29,6 @@ public interface UserPort {
     Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono);
     Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono);
 
+    Mono<Result<UserAccessData>> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData);
+
 }

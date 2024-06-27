@@ -82,5 +82,10 @@ public class UserController {
     }
 
 
+    @PostMapping("/authorizeUser")
+    public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid Mono<UserAuthorizeData> user) {
+        return userPort.authorizeUser(user).flatMap(ConvertToJSON::convert);
+    }
+
 
 }

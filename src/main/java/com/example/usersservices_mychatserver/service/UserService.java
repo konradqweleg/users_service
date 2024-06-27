@@ -10,6 +10,7 @@ import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodeP
 import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
+import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -26,15 +27,18 @@ public class UserService implements UserPort {
     private final GenerateRandomCodePort generateRandomCodePort;
     private final HashPasswordPort hashPasswordPort;
 
+    private final UserAuthPort userAuthPort;
+
 
     private static final Integer ROLE_USER = 1;
     private static final Boolean DEFAULT_ACTIVE_IS_NOT_ACTIVE = false;
 
-    public UserService(UserRepositoryPort userRepositoryPort, SendEmailToUserPort sendEmail, GenerateRandomCodePort generateRandomCodePort, HashPasswordPort hashPasswordPort) {
+    public UserService(UserRepositoryPort userRepositoryPort, SendEmailToUserPort sendEmail, GenerateRandomCodePort generateRandomCodePort, HashPasswordPort hashPasswordPort, UserAuthPort userAuthPort) {
         this.userRepositoryPort = userRepositoryPort;
         this.sendEmail = sendEmail;
         this.generateRandomCodePort = generateRandomCodePort;
         this.hashPasswordPort = hashPasswordPort;
+        this.userAuthPort = userAuthPort;
     }
 
     @Override
@@ -169,6 +173,11 @@ public class UserService implements UserPort {
                 )
                 .switchIfEmpty(Mono.just(Result.<UserData>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
                 .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
+    }
+
+    @Override
+    public Mono<Result<UserAccessData>> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
+        return userAuthPort.authorizeUser(userAuthorizeData).map(Result::success).onErrorResume(ex -> Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()+ex.getMessage())));
     }
 
 
