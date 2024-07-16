@@ -1,4 +1,11 @@
 package com.example.usersservices_mychatserver.entity.response;
 
-public record UserAccessData(String accessToken, String refreshToken,String sessionState) {
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown=true)
+public record UserAccessData(
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("refresh_token") String refreshToken,
+        @JsonProperty("session_state") String sessionState) {
 }

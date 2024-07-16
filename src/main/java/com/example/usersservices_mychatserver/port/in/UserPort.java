@@ -18,7 +18,7 @@ public interface UserPort {
 
     Mono<Result<IsCorrectCredentials>> isCorrectLoginCredentials(Mono<EmailAndPasswordData> user);
 
-    Mono<Result<Status>> registerUser(Mono<UserRegisterData> user);
+    Mono<Result<UserAccessData>> registerUser(Mono<UserRegisterData> user);
 
     Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> user);
 

@@ -76,31 +76,47 @@ public class UserService implements UserPort {
                 .onErrorResume(ex -> Mono.just(Result.<IsCorrectCredentials>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
     }
 
+    @Override
+    public Mono<Result<UserAccessData>> registerUser(Mono<UserRegisterData> user) {
+
+        return user.flatMap(userRegisterData ->
+                userAuthPort.getAdminAccessData()
+                        .map(Result::success)
+                        .onErrorResume(ex -> Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
+        );
+    }
+
 
     @Override
-    public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
-        return userRegisterDataMono.flatMap(userRegisterData -> userRepositoryPort.findUserWithEmail(userRegisterData.email())
-                .flatMap(userWithSameEmailInDatabase -> {
-                            if (userWithSameEmailInDatabase.isActiveAccount()) {
-                                return Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXIST.getMessage()));
-                            } else {
-                                return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
-                            }
-
-                        }
-
-                )
-                .switchIfEmpty(Mono.defer(() -> {
-                    try {
-                        return registerNewUser(userRegisterData);
-                    } catch (Exception e) {
-
-                        return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                    }
-                }))
-
-        ).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+    public Mono<Result<UserAccessData>> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
+        return userAuthPort.authorizeUser(userAuthorizeData).map(Result::success).onErrorResume(ex -> Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()+ex.getMessage())));
     }
+
+
+//    @Override
+//    public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
+//        return userRegisterDataMono.flatMap(userRegisterData -> userRepositoryPort.findUserWithEmail(userRegisterData.email())
+//                .flatMap(userWithSameEmailInDatabase -> {
+//                            if (userWithSameEmailInDatabase.isActiveAccount()) {
+//                                return Mono.just(Result.<Status>error(ErrorMessage.USER_ALREADY_EXIST.getMessage()));
+//                            } else {
+//                                return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+//                            }
+//
+//                        }
+//
+//                )
+//                .switchIfEmpty(Mono.defer(() -> {
+//                    try {
+//                        return registerNewUser(userRegisterData);
+//                    } catch (Exception e) {
+//
+//                        return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                    }
+//                }))
+//
+//        ).onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+//    }
 
 
     @Override
@@ -175,10 +191,8 @@ public class UserService implements UserPort {
                 .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
     }
 
-    @Override
-    public Mono<Result<UserAccessData>> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
-        return userAuthPort.authorizeUser(userAuthorizeData).map(Result::success).onErrorResume(ex -> Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()+ex.getMessage())));
-    }
+
+
 
 
     private Mono<Result<Status>> registerNewUser(UserRegisterData userRegisterData) {

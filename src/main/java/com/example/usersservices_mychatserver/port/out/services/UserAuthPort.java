@@ -7,4 +7,6 @@ import reactor.core.publisher.Mono;
 public interface UserAuthPort {
     Mono<UserAccessData> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData);
 
+    Mono<UserAccessData> getAdminAccessData();
+
 }
