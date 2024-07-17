@@ -2,8 +2,10 @@ package com.example.usersservices_mychatserver.adapter.out.logic.keycloakadapter
 
 import com.example.usersservices_mychatserver.entity.request.UserAuthorizeData;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
+import com.example.usersservices_mychatserver.port.out.logic.StoreAdminTokensPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.keycloak.admin.client.Keycloak;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -11,20 +13,27 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
+import org.keycloak.admin.client.KeycloakBuilder;
 @Service
 public class UserKeyCloakAdapter implements UserAuthPort {
 
     @Value("${keyclock.admin.username}")
-    private String username;
+    private String usernameKeycloakAdmin;
 
     @Value("${keyclock.admin.password}")
-    private String password;
+    private String passwordKeycloakAdmin;
     private final String uriAuthorizeUser = "http://localhost:8080/realms/MyChatApp/protocol/openid-connect/token";
 
     private final String keycloakClientId = "mychatclient";
     private final String keycloakGrantType = "password";
     private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private final StoreAdminTokensPort storeAdminTokens;
+
+    public UserKeyCloakAdapter(StoreAdminTokensPort storeAdminTokens) {
+        this.storeAdminTokens = storeAdminTokens;
+    }
+
     @Override
     public Mono<UserAccessData> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
 
@@ -54,13 +63,29 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     @Override
     public Mono<UserAccessData> getAdminAccessData() {
 
+        Keycloak keycloak = KeycloakBuilder.builder()
+                .serverUrl("http://localhost:8080")
+                .realm("master")
+                .clientId("admin-cli")
+                .grantType("password")
+                .username(usernameKeycloakAdmin)
+                .password(passwordKeycloakAdmin)
+                .build();
+
+        System.out.println("11");
+        try {
+            System.out.println(keycloak.tokenManager().getAccessToken().getExpiresIn());
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        System.out.println("12");
 
         Mono<MultiValueMap<String, String>> formData = Mono.just(new LinkedMultiValueMap<>())
                 .map(map -> {
                     MultiValueMap<String, String> map2 = new LinkedMultiValueMap<>();
                     map2.add("client_id", keycloakClientId);
-                    map2.add("username", username);
-                    map2.add("password", password);
+                    map2.add("username", usernameKeycloakAdmin);
+                    map2.add("password", passwordKeycloakAdmin);
                     map2.add("grant_type", keycloakGrantType);
                     return map2;
                 });

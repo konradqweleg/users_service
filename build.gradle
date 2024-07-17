@@ -30,7 +30,7 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.15.2'
 
     implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webflux-ui', version: '2.2.0'
-
+    implementation group: 'org.keycloak', name: 'keycloak-admin-client', version: '23.0.6'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.1'
     implementation 'io.r2dbc:r2dbc-h2'
 

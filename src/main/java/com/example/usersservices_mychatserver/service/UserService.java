@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Base64;
 import java.util.NoSuchElementException;
 
 
@@ -80,7 +81,25 @@ public class UserService implements UserPort {
     public Mono<Result<UserAccessData>> registerUser(Mono<UserRegisterData> user) {
 
         return user.flatMap(userRegisterData ->
-                userAuthPort.getAdminAccessData()
+                userAuthPort.getAdminAccessData().map(
+                        adminAccessData -> {
+
+                            System.out.println("1");
+                            String[] chunks = adminAccessData.accessToken().split("\\.");
+                            System.out.println("2");
+                            Base64.Decoder decoder =  Base64.getDecoder();
+                            System.out.println("3");
+                            String header = new String(decoder.decode(chunks[0]));
+                            System.out.println("4"+header);
+                            System.out.println(chunks.length);
+                            String payload = new String(decoder.decode(chunks[1]));
+                            System.out.println("5");
+                            System.out.println("header: "+header);
+                            System.out.println("payload: "+payload);
+                            return adminAccessData;
+
+                        }
+                        )
                         .map(Result::success)
                         .onErrorResume(ex -> Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
         );
