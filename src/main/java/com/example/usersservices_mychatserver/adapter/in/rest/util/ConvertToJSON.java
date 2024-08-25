@@ -15,6 +15,8 @@ public class ConvertToJSON {
     private static final String ERROR_CONVERSION_TO_JSON = "Error";
 
     public static <T> Mono<ResponseEntity<String>> convert(Result<T> response) {
+        System.out.println("Status: " + response.isSuccess());
+
         ObjectMapper objectMapper = new ObjectMapper();
         if (response.isError()) {
             return Mono.just(ResponseEntity.badRequest().body(response.getError()));

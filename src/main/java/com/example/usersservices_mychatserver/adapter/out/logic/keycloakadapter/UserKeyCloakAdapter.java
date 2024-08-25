@@ -1,11 +1,17 @@
 package com.example.usersservices_mychatserver.adapter.out.logic.keycloakadapter;
 
 import com.example.usersservices_mychatserver.entity.request.UserAuthorizeData;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.port.out.logic.StoreAdminTokensPort;
+import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -13,134 +19,93 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import org.keycloak.admin.client.KeycloakBuilder;
+
+import java.util.Collections;
+
+import com.example.usersservices_mychatserver.entity.response.Status;
+import org.springframework.http.HttpStatus;
+
 @Service
 public class UserKeyCloakAdapter implements UserAuthPort {
 
-    @Value("${keyclock.admin.username}")
-    private String usernameKeycloakAdmin;
-
-    @Value("${keyclock.admin.password}")
-    private String passwordKeycloakAdmin;
-    private final String uriAuthorizeUser = "http://localhost:8080/realms/MyChatApp/protocol/openid-connect/token";
-
     private final String keycloakClientId = "mychatclient";
+    private final String realName = "MyChatApp";
     private final String keycloakGrantType = "password";
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Keycloak keycloakAdmin;
 
-    private final StoreAdminTokensPort storeAdminTokens;
-
-    public UserKeyCloakAdapter(StoreAdminTokensPort storeAdminTokens) {
-        this.storeAdminTokens = storeAdminTokens;
+    public UserKeyCloakAdapter(Keycloak keycloakAdmin) {
+        this.keycloakAdmin = keycloakAdmin;
     }
 
     @Override
     public Mono<UserAccessData> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
 
-        Mono<MultiValueMap<String, String>> formData = userAuthorizeData.map(data -> {
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-            map.add("client_id", keycloakClientId);
-            map.add("username", data.email());
-            map.add("password", data.password());
-            map.add("grant_type", keycloakGrantType);
-            return map;
+        Mono<MultiValueMap<String, String>> bodyUserAuthData = userAuthorizeData.map(authorizeData -> {
+            MultiValueMap<String, String> mapAuthData = new LinkedMultiValueMap<>();
+            mapAuthData.add("client_id", keycloakClientId);
+            mapAuthData.add("username", authorizeData.email());
+            mapAuthData.add("password", authorizeData.password());
+            mapAuthData.add("grant_type", keycloakGrantType);
+            return mapAuthData;
         });
 
+
+        String uriAuthorizeUser = "http://localhost:8080/realms/MyChatApp/protocol/openid-connect/token";
         return WebClient.create().post().uri(uriAuthorizeUser)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(formData, MultiValueMap.class)
+                .body(bodyUserAuthData, MultiValueMap.class)
                 .retrieve()
+                .onStatus(HttpStatus.BAD_REQUEST::equals, clientResponse ->
+                        Mono.error(new RuntimeException("User not authorized"))
+                )
                 .bodyToMono(String.class)
                 .flatMap(response -> {
                     try {
                         return Mono.just(objectMapper.readValue(response, UserAccessData.class));
                     } catch (Exception e) {
-                        return Mono.error(new RuntimeException(e));
+                        return Mono.error(new RuntimeException("User not authorized"));
                     }
                 });
     }
 
-    @Override
-    public Mono<UserAccessData> getAdminAccessData() {
-
-        Keycloak keycloak = KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8080")
-                .realm("master")
-                .clientId("admin-cli")
-                .grantType("password")
-                .username(usernameKeycloakAdmin)
-                .password(passwordKeycloakAdmin)
-                .build();
-
-        System.out.println("11");
-        try {
-            System.out.println(keycloak.tokenManager().getAccessToken().getExpiresIn());
-        }catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        System.out.println("12");
-
-        Mono<MultiValueMap<String, String>> formData = Mono.just(new LinkedMultiValueMap<>())
-                .map(map -> {
-                    MultiValueMap<String, String> map2 = new LinkedMultiValueMap<>();
-                    map2.add("client_id", keycloakClientId);
-                    map2.add("username", usernameKeycloakAdmin);
-                    map2.add("password", passwordKeycloakAdmin);
-                    map2.add("grant_type", keycloakGrantType);
-                    return map2;
-                });
-
-
-
-        return WebClient.create().post().uri(uriAuthorizeUser)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(formData, MultiValueMap.class)
-                .retrieve()
-                .bodyToMono(String.class)
-                .flatMap(response -> {
-                    try {
-                        System.out.println(response);
-                        return Mono.just(objectMapper.readValue(response, UserAccessData.class));
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage()   );
-                        return Mono.error(new RuntimeException(e));
-                    }
-                });
-    }
 
     @Override
-    public Mono<Boolean> registerNewUser() {
-        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-        map.add("username", "John.Doe");
-        map.add("firstName", "John");
-        map.add("lastName", "Doe");
-        map.add("enabled", "true");
-        map.add("email", "john.doe@example.com");
-        map.add("credentials", "[{\"type\": \"password\", \"value\": \"password\"}]");
-        System.out.println("REJESTRUJE");
-        // Get admin access token
-        Mono<UserAccessData> adminAccessData = getAdminAccessData();
+    public Mono<Status> registerNewUser(Mono<UserRegisterData> userRegisterDataMono) {
 
-        return adminAccessData.flatMap(data -> {
-            // Create web client
-            WebClient webClient = WebClient.create("http://localhost:8080");
+        Mono<UserRepresentation> keyCloakUserRepresentation = userRegisterDataMono.map(data -> {
+            UserRepresentation userRepresentation = new UserRepresentation();
+            userRepresentation.setEnabled(false);
+            userRepresentation.setUsername(data.email());
+            userRepresentation.setEmail(data.email());
+            userRepresentation.setFirstName(data.name());
+            userRepresentation.setLastName(data.surname());
 
-            // Send POST request to Keycloak API
-            return webClient.post()
-                    .uri("/auth/admin/realms/MyChatApp/users")
-                    .header("Authorization", "Bearer " + data.accessToken())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(Mono.just(map), MultiValueMap.class)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .map(response -> {
-                        System.out.println(response);
-                        return true;
+            CredentialRepresentation credential = new CredentialRepresentation();
+            credential.setType(CredentialRepresentation.PASSWORD);
+            credential.setValue(data.password());
+            credential.setTemporary(false);
+            userRepresentation.setCredentials(Collections.singletonList(credential));
 
-                    })
-                    .onErrorReturn(false);
+            return userRepresentation;
         });
 
+        return keyCloakUserRepresentation.flatMap(
+                userRepresentation -> {
+                    try (Response response = keycloakAdmin.realm(realName).users().create(userRepresentation)) {
+
+                        if (response.getStatus() == 201) {
+
+                            return Mono.just(new Status(true));
+                        } else {
+                            return Mono.error(new RuntimeException("User not registered"));
+                        }
+
+                    } catch (Exception e) {
+                        return Mono.error(new RuntimeException(e));
+                    }
+                }
+        );
 
 
     }

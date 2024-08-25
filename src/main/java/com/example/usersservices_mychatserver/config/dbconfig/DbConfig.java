@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.dbconfig;
+package com.example.usersservices_mychatserver.config.dbconfig;
 
 
 import io.r2dbc.spi.ConnectionFactory;

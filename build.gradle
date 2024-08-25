@@ -37,6 +37,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation group: 'io.projectreactor', name: 'reactor-test', version: '3.1.0.RELEASE'
 
+    implementation group: 'org.springframework.boot', name: 'spring-boot-devtools', version: '3.3.3'
+
+
+
 
 
 }

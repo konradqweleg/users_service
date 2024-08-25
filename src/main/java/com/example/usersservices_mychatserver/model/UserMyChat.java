@@ -4,6 +4,6 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.data.annotation.Id;
 
 
-public record UserMyChat(@Id Long id, @NotNull String name,@NotNull String surname,@NotNull String email,@NotNull String password,@NotNull int idRole,@NotNull boolean isActiveAccount) {
+public record UserMyChat(@Id Long id, @NotNull String name,@NotNull String surname,@NotNull String email) {
 
 }
