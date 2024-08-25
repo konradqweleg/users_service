@@ -107,4 +107,41 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                     }
                 });
     }
+
+    @Override
+    public Mono<Boolean> registerNewUser() {
+        MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("username", "John.Doe");
+        map.add("firstName", "John");
+        map.add("lastName", "Doe");
+        map.add("enabled", "true");
+        map.add("email", "john.doe@example.com");
+        map.add("credentials", "[{\"type\": \"password\", \"value\": \"password\"}]");
+        System.out.println("REJESTRUJE");
+        // Get admin access token
+        Mono<UserAccessData> adminAccessData = getAdminAccessData();
+
+        return adminAccessData.flatMap(data -> {
+            // Create web client
+            WebClient webClient = WebClient.create("http://localhost:8080");
+
+            // Send POST request to Keycloak API
+            return webClient.post()
+                    .uri("/auth/admin/realms/MyChatApp/users")
+                    .header("Authorization", "Bearer " + data.accessToken())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(Mono.just(map), MultiValueMap.class)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .map(response -> {
+                        System.out.println(response);
+                        return true;
+
+                    })
+                    .onErrorReturn(false);
+        });
+
+
+
+    }
 }

@@ -83,23 +83,35 @@ public class UserService implements UserPort {
         return user.flatMap(userRegisterData ->
                 userAuthPort.getAdminAccessData().map(
                         adminAccessData -> {
+                            System.out.println("Admin access token: " + adminAccessData.accessToken());
 
-                            System.out.println("1");
-                            String[] chunks = adminAccessData.accessToken().split("\\.");
-                            System.out.println("2");
-                            Base64.Decoder decoder =  Base64.getDecoder();
-                            System.out.println("3");
-                            String header = new String(decoder.decode(chunks[0]));
-                            System.out.println("4"+header);
-                            System.out.println(chunks.length);
-                            String payload = new String(decoder.decode(chunks[1]));
-                            System.out.println("5");
-                            System.out.println("header: "+header);
-                            System.out.println("payload: "+payload);
+                            try {
+                                String[] chunks = adminAccessData.accessToken().split("\\.");
+                                if (chunks.length != 3) {
+                                    System.out.println("Invalid token format");
+                                    return adminAccessData;
+                                }
+
+                                Base64.Decoder decoder = Base64.getUrlDecoder(); // Use getUrlDecoder() instead of getDecoder()
+                                String header = new String(decoder.decode(chunks[0]));
+                                String payload = new String(decoder.decode(chunks[1]));
+
+                                System.out.println("Header: " + header);
+                                System.out.println("Payload: " + payload);
+                            } catch (IllegalArgumentException e) {
+                                System.out.println("Decoding error: " + e.getMessage());
+                            }
+
                             return adminAccessData;
 
                         }
-                        )
+                        ).map(x->{
+
+                            System.out.println("Admin access token: " + x.accessToken());
+                            userAuthPort.registerNewUser().subscribe();
+                            return x;
+
+                        })
                         .map(Result::success)
                         .onErrorResume(ex -> Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
         );

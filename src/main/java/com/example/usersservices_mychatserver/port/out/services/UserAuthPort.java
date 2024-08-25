@@ -9,4 +9,6 @@ public interface UserAuthPort {
 
     Mono<UserAccessData> getAdminAccessData();
 
+    Mono<Boolean> registerNewUser();
+
 }
