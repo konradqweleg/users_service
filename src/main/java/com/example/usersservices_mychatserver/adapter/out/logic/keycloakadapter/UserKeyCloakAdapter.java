@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.List;
 
 import com.example.usersservices_mychatserver.entity.response.Status;
 import org.springframework.http.HttpStatus;
@@ -108,5 +109,33 @@ public class UserKeyCloakAdapter implements UserAuthPort {
         );
 
 
+    }
+
+    @Override
+    public Mono<Status> activateUserAccount(Mono<String> emailMono) {
+        return emailMono.flatMap(email -> {
+            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+            if (!users.isEmpty()) {
+                UserRepresentation user = users.get(0);
+                user.setEnabled(true);
+                keycloakAdmin.realm(realName).users().get(user.getId()).update(user);
+                return Mono.just(new Status(true));
+            } else {
+                return Mono.error(new RuntimeException("User not found"));
+            }
+        });
+    }
+
+    @Override
+    public Mono<Boolean> isActivatedUserAccount(Mono<String> email) {
+        return email.flatMap(emailStr -> {
+            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(emailStr);
+            if (!users.isEmpty()) {
+                UserRepresentation user = users.get(0);
+                return Mono.just(user.isEnabled());
+            } else {
+                return Mono.error(new RuntimeException("User not found"));
+            }
+        });
     }
 }

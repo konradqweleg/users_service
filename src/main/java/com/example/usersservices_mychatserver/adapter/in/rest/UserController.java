@@ -24,10 +24,10 @@ public class UserController {
 //        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
 //    }
 
-//    @PostMapping("/sendResetPasswordCode")
-//    public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
-//        return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
-//    }
+    @PostMapping("/sendResetPasswordCode")
+    public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
+        return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
+    }
 //
 //    @PostMapping("/checkIsCorrectResetPasswordCode")
 //    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
@@ -48,16 +48,16 @@ public class UserController {
 //    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono) {
 //        return userPort.changeUserPassword(changePasswordDataMono).flatMap(ConvertToJSON::convert);
 //    }
+
+    @PostMapping("/resendActiveUserAccountCode")
+    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {
+        return userPort.resendActiveUserAccountCode(emailDataMono).flatMap(ConvertToJSON::convert);
+    }
 //
-//    @PostMapping("/resendActiveUserAccountCode")
-//    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {
-//        return userPort.resendActiveUserAccountCode(emailDataMono).flatMap(ConvertToJSON::convert);
-//    }
-//
-//    @PostMapping("/activeUserAccount")
-//    public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
-//        return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
-//    }
+    @PostMapping("/activeUserAccount")
+    public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
+        return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
+    }
 //
 //    @GetMapping("/getUserAboutId/{idUserDataMono}")
 //    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long idUserDataMono) {

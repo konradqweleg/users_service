@@ -4,5 +4,5 @@ import com.example.usersservices_mychatserver.model.UserMyChat;
 
 public interface SendEmailToUserPort {
     void sendResetPasswordCode(String email, String code);
-    void sendVerificationCode(UserMyChat user, String code);
+    void sendVerificationCode(String userEmail, String code);
 }

@@ -12,7 +12,7 @@ public class SendEmailToUserOnConsole implements SendEmailToUserPort {
     }
 
     @Override
-    public void sendVerificationCode(UserMyChat user, String code) {
-        System.out.println("Send code for user "+user.name()+" code value = "+code);
+    public void sendVerificationCode(String userEmail, String code) {
+        System.out.println("Send code for user "+userEmail+" code value = "+code);
     }
 }

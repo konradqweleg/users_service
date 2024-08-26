@@ -6,11 +6,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserPort {
-  //  Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono);
+    Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono);
 
-  //  Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> user);
+    Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> user);
 
-  //  Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono);
+    Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono);
 
  //   Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono);
 

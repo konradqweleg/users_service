@@ -12,4 +12,8 @@ public interface UserAuthPort {
 
     Mono<Status>  registerNewUser(Mono<UserRegisterData> user);
 
+    Mono<Status> activateUserAccount(Mono<String> email);
+
+    Mono<Boolean> isActivatedUserAccount(Mono<String> email);
+
 }
