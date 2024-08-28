@@ -43,7 +43,6 @@ public class PostgreUserRepository implements UserRepositoryPort {
         return codeVerificationRepository.deleteByIdUser(idUser);
     }
 
-
     @Override
     public Mono<Void> deleteUserActiveAccountCode(CodeVerification codeVerification1) {
         return codeVerificationRepository.delete(codeVerification1);

@@ -2,17 +2,13 @@ package com.example.usersservices_mychatserver.adapter.out.logic.keycloakadapter
 
 import com.example.usersservices_mychatserver.entity.request.UserAuthorizeData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
-import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
-import com.example.usersservices_mychatserver.port.out.logic.StoreAdminTokensPort;
-import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -41,6 +37,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
 
     @Override
     public Mono<UserAccessData> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
+
 
         Mono<MultiValueMap<String, String>> bodyUserAuthData = userAuthorizeData.map(authorizeData -> {
             MultiValueMap<String, String> mapAuthData = new LinkedMultiValueMap<>();
@@ -133,6 +130,25 @@ public class UserKeyCloakAdapter implements UserAuthPort {
             if (!users.isEmpty()) {
                 UserRepresentation user = users.get(0);
                 return Mono.just(user.isEnabled());
+            } else {
+                return Mono.error(new RuntimeException("User not found"));
+            }
+        });
+    }
+
+    @Override
+    public Mono<Status> changeUserPassword(Mono<String> email, String newPassword) {
+        return email.flatMap(emailStr -> {
+            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(emailStr);
+            if (!users.isEmpty()) {
+                UserRepresentation user = users.get(0);
+                CredentialRepresentation credential = new CredentialRepresentation();
+                credential.setType(CredentialRepresentation.PASSWORD);
+                credential.setValue(newPassword);
+                credential.setTemporary(false);
+                user.setCredentials(Collections.singletonList(credential));
+                keycloakAdmin.realm(realName).users().get(user.getId()).resetPassword(credential);
+                return Mono.just(new Status(true));
             } else {
                 return Mono.error(new RuntimeException("User not found"));
             }

@@ -19,20 +19,20 @@ public class UserController {
         this.userPort = userPort;
     }
 
-//    @PostMapping("/checkIsUserWithThisEmailExist")
-//    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailData> user) {
-//        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
-//    }
+    @PostMapping("/checkIsUserWithThisEmailExist")
+    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailData> user) {
+        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
+    }
 
     @PostMapping("/sendResetPasswordCode")
     public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
         return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
     }
 //
-//    @PostMapping("/checkIsCorrectResetPasswordCode")
-//    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
-//        return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
-//    }
+    @PostMapping("/checkIsCorrectResetPasswordCode")
+    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
+        return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
+    }
 //
 //    @PostMapping("/login")
 //    public Mono<ResponseEntity<String>> logIn(@RequestBody @Valid Mono<EmailAndPasswordData> user) {
@@ -44,10 +44,10 @@ public class UserController {
         return userPort.registerUser(user).flatMap(ConvertToJSON::convert);
     }
 
-//    @PostMapping("/resetPassword")
-//    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono) {
-//        return userPort.changeUserPassword(changePasswordDataMono).flatMap(ConvertToJSON::convert);
-//    }
+    @PostMapping("/resetPassword")
+    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono) {
+        return userPort.changeUserPassword(changePasswordDataMono).flatMap(ConvertToJSON::convert);
+    }
 
     @PostMapping("/resendActiveUserAccountCode")
     public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {
@@ -58,26 +58,26 @@ public class UserController {
     public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
         return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
     }
-//
-//    @GetMapping("/getUserAboutId/{idUserDataMono}")
-//    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long idUserDataMono) {
-//        return userPort.getUserAboutId(Mono.just(new IdUserData(idUserDataMono))).flatMap(ConvertToJSON::convert);
-//    }
 
-//    @GetMapping("/getAllUsers")
-//    public Mono<ResponseEntity<String>> getAllUsers() {
-//        return ConvertToJSON.convert(userPort.getAllUsers());
-//    }
-//
-//    @GetMapping("/getUserAboutEmail")
-//    public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
-//        return userPort.getUserAboutEmail(Mono.just(new UserEmailData(email))).flatMap(ConvertToJSON::convert);
-//    }
-//
-//    @GetMapping("/getUserMatchingNameAndSurname")
-//    public Mono<ResponseEntity<String>> getUserMatchingNameAndSurname(@RequestParam String patternName) {
-//        return ConvertToJSON.convert(userPort.getUserMatchingNameAndSurname(Mono.just(patternName)));
-//    }
+    @GetMapping("/getUserAboutId/{idUserDataMono}")
+    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long idUserDataMono) {
+        return userPort.getUserAboutId(Mono.just(new IdUserData(idUserDataMono))).flatMap(ConvertToJSON::convert);
+    }
+
+    @GetMapping("/getAllUsers")
+    public Mono<ResponseEntity<String>> getAllUsers() {
+        return ConvertToJSON.convert(userPort.getAllUsers());
+    }
+
+    @GetMapping("/getUserAboutEmail")
+    public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
+        return userPort.getUserAboutEmail(Mono.just(new UserEmailData(email))).flatMap(ConvertToJSON::convert);
+    }
+
+    @GetMapping("/getUserMatchingNameAndSurname")
+    public Mono<ResponseEntity<String>> getUserMatchingNameAndSurname(@RequestParam String patternName) {
+        return ConvertToJSON.convert(userPort.getUserMatchingNameAndSurname(Mono.just(patternName)));
+    }
 
     @PostMapping("/authorizeUser")
     public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid Mono<UserAuthorizeData> user) {

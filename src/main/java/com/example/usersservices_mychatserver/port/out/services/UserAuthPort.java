@@ -16,4 +16,6 @@ public interface UserAuthPort {
 
     Mono<Boolean> isActivatedUserAccount(Mono<String> email);
 
+    Mono<Status> changeUserPassword(Mono<String> email,String newPassword);
+
 }

@@ -12,6 +12,8 @@ import com.example.usersservices_mychatserver.port.out.persistence.UserRepositor
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.example.usersservices_mychatserver.service.message.ErrorMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -31,39 +33,43 @@ public class UserService implements UserPort {
     private final UserRepositoryPort userRepositoryPort;
     private final SendEmailToUserPort sendEmail;
     private final GenerateRandomCodePort generateRandomCodePort;
-    private final HashPasswordPort hashPasswordPort;
 
     private final UserAuthPort userAuthPort;
 
-
+    private static final Logger logger = LogManager.getLogger(UserService.class);
     private static final Integer ROLE_USER = 1;
     private static final Boolean DEFAULT_ACTIVE_IS_NOT_ACTIVE = false;
 
-    public UserService(UserRepositoryPort userRepositoryPort, SendEmailToUserPort sendEmail, GenerateRandomCodePort generateRandomCodePort, HashPasswordPort hashPasswordPort, UserAuthPort userAuthPort) {
+    public UserService(UserRepositoryPort userRepositoryPort, SendEmailToUserPort sendEmail, GenerateRandomCodePort generateRandomCodePort, UserAuthPort userAuthPort) {
         this.userRepositoryPort = userRepositoryPort;
         this.sendEmail = sendEmail;
         this.generateRandomCodePort = generateRandomCodePort;
-        this.hashPasswordPort = hashPasswordPort;
         this.userAuthPort = userAuthPort;
     }
 
-//    @Override
-//    public Mono<Result<Status>> changeUserPassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono) {
-//        return userEmailAndCodeAndPasswordMono.flatMap(userEmailCodeAndPassword -> userRepositoryPort.findUserWithEmail(userEmailCodeAndPassword.email()).
-//                        flatMap(userFromDb -> userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id())).flatMap(code -> {
-//                            if (code.code().equals(userEmailCodeAndPassword.code())) {
-//                                String newPassword = hashPasswordPort.cryptPassword(userEmailCodeAndPassword.password());
-//                                return userRepositoryPort.changePassword(userFromDb.id(), newPassword).
-//                                        then(Mono.defer(() -> userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userFromDb.id())).
-//                                                thenReturn(Result.success(new Status(true)))));
-//                            } else {
-//                                return Mono.just(Result.<Status>error(ErrorMessage.BAD_CHANGE_PASSWORD_CODE.getMessage()));
-//                            }
-//                        })).
-//                        onErrorResume(RuntimeException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))).
-//                switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_OR_RESET_PASSWORD_CODE_NOT_FOUND.getMessage())));
-//
-//    }
+    @Override
+    public Mono<Result<Status>> changeUserPassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono) {
+        return userEmailAndCodeAndPasswordMono.flatMap(userEmailCodeAndPassword ->
+                        userRepositoryPort.findUserWithEmail(userEmailCodeAndPassword.email())
+                                .flatMap(userFromDb ->
+                                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
+                                                .flatMap(code -> {
+                                                    if (code.code().equals(userEmailCodeAndPassword.code())) {
+                                                        return userAuthPort.changeUserPassword(Mono.just(userFromDb.email()), userEmailCodeAndPassword.password())
+                                                                .then(Mono.defer(() ->
+                                                                        userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userFromDb.id()))
+                                                                                .thenReturn(Result.success(new Status(true)))
+                                                                ));
+                                                    } else {
+                                                        return Mono.just(Result.<Status>error(ErrorMessage.BAD_CHANGE_PASSWORD_CODE.getMessage()));
+                                                    }
+                                                })
+                                )
+                                .onErrorResume(RuntimeException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
+                )
+                .switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_OR_RESET_PASSWORD_CODE_NOT_FOUND.getMessage())));
+
+    }
 
 //    public Mono<Result<IsCorrectCredentials>> isCorrectLoginCredentials(Mono<EmailAndPasswordData> userLoginDataMono) {
 //        return userLoginDataMono.flatMap(userLoginData -> userRepositoryPort.findUserWithEmail(userLoginData.email())
@@ -135,114 +141,88 @@ public class UserService implements UserPort {
 
     }
 
-//    @Override
-//    public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> user) {
-//        return user.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
-//                .flatMap(userFromDb -> {
-//                    if (userFromDb.isActiveAccount()) {
-//                        return Mono.just(Result.success(new Status(true)));
-//                    } else {
-//                        return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
-//                    }
-//                })
-//                .switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
-//                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
-//    }
+    @Override
+    public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> user) {
+        return user.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
+                .flatMap(userFromDb -> userAuthPort.isActivatedUserAccount(Mono.just(userFromDb.email()))
+                        .flatMap(isActivated -> {
+                            if (isActivated) {
+                                return Mono.just(Result.success(new Status(true)));
+                            } else {
+                                logger.warn("User account is not activated: {}", userFromDb.email());
+                                return Mono.just(Result.<Status>error(ErrorMessage.ACCOUNT_NOT_ACTIVE.getMessage()));
+                            }
+                        }))
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.info("User not found for email: {}", userEmailData.email());
+                    return Mono.just(Result.<Status>error(ErrorMessage.USER_NOT_FOUND.getMessage()));
+                })))
+                .onErrorResume(ex -> {
+                    logger.error("Error occurred while processing user: {}", ex.getMessage());
+                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+                });
+    }
 
-//    @Override
-//    public Mono<Result<UserData>> getUserAboutId(Mono<IdUserData> idUserDataMono) {
-//        return idUserDataMono.flatMap(idUserData -> userRepositoryPort.findUserById(idUserData.idUser())
-//                .flatMap(userFromDb -> Mono.just(Result.success(new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email()))).onErrorResume(ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))))
-//                .switchIfEmpty(Mono.just(Result.<UserData>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
-//                .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
-//    }
-//
-//    @Override
-//    public Flux<UserData> getAllUsers() {
-//        return userRepositoryPort.findAllUsers().map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
-//    }
-//
-//    @Override
-//    public Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono) {
-//        return patternNameMono.flatMapMany(patternName -> {
-//            String[] splitPattern = patternName.split(" ");
-//            if (splitPattern.length > 1) {
-//                return userRepositoryPort.findUserMatchingNameAndSurname(splitPattern[0].trim(), splitPattern[1].trim())
-//                        .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
-//            } else {
-//                return userRepositoryPort.findUserMatchingNameOrSurname(patternName.trim(), patternName.trim())
-//                        .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
-//            }
-//        });
-//    }
-//
-//    @Override
-//    public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono) {
-//        return userEmailDataMono.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
-//                .flatMap(userFromDb -> Mono.just(Result.success(new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email())))
-//                        .onErrorResume(ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
-//                )
-//                .switchIfEmpty(Mono.just(Result.<UserData>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
-//                .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
-//    }
+    @Override
+    public Mono<Result<UserData>> getUserAboutId(Mono<IdUserData> idUserDataMono) {
+        return idUserDataMono.flatMap(idUserData -> userRepositoryPort.findUserById(idUserData.idUser())
+                .flatMap(userFromDb -> Mono.just(Result.success(new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email()))).onErrorResume(ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))))
+                .switchIfEmpty(Mono.just(Result.<UserData>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+                .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
+    }
 
+    @Override
+    public Flux<UserData> getAllUsers() {
+        return userRepositoryPort.findAllUsers().map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+    }
 
-//    private Mono<Result<Status>> registerNewUser(UserRegisterData userRegisterData) {
-//        try {
-//            UserMyChat newUser = prepareUserForRegistration(userRegisterData);
-//            return userRepositoryPort.saveUser(newUser)
-//                    .flatMap(newlyCreatedUser -> {
-//                        String registerCode = generateRandomCodePort.generateCode();
-//                        CodeVerification codeVerification = new CodeVerification(null, newlyCreatedUser.id(), registerCode);
-//                        return userRepositoryPort.saveVerificationCode(codeVerification)
-//                                .flatMap(sendSavedVerificationCode -> {
-//                                    sendEmail.sendVerificationCode(newlyCreatedUser, registerCode);
-//                                    return Mono.just(Result.success(newlyCreatedUser));
-//                                })
-//                                .thenReturn(Result.success(new Status(true)));
-//                    })
-//                    .onErrorResume(DataAccessException.class, ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
-//        } catch (Exception e) {
-//
-//            return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//        }
-//    }
-//
-//    private UserMyChat prepareUserForRegistration(UserRegisterData userRegisterData) {
-//        return new UserMyChat(
-//                null,
-//                userRegisterData.name(),
-//                userRegisterData.surname(),
-//                userRegisterData.email(),
-//                hashPasswordPort.cryptPassword(userRegisterData.password()),
-//                ROLE_USER,
-//                DEFAULT_ACTIVE_IS_NOT_ACTIVE);
-//
-//    }
+    @Override
+    public Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono) {
+        return patternNameMono.flatMapMany(patternName -> {
+            String[] splitPattern = patternName.split(" ");
+            if (splitPattern.length > 1) {
+                return userRepositoryPort.findUserMatchingNameAndSurname(splitPattern[0].trim(), splitPattern[1].trim())
+                        .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+            } else {
+                return userRepositoryPort.findUserMatchingNameOrSurname(patternName.trim(), patternName.trim())
+                        .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+            }
+        });
+    }
+
+    @Override
+    public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono) {
+        return userEmailDataMono.flatMap(userEmailData -> userRepositoryPort.findUserWithEmail(userEmailData.email())
+                .flatMap(userFromDb -> Mono.just(Result.success(new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email())))
+                        .onErrorResume(ex -> Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
+                )
+                .switchIfEmpty(Mono.just(Result.<UserData>error(ErrorMessage.USER_NOT_FOUND.getMessage())))
+                .onErrorResume(ex -> Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()))));
+    }
 
 
-//    @Override
-//    public Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono) {
-//
-//        return emailAndCodeMono.flatMap(emailAndCode ->
-//                        userRepositoryPort.findUserWithEmail(emailAndCode.email())
-//                                .flatMap(userFromDb ->
-//                                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
-//                                                .flatMap(codeFromDb -> {
-//                                                    if (codeFromDb.code().equals(emailAndCode.code())) {
-//                                                        return Mono.just(Result.<Status>success(new Status(true)));
-//                                                    } else {
-//                                                        return Mono.just(Result.<Status>error(ErrorMessage.WRONG_RESET_PASSWORD_CODE.getMessage()));
-//                                                    }
-//                                                })
-//
-//
-//                                )
-//                ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESET_PASSWORD_CODE_NOT_FOUND.getMessage())))
-//                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
-//
-//    }
-//
+    @Override
+    public Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono) {
+
+        return emailAndCodeMono.flatMap(emailAndCode ->
+                        userRepositoryPort.findUserWithEmail(emailAndCode.email())
+                                .flatMap(userFromDb ->
+                                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
+                                                .flatMap(codeFromDb -> {
+                                                    if (codeFromDb.code().equals(emailAndCode.code())) {
+                                                        return Mono.just(Result.<Status>success(new Status(true)));
+                                                    } else {
+                                                        return Mono.just(Result.<Status>error(ErrorMessage.WRONG_RESET_PASSWORD_CODE.getMessage()));
+                                                    }
+                                                })
+
+
+                                )
+                ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESET_PASSWORD_CODE_NOT_FOUND.getMessage())))
+                .onErrorResume(ex -> Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+
+    }
+
     @Override
     public Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono) {
 
@@ -286,9 +266,9 @@ public class UserService implements UserPort {
                             String generatedCode = generateRandomCodePort.generateCode();
 
                             return userRepositoryPort.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode)).doOnNext(
-                                    x -> {
-                                        sendEmail.sendVerificationCode(userFromDb.email(), generatedCode);
-                                    }
+                                            x -> {
+                                                sendEmail.sendVerificationCode(userFromDb.email(), generatedCode);
+                                            }
                                     )
                                     .thenReturn(Result.success(new Status(true)));
                         })
