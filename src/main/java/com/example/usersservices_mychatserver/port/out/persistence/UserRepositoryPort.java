@@ -24,11 +24,7 @@ public interface UserRepositoryPort {
     Mono<UserMyChat> saveUser(UserMyChat user);
     Mono<UserMyChat> findUserWithEmail(String email);
 
-    Mono<UserMyChat> activeUserAccount(Long idUser);
-
     Mono<UserMyChat> findUserById(Long idUser);
-
-    Mono<Void> changePassword(Long idUser, String newPassword);
 
     Flux<UserMyChat> findAllUsers();
 

@@ -28,16 +28,11 @@ public class UserController {
     public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
         return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
     }
-//
+
     @PostMapping("/checkIsCorrectResetPasswordCode")
     public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
         return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
     }
-//
-//    @PostMapping("/login")
-//    public Mono<ResponseEntity<String>> logIn(@RequestBody @Valid Mono<EmailAndPasswordData> user) {
-//        return userPort.isCorrectLoginCredentials(user).flatMap(ConvertToJSON::convert);
-//    }
 
     @PostMapping("/register")
     public Mono<ResponseEntity<String>> registerUser(@RequestBody @Valid Mono<UserRegisterData> user) {
@@ -53,7 +48,7 @@ public class UserController {
     public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {
         return userPort.resendActiveUserAccountCode(emailDataMono).flatMap(ConvertToJSON::convert);
     }
-//
+
     @PostMapping("/activeUserAccount")
     public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
         return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);

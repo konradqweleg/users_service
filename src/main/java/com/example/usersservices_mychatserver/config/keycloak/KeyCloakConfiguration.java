@@ -9,21 +9,24 @@ import org.springframework.stereotype.Service;
 @Service
 public class KeyCloakConfiguration {
 
-    @Value("${keyclock.admin.username}")
+    @Value("${keycloak.admin.username}")
     private String usernameKeycloakAdmin;
 
-    @Value("${keyclock.admin.password}")
+    @Value("${keycloak.admin.password}")
     private String passwordKeycloakAdmin;
+
+    @Value("${keycloak.server.url}")
+    private String serverUrlKeycloak;
 
     @Bean
     public Keycloak keycloak() {
         return KeycloakBuilder.builder()
-                .serverUrl("http://localhost:8080")
+                .serverUrl(serverUrlKeycloak)
                 .realm("master")
                 .clientId("admin-cli")
                 .clientSecret("client-secret")
-                .username(usernameKeycloakAdmin)
-                .password(passwordKeycloakAdmin)
+                .username("admin")
+                .password("admin")
                 .grantType("password")
                 .build();
     }

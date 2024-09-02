@@ -16,13 +16,13 @@ import reactor.core.publisher.Mono;
 
 
 @Service
-public class PostgreUserRepository implements UserRepositoryPort {
+public class PostgresUserRepository implements UserRepositoryPort {
 
     private final UserRepository userRepository;
     private final CodeVerificationRepository codeVerificationRepository;
     private final ResetPasswordCodeRepository resetPasswordCodeRepository;
 
-    public PostgreUserRepository(UserRepository userRepository, CodeVerificationRepository codeVerificationRepository, ResetPasswordCodeRepository resetPasswordCodeRepository) {
+    public PostgresUserRepository(UserRepository userRepository, CodeVerificationRepository codeVerificationRepository, ResetPasswordCodeRepository resetPasswordCodeRepository) {
         this.userRepository = userRepository;
         this.codeVerificationRepository = codeVerificationRepository;
         this.resetPasswordCodeRepository = resetPasswordCodeRepository;
@@ -60,18 +60,8 @@ public class PostgreUserRepository implements UserRepositoryPort {
     }
 
     @Override
-    public Mono<UserMyChat> activeUserAccount(Long idUser) {
-        return  userRepository.activeUserAccount(idUser);
-    }
-
-    @Override
     public Mono<UserMyChat> findUserById(Long idUser) {
         return userRepository.findById(idUser);
-    }
-
-    @Override
-    public Mono<Void> changePassword(Long idUser, String newPassword) {
-        return userRepository.changePassword(idUser, newPassword);
     }
 
     @Override

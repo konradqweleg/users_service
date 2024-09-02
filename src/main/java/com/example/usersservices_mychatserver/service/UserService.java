@@ -7,24 +7,16 @@ import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
-import com.example.usersservices_mychatserver.port.out.logic.HashPasswordPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Base64;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 
 
@@ -33,12 +25,9 @@ public class UserService implements UserPort {
     private final UserRepositoryPort userRepositoryPort;
     private final SendEmailToUserPort sendEmail;
     private final GenerateRandomCodePort generateRandomCodePort;
-
     private final UserAuthPort userAuthPort;
-
     private static final Logger logger = LogManager.getLogger(UserService.class);
-    private static final Integer ROLE_USER = 1;
-    private static final Boolean DEFAULT_ACTIVE_IS_NOT_ACTIVE = false;
+
 
     public UserService(UserRepositoryPort userRepositoryPort, SendEmailToUserPort sendEmail, GenerateRandomCodePort generateRandomCodePort, UserAuthPort userAuthPort) {
         this.userRepositoryPort = userRepositoryPort;
@@ -61,6 +50,7 @@ public class UserService implements UserPort {
                                                                                 .thenReturn(Result.success(new Status(true)))
                                                                 ));
                                                     } else {
+                                                        logger.warn("Wrong reset password code for user: {}", userFromDb.email());
                                                         return Mono.just(Result.<Status>error(ErrorMessage.BAD_CHANGE_PASSWORD_CODE.getMessage()));
                                                     }
                                                 })
@@ -91,7 +81,7 @@ public class UserService implements UserPort {
     @Override
     public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
         Mono<UserRegisterData> cachedUserRegisterDataMono = userRegisterDataMono.cache();
-        return userAuthPort.registerNewUser(cachedUserRegisterDataMono).
+        return userAuthPort.register(cachedUserRegisterDataMono).
                 flatMap(result -> {
                     if (result.correctResponse()) {
                         return cachedUserRegisterDataMono.flatMap(x -> userRepositoryPort.saveUser(new UserMyChat(null, x.name(), x.surname(), x.email()))).
