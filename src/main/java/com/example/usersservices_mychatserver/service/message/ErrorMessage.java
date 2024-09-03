@@ -5,6 +5,7 @@ public enum ErrorMessage {
     RESET_PASSWORD_CODE_NOT_FOUND("Reset password code not found"),
     USER_ALREADY_EXIST("User already exist"),
     RESPONSE_NOT_AVAILABLE("Response not available"),
+
     WRONG_RESET_PASSWORD_CODE("Wrong reset password code"),
     ACCOUNT_NOT_ACTIVE("Account not active"),
 
