@@ -16,15 +16,12 @@ public enum ErrorMessage {
 
     BAD_CHANGE_PASSWORD_CODE ("Bad change password code");
 
-    private String message;
+    private final String message;
 
     public String getMessage(){
         return message;
     }
 
-    public String getFullJSON(){
-        return "{\"ErrorMessage\" : \""+message+"\"}";
-    }
     ErrorMessage(String message) {
         this.message = message;
     }

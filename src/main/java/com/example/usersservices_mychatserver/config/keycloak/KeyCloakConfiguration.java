@@ -25,8 +25,8 @@ public class KeyCloakConfiguration {
                 .realm("master")
                 .clientId("admin-cli")
                 .clientSecret("client-secret")
-                .username("admin")
-                .password("admin")
+                .username(usernameKeycloakAdmin)
+                .password(passwordKeycloakAdmin)
                 .grantType("password")
                 .build();
     }

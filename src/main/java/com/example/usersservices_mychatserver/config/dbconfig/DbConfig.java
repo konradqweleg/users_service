@@ -16,8 +16,8 @@ import org.springframework.r2dbc.core.DatabaseClient;
 class DbConfig {
 
     @Bean
-    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory){
-        ConnectionFactoryInitializer initializer =  new ConnectionFactoryInitializer();
+    public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {
+        ConnectionFactoryInitializer initializer = new ConnectionFactoryInitializer();
         initializer.setConnectionFactory(connectionFactory);
 
         initializer.setDatabasePopulator(
@@ -27,7 +27,7 @@ class DbConfig {
         );
         return initializer;
 
-    };
+    }
 
 
     @Bean

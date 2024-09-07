@@ -43,7 +43,6 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     public UserKeyCloakAdapter(Keycloak keycloakAdmin) {
         this.keycloakAdmin = keycloakAdmin;
     }
-
     @Override
     public Mono<UserAccessData> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
 
@@ -81,6 +80,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                 })
                 .doOnSuccess(userAccessData -> logger.info("Successfully authorized user "));
     }
+
 
 
     @Override
