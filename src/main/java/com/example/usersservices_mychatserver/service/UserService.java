@@ -119,14 +119,26 @@ public class UserService implements UserPort {
 
     @Override
     public Mono<Result<UserAccessData>> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
-        return userAuthPort.authorizeUser(userAuthorizeData)
-                .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", userAuthorizeData))
-                .map(Result::success)
-                .onErrorResume(ex -> {
-                    logger.error("Error during user authorization", ex);
-                    return Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                });
+        return userAuthorizeData.flatMap(data ->
+                userAuthPort.isActivatedUserAccount(Mono.just(data.email()))
+                        .flatMap(isActive -> {
+                            if (!isActive) {
+                                logger.warn("User account is inactive: {}", data.email());
+                                return Mono.just(Result.<UserAccessData>error("User account is inactive"));
+                            }
+
+                            return userAuthPort.authorizeUser(Mono.just(data))
+                                    .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", data))
+                                    .map(Result::success);
+                        })
+                        .switchIfEmpty(Mono.just(Result.<UserAccessData>error("User not found")))
+        ).onErrorResume(ex -> {
+            logger.error("Error during user authorization", ex);
+            return Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+        });
     }
+
+
 
 
     @Override
