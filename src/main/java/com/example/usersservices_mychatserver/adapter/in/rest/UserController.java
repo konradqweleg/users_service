@@ -34,6 +34,11 @@ public class UserController {
         return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
     }
 
+    @GetMapping("/test")
+    public Mono<String> test() {
+        return Mono.just("test");
+    }
+
     @PostMapping("/register")
     public Mono<ResponseEntity<String>> registerUser(@RequestBody @Valid Mono<UserRegisterData> user) {
         return userPort.registerUser(user).flatMap(ConvertToJSON::convert);
@@ -76,6 +81,7 @@ public class UserController {
 
     @PostMapping("/authorizeUser")
     public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid Mono<UserAuthorizeData> user) {
+        System.out.println("authorizeUser");
         return userPort.authorizeUser(user).flatMap(ConvertToJSON::convert);
     }
 
