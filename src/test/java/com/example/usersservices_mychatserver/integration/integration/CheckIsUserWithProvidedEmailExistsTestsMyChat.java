@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.BodyInserters;
 
-public class CheckIsUserWithProvidedEmailExistsTests extends DefaultTestConfiguration  {
+public class CheckIsUserWithProvidedEmailExistsTestsMyChat extends DefaultTestConfiguration  {
     @Test
     public void whenUserExistsRequestShouldReturnInformationUserWithProvidedEmailExists() throws Exception {
         //given

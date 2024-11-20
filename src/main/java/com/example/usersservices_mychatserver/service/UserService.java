@@ -2,6 +2,10 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.entity.request.*;
 import com.example.usersservices_mychatserver.entity.response.*;
+import com.example.usersservices_mychatserver.exception.KeycloakException;
+import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
+import com.example.usersservices_mychatserver.exception.SendVerificationCodeException;
+import com.example.usersservices_mychatserver.exception.UnexpectedError;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
@@ -72,49 +76,51 @@ public class UserService implements UserPort {
         ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
     }
 
-    @Override
-    public Mono<Result<Status>> registerUser(Mono<UserRegisterData> userRegisterDataMono) {
-        Mono<UserRegisterData> cachedUserRegisterDataMono = userRegisterDataMono.cache();
 
-        return userAuthPort.register(cachedUserRegisterDataMono)
+    private UserMyChat mapToUser(UserRegisterDataDTO userRegisterDataDTO) {
+        return new UserMyChat(null, userRegisterDataDTO.name(), userRegisterDataDTO.surname(), userRegisterDataDTO.email());
+    }
+    private Mono<CodeVerification> generateAndSaveVerificationCode(UserMyChat savedUserMyChat) {
+        String code = generateRandomCodePort.generateCode();
+        return userRepositoryPort.saveVerificationCode(new CodeVerification(null, savedUserMyChat.id(), code))
+                .doOnSuccess(savedCode -> {
+                    sendEmail.sendVerificationCode(savedUserMyChat.email(), code);
+                    logger.info("Verification code sent to user email: {}", savedUserMyChat.email());
+                }).onErrorResume(ex -> {
+                    logger.error("Error sending verification code for user ID: {}", savedUserMyChat.id(), ex);
+                    return Mono.error(new SendVerificationCodeException(ex));
+                });
+    }
+    @Override
+    public Mono<Void> registerUser(UserRegisterDataDTO userRegisterDataDTO) {
+        return userAuthPort.register(userRegisterDataDTO)
+                .doOnSuccess(result -> logger.info("User registration in KeyCloak: {}", result))
                 .flatMap(result -> {
                     if (result.correctResponse()) {
-                        logger.info("User registration successful in auth service.");
-                        return cachedUserRegisterDataMono
-                                .flatMap(userRegisterData -> {
-                                    UserMyChat newUser = new UserMyChat(null, userRegisterData.name(), userRegisterData.surname(), userRegisterData.email());
-                                    return userRepositoryPort.saveUser(newUser)
-                                            .flatMap(savedUser -> {
-                                                logger.info("User saved in repository with ID: {}", savedUser.id());
-
-                                                String code = generateRandomCodePort.generateCode();
-                                                sendEmail.sendVerificationCode(savedUser.email(), code);
-                                                logger.info("Verification code sent to user email: {}", savedUser.email());
-
-                                                return userRepositoryPort.saveVerificationCode(new CodeVerification(null, savedUser.id(), code))
-                                                        .flatMap(savedCode -> {
-                                                            logger.info("Verification code saved for user ID: {}", savedUser.id());
-                                                            return Mono.just(Result.success(new Status(true)));
-                                                        })
-                                                        .onErrorResume(ex -> {
-                                                            logger.error("Error saving verification code for user ID: {}", savedUser.id(), ex);
-                                                            return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                                        });
-                                            })
-                                            .onErrorResume(ex -> {
-                                                logger.error("Error saving user in repository", ex);
-                                                return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                            });
+                        UserMyChat newUserMyChat = mapToUser(userRegisterDataDTO);
+                        return userRepositoryPort.saveUser(newUserMyChat)
+                                .doOnSuccess(user -> logger.info("User saved in repository with ID: {}", user.id()))
+                                .flatMap(savedUser -> generateAndSaveVerificationCode(savedUser)
+                                        .onErrorResume(ex -> {
+                                            logger.error("Error saving verification code for user ID: {}", savedUser.id(), ex);
+                                            return Mono.error(new SaveDataInRepositoryException("Error saving verification code",ex));
+                                        })
+                                )
+                                .onErrorResume(ex -> {
+                                    logger.error("Error saving user in repository", ex);
+                                    return Mono.error(new SaveDataInRepositoryException("Error saving user in repository",ex));
                                 });
                     } else {
-                        logger.warn("User registration failed in auth service.");
-                        return Mono.just(Result.<Status>error("User not registered"));
+                        logger.error("User registration failed in auth service.");
+                        return Mono.error(new KeycloakException("User registration failed in auth service"));
                     }
                 })
+                .then()
                 .onErrorResume(ex -> {
                     logger.error("Unexpected error during user registration", ex);
-                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                });
+                    return Mono.error(new UnexpectedError("Unexpected error during user registration",ex));
+                })
+               .doOnSuccess(user -> logger.info("User registration successful for email: {}", userRegisterDataDTO.email()));
     }
 
     @Override

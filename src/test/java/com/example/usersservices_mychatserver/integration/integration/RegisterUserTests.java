@@ -1,23 +1,5 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
-import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
-
-import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
-import com.example.usersservices_mychatserver.integration.integration.responseUtil.ResponseMessageUtil;
-import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
-import reactor.core.publisher.Flux;
-
-import reactor.test.StepVerifier;
-
-import java.net.URISyntaxException;
-import java.util.List;
-
 
 class RegisterUserTests extends DefaultTestConfiguration {
 

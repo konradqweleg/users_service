@@ -4,14 +4,12 @@ import com.example.usersservices_mychatserver.config.keycloak.KeyCloakConfigurat
 import com.example.usersservices_mychatserver.entity.request.UserEmailData;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
-import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
-import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.admin.client.Keycloak;
@@ -64,10 +62,10 @@ public class SendResetPasswordCodeTests {
     public void testSendResetPasswordCode_Success() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
         String generatedCode = "123456";
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(user));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(true));
         when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
         when(generateRandomCodePort.generateCode()).thenReturn(generatedCode);
@@ -87,9 +85,9 @@ public class SendResetPasswordCodeTests {
     public void testSendResetPasswordCode_UserNotActivated() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(user));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(false));
 
         // when
@@ -140,9 +138,9 @@ public class SendResetPasswordCodeTests {
     public void testSendResetPasswordCode_DeleteResetPasswordCodeFailure() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(user));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(true));
         when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.error(new RuntimeException("Delete reset password code error")));
 
@@ -160,10 +158,10 @@ public class SendResetPasswordCodeTests {
     public void testSendResetPasswordCode_InsertResetPasswordCodeFailure() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(user));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(true));
         when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
         when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.error(new RuntimeException("Insert reset password code error")));

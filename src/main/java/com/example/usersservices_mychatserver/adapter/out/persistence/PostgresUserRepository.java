@@ -49,8 +49,8 @@ public class PostgresUserRepository implements UserRepositoryPort {
     }
 
     @Override
-    public Mono<UserMyChat> saveUser(UserMyChat user) {
-        return userRepository.save(user);
+    public Mono<UserMyChat> saveUser(UserMyChat userMyChat) {
+        return userRepository.save(userMyChat);
     }
 
 

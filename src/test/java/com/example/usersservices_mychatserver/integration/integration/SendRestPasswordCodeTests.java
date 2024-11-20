@@ -1,25 +1,12 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
-import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailData;
-import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
-import com.example.usersservices_mychatserver.integration.integration.dbUtils.DatabaseActionUtilService;
 import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
 import com.example.usersservices_mychatserver.integration.integration.responseUtil.ResponseMessageUtil;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.web.reactive.function.BodyInserters;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import static org.mockito.Mockito.when;

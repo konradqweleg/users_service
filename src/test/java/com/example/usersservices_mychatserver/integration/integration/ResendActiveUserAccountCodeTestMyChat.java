@@ -12,7 +12,7 @@ import java.net.URISyntaxException;
 
 import static org.mockito.Mockito.when;
 
-public class ResendActiveUserAccountCodeTest  extends  DefaultTestConfiguration{
+public class ResendActiveUserAccountCodeTestMyChat extends  DefaultTestConfiguration{
 
     private static final ActiveAccountCodeData correctResendActiveAccountCode = new ActiveAccountCodeData("000000", CorrectRequestData.USER_REGISTER_DATA.email());
 

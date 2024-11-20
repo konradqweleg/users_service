@@ -21,7 +21,7 @@ public interface UserRepositoryPort {
 
     Mono<ResetPasswordCode> findResetPasswordCodeForUserById(IdUserData idUser);
 
-    Mono<UserMyChat> saveUser(UserMyChat user);
+    Mono<UserMyChat> saveUser(UserMyChat userMyChat);
     Mono<UserMyChat> findUserWithEmail(String email);
 
     Mono<UserMyChat> findUserById(Long idUser);

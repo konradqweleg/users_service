@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ChangeUserPasswordTests {
+public class ChangeUserPasswordTestsMyChat {
 
     @MockBean
     private UserRepositoryPort userRepositoryPort;
@@ -62,13 +62,13 @@ public class ChangeUserPasswordTests {
     public void testChangeUserPassword_Success() {
         // given
         ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
-        UserMyChat userFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userFromDb.id(), "code123");
+        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
 
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userFromDb));
-        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
+        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
+        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
         when(userAuthPort.changeUserPassword(any(),any())).thenReturn(Mono.empty());
-        when(userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userFromDb.id()))).thenReturn(Mono.empty());
+        when(userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.empty());
 
         // when
         Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
@@ -84,11 +84,11 @@ public class ChangeUserPasswordTests {
     public void testChangeUserPassword_WrongCode() {
         // given
         ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "wrongCode", "newPassword");
-        UserMyChat userFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userFromDb.id(), "code123");
+        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
 
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userFromDb));
-        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
+        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
+        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
 
         // when
         Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
@@ -138,11 +138,11 @@ public class ChangeUserPasswordTests {
     public void testChangeUserPassword_AuthPortChangePasswordFailure() {
         // given
         ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
-        UserMyChat userFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userFromDb.id(), "code123");
+        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
 
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userFromDb));
-        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
+        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
+        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
         when(userAuthPort.changeUserPassword(any(), any())).thenReturn(Mono.error(new RuntimeException("Change password error")));
 
         // when

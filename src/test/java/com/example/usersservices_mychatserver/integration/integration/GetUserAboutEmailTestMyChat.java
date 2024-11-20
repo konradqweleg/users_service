@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
 
-public class GetUserAboutEmailTest extends DefaultTestConfiguration{
+public class GetUserAboutEmailTestMyChat extends DefaultTestConfiguration{
     @Test
     public void whenUserWithProvidedIdNotExistsRequestShouldReturnErrorUserNotFound() throws URISyntaxException {
 

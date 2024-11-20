@@ -15,9 +15,9 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 
 
-public class GetUserAboutIdTest extends DefaultTestConfiguration {
+public class GetUserAboutIdTestMyChat extends DefaultTestConfiguration {
 
-    private final String sqlSelectIdsAllUsers = "SELECT id FROM users_services_scheme.user_my_chat";
+    private final String sqlSelectIdsAllUsers = "SELECT id FROM users_services_scheme.user";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test

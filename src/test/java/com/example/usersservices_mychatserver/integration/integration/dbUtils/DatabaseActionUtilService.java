@@ -10,7 +10,7 @@ public class DatabaseActionUtilService {
     private DatabaseClient databaseClient;
 
     public void clearAllUsersInDatabase() {
-        databaseClient.sql("DELETE FROM users_services_scheme.user_my_chat where 1=1").
+        databaseClient.sql("DELETE FROM users_services_scheme.user where 1=1").
                 fetch().
                 rowsUpdated()
                 .block();

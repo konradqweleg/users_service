@@ -10,7 +10,6 @@ import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodeP
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
-import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.admin.client.Keycloak;
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class CheckIsUserWithEmailExistsTests {
+public class CheckIsUserWithEmailExistsTestsMyChat {
 
     @MockBean
     private UserRepositoryPort userRepositoryPort;
@@ -59,9 +58,9 @@ public class CheckIsUserWithEmailExistsTests {
     public void testCheckIsUserWithThisEmailExist_Success() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userFromDb));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChatFromDb));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(true));
 
         // when
@@ -78,9 +77,9 @@ public class CheckIsUserWithEmailExistsTests {
     public void testCheckIsUserWithThisEmailExist_UserNotActivated() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userFromDb));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChatFromDb));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(false));
 
         // when
@@ -131,9 +130,9 @@ public class CheckIsUserWithEmailExistsTests {
     public void testCheckIsUserWithThisEmailExist_IsActivatedUserAccountFailure() {
         // given
         UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userFromDb));
+        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChatFromDb));
         when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.error(new RuntimeException("Activation check error")));
 
         // when

@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ActivateUserAccountTests {
+public class ActivateUserAccountTestsMyChat {
 
     @MockBean
     private UserRepositoryPort userRepositoryPort;
@@ -62,11 +62,11 @@ public class ActivateUserAccountTests {
     public void testActivateUserAccount_Success() {
         // given
         ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        CodeVerification codeVerification = new CodeVerification(1L, user.id(), "123456");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
 
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(user));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(user.id())).thenReturn(Mono.just(codeVerification));
+        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
         when(userAuthPort.activateUserAccount(any())).thenReturn(Mono.empty());
         when(userRepositoryPort.deleteUserActiveAccountCode(codeVerification)).thenReturn(Mono.empty());
 
@@ -84,11 +84,11 @@ public class ActivateUserAccountTests {
     public void testActivateUserAccount_BadCode() {
         // given
         ActiveAccountCodeData codeData = new ActiveAccountCodeData("wrongCode", "mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        CodeVerification codeVerification = new CodeVerification(1L, user.id(), "123456");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
 
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(user));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(user.id())).thenReturn(Mono.just(codeVerification));
+        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
 
         // when
         Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
@@ -121,10 +121,10 @@ public class ActivateUserAccountTests {
     public void testActivateUserAccount_CodeNotFound() {
         // given
         ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(user));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(user.id())).thenReturn(Mono.empty());
+        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.empty());
 
         // when
         Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
@@ -158,10 +158,10 @@ public class ActivateUserAccountTests {
     public void testActivateUserAccount_FindActiveUserAccountCodeFailure() {
         // given
         ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(user));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(user.id())).thenReturn(Mono.error(new RuntimeException("Find active user account code error")));
+        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.error(new RuntimeException("Find active user account code error")));
 
         // when
         Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
@@ -177,11 +177,11 @@ public class ActivateUserAccountTests {
     public void testActivateUserAccount_ActivateUserAccountFailure() {
         // given
         ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat user = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        CodeVerification codeVerification = new CodeVerification(1L, user.id(), "123456");
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
 
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(user));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(user.id())).thenReturn(Mono.just(codeVerification));
+        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
         when(userAuthPort.activateUserAccount(any())).thenReturn(Mono.error(new RuntimeException("Activate user account error")));
 
         // when

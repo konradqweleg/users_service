@@ -1,23 +1,6 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
 
-import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
-import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
-import com.example.usersservices_mychatserver.model.UserMyChat;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
-import reactor.core.publisher.Flux;
-import reactor.test.StepVerifier;
-
-import java.net.URISyntaxException;
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.mockito.Mockito.when;
-
-
-
 public class ResetPasswordTests extends DefaultTestConfiguration {
 //    @Test
 //    public void whenValidResetPasswordCodeAndNewPasswordSentShouldResetPassword() throws URISyntaxException {

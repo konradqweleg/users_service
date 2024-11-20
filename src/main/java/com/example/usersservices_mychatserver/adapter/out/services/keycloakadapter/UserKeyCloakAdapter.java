@@ -1,7 +1,7 @@
 package com.example.usersservices_mychatserver.adapter.out.services.keycloakadapter;
 
 import com.example.usersservices_mychatserver.entity.request.UserAuthorizeData;
-import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -84,41 +84,37 @@ public class UserKeyCloakAdapter implements UserAuthPort {
 
 
     @Override
-    public Mono<Status> register(Mono<UserRegisterData> userRegisterDataMono) {
+    public Mono<Status> register(UserRegisterDataDTO userRegisterDataDTO) {
 
-        return userRegisterDataMono
-                .map(userData -> {
-                    UserRepresentation userRepresentation = new UserRepresentation();
-                    userRepresentation.setEnabled(false);
-                    userRepresentation.setUsername(userData.email());
-                    userRepresentation.setEmail(userData.email());
-                    userRepresentation.setFirstName(userData.name());
-                    userRepresentation.setLastName(userData.surname());
+        return Mono.fromCallable(() -> {
+            UserRepresentation userRepresentation = new UserRepresentation();
+            userRepresentation.setEnabled(false);
+            userRepresentation.setUsername(userRegisterDataDTO.email());
+            userRepresentation.setEmail(userRegisterDataDTO.email());
+            userRepresentation.setFirstName(userRegisterDataDTO.name());
+            userRepresentation.setLastName(userRegisterDataDTO.surname());
 
-                    CredentialRepresentation credential = new CredentialRepresentation();
-                    credential.setType(CredentialRepresentation.PASSWORD);
-                    credential.setValue(userData.password());
-                    credential.setTemporary(false);
-                    userRepresentation.setCredentials(Collections.singletonList(credential));
+            CredentialRepresentation credential = new CredentialRepresentation();
+            credential.setType(CredentialRepresentation.PASSWORD);
+            credential.setValue(userRegisterDataDTO.password());
+            credential.setTemporary(false);
+            userRepresentation.setCredentials(Collections.singletonList(credential));
 
-                    return userRepresentation;
-                })
-                .flatMap(userRepresentation -> {
-                    try (Response response = keycloakAdmin.realm(realName).users().create(userRepresentation)) {
-                        if (response.getStatus() == HTTP_CREATED) {
-                            logger.info("User registered successfully: {}", userRepresentation.getUsername());
-                            return Mono.just(new Status(true));
-                        } else {
-                            logger.error("Failed to register user: {}. Response status: {}", userRepresentation.getUsername(), response.getStatus());
-                            return Mono.error(new RuntimeException("User not registered"));
-                        }
-                    } catch (Exception e) {
-                        logger.error("Exception occurred during user registration: {}", e.getMessage(), e);
-                        return Mono.error(new RuntimeException(e));
-                    }
-                });
-
-
+            return userRepresentation;
+        }).flatMap(userRepresentation -> {
+            try (Response response = keycloakAdmin.realm(realName).users().create(userRepresentation)) {
+                if (response.getStatus() == HTTP_CREATED) {
+                    logger.info("User registered successfully: {}", userRepresentation.getUsername());
+                    return Mono.just(new Status(true));
+                } else {
+                    logger.error("Failed to register user: {}. Response status: {}", userRepresentation.getUsername(), response.getStatus());
+                    return Mono.error(new RuntimeException("User not registered"));
+                }
+            } catch (Exception e) {
+                logger.error("Exception occurred during user registration: {}", e.getMessage(), e);
+                return Mono.error(new RuntimeException(e));
+            }
+        });
     }
 
     @Override

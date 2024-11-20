@@ -1,9 +1,8 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
-import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.integration.integration.dbUtils.DatabaseActionUtilService;
-import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
 import com.example.usersservices_mychatserver.integration.integration.request_util.RequestUtil;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import org.junit.jupiter.api.AfterEach;
@@ -57,12 +56,12 @@ public class DefaultTestConfiguration {
     }
 
 
-    private void createUserAccount(UserRegisterData userRegisterData, boolean isActiveAccount) throws URISyntaxException {
+    private void createUserAccount(UserRegisterDataDTO userRegisterDataDTO, boolean isActiveAccount) throws URISyntaxException {
         when(randomCodePort.generateCode()).thenReturn("000000");
 
         webTestClient.post().uri(createRequestUtil().createRequestRegister())
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(userRegisterData))
+                .body(BodyInserters.fromValue(userRegisterDataDTO))
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -70,7 +69,7 @@ public class DefaultTestConfiguration {
 
 
         if (isActiveAccount) {
-            ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", userRegisterData.email());
+            ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", userRegisterDataDTO.email());
             webTestClient.post().uri(createRequestUtil().createRequestActiveUserAccount())
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(activeAccountCodeData))
@@ -82,12 +81,12 @@ public class DefaultTestConfiguration {
     }
 
 
-    void createActivatedUserAccount(UserRegisterData userRegisterData) throws URISyntaxException {
-        createUserAccount(userRegisterData,true);
+    void createActivatedUserAccount(UserRegisterDataDTO userRegisterDataDTO) throws URISyntaxException {
+        createUserAccount(userRegisterDataDTO,true);
     }
 
-    void createUserAccountWithNotActiveAccount(UserRegisterData userRegisterData) throws URISyntaxException {
-        createUserAccount(userRegisterData,false);
+    void createUserAccountWithNotActiveAccount(UserRegisterDataDTO userRegisterDataDTO) throws URISyntaxException {
+        createUserAccount(userRegisterDataDTO,false);
     }
 
 

@@ -1,7 +1,7 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
 import com.example.usersservices_mychatserver.config.keycloak.KeyCloakConfiguration;
-import com.example.usersservices_mychatserver.entity.request.UserRegisterData;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.Result;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.model.CodeVerification;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RegisterUserTests {
+public class RegisterUserTestsMyChat {
 
     @MockBean
     private UserRepositoryPort userRepositoryPort;
@@ -61,7 +61,7 @@ public class RegisterUserTests {
     public void testRegisterUser_AuthServiceFailure() {
 
         // given
-        Mono<UserRegisterData> userRegisterData = Mono.just(new UserRegisterData("root", "surname", "mail@mail.pl", "password"));
+        Mono<UserRegisterDataDTO> userRegisterData = Mono.just(new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password"));
         when(userAuthPort.register(any())).thenReturn(Mono.just(new Status(false)));
 
         // when
@@ -78,17 +78,17 @@ public class RegisterUserTests {
     @Test
     public void testRegisterUser_Success() {
         // given
-        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "password");
-        UserMyChat savedUser = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserRegisterDataDTO userRegisterDataDTO = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
+        UserMyChat savedUserMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
         String verificationCode = "123456";
 
         when(userAuthPort.register(any())).thenReturn(Mono.just(new Status(true)));
-        when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(savedUser));
+        when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(savedUserMyChat));
         when(generateRandomCodePort.generateCode()).thenReturn(verificationCode);
-        when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.just(new CodeVerification(null, savedUser.id(), verificationCode)));
+        when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.just(new CodeVerification(null, savedUserMyChat.id(), verificationCode)));
 
         // when
-        Mono<Result<Status>> result = userPort.registerUser(Mono.just(userRegisterData));
+        Mono<Result<Status>> result = userPort.registerUser(Mono.just(userRegisterDataDTO));
 
         // then
         StepVerifier.create(result)
@@ -101,13 +101,13 @@ public class RegisterUserTests {
     @Test
     public void testRegisterUser_SaveUserFailure() {
         // given
-        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "password");
+        UserRegisterDataDTO userRegisterDataDTO = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
 
         when(userAuthPort.register(any())).thenReturn(Mono.just(new Status(true)));
         when(userRepositoryPort.saveUser(any())).thenReturn(Mono.error(new RuntimeException("Save user error")));
 
         // when
-        Mono<Result<Status>> result = userPort.registerUser(Mono.just(userRegisterData));
+        Mono<Result<Status>> result = userPort.registerUser(Mono.just(userRegisterDataDTO));
 
         // then
         StepVerifier.create(result)
@@ -120,17 +120,17 @@ public class RegisterUserTests {
     @Test
     public void testRegisterUser_SaveVerificationCodeFailure() {
         // given
-        UserRegisterData userRegisterData = new UserRegisterData("root", "surname", "mail@mail.pl", "password");
-        UserMyChat savedUser = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+        UserRegisterDataDTO userRegisterDataDTO = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
+        UserMyChat savedUserMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
         String verificationCode = "123456";
 
         when(userAuthPort.register(any())).thenReturn(Mono.just(new Status(true)));
-        when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(savedUser));
+        when(userRepositoryPort.saveUser(any())).thenReturn(Mono.just(savedUserMyChat));
         when(generateRandomCodePort.generateCode()).thenReturn(verificationCode);
         when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.error(new RuntimeException("Save verification code error")));
 
         // when
-        Mono<Result<Status>> result = userPort.registerUser(Mono.just(userRegisterData));
+        Mono<Result<Status>> result = userPort.registerUser(Mono.just(userRegisterDataDTO));
 
         // then
         StepVerifier.create(result)

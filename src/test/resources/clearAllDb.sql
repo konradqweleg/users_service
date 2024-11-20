@@ -1,1 +1,1 @@
-DELETE FROM  users_services_scheme.user_my_chat where 1=1;
+DELETE FROM  users_services_scheme.userMyChat where 1=1;
