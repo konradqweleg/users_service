@@ -2,7 +2,7 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.entity.request.*;
 import com.example.usersservices_mychatserver.entity.response.*;
-import com.example.usersservices_mychatserver.exception.KeycloakException;
+import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.exception.SendVerificationCodeException;
 import com.example.usersservices_mychatserver.exception.UnexpectedError;
@@ -112,7 +112,7 @@ public class UserService implements UserPort {
                                 });
                     } else {
                         logger.error("User registration failed in auth service.");
-                        return Mono.error(new KeycloakException("User registration failed in auth service"));
+                        return Mono.error(new AuthServiceException("User registration failed in auth service"));
                     }
                 })
                 .then()
@@ -124,24 +124,21 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<UserAccessData>> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
-        return userAuthorizeData.flatMap(data ->
-                userAuthPort.isActivatedUserAccount(Mono.just(data.email()))
-                        .flatMap(isActive -> {
-                            if (!isActive) {
-                                logger.warn("User account is inactive: {}", data.email());
-                                return Mono.just(Result.<UserAccessData>error("User account is inactive"));
-                            }
-
-                            return userAuthPort.authorizeUser(Mono.just(data))
-                                    .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", data))
-                                    .map(Result::success);
-                        })
-                        .switchIfEmpty(Mono.just(Result.<UserAccessData>error("User not found")))
-        ).onErrorResume(ex -> {
-            logger.error("Error during user authorization", ex);
-            return Mono.just(Result.<UserAccessData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-        });
+    public Mono<UserAccessData> login(LoginData loginData) {
+        return userAuthPort.isActivatedUserAccount(Mono.just(loginData.email()))
+                .flatMap(isActive -> {
+                    if (!isActive) {
+                        logger.warn("User account is inactive: {}", loginData.email());
+                        return Mono.error(new AuthServiceException("User account is inactive"));
+                    }
+                    return userAuthPort.authorizeUser(Mono.just(loginData))
+                            .doOnError(ex -> logger.error("Error during user authorization", ex))
+                            .onErrorResume(ex -> Mono.error(new AuthServiceException("Error during user authorization",ex)))
+                            .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginData.email()));
+                })
+                .switchIfEmpty(Mono.error(new AuthServiceException("User not found")))
+                .doOnError(ex -> logger.error("Error during user authorization", ex))
+                .onErrorResume(ex -> Mono.error(new AuthServiceException("Error check if user active in auth service",ex)));
     }
 
 

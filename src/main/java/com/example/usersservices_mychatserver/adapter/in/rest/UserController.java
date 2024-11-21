@@ -78,9 +78,9 @@ public class UserController {
         return ConvertToJSON.convert(userPort.getUserMatchingNameAndSurname(Mono.just(patternName)));
     }
 
-    @PostMapping("/login")
-    public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid Mono<UserAuthorizeData> user) {
-        return userPort.authorizeUser(user).flatMap(ConvertToJSON::convert);
-    }
+//    @PostMapping("/login")
+//    public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid LoginData user) {
+//        return userPort.login(user).flatMap(ConvertToJSON::convert);
+//    }
 
 }

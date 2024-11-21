@@ -1,8 +1,9 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
-import com.example.usersservices_mychatserver.entity.request.UserAuthorizeData;
+import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
+import com.example.usersservices_mychatserver.entity.request.LoginData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
+import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -29,7 +30,9 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid Mono<UserAuthorizeData> user) {
-        return userPort.authorizeUser(user).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<UserAccessData>> authorizeUser(@RequestBody @Valid LoginData loginData) {
+        return ResponseUtil.toResponseEntity(userPort.login(loginData), HttpStatus.OK);
     }
+
+
 }

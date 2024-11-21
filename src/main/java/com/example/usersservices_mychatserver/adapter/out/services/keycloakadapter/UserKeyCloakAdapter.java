@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.out.services.keycloakadapter;
 
-import com.example.usersservices_mychatserver.entity.request.UserAuthorizeData;
+import com.example.usersservices_mychatserver.entity.request.LoginData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
@@ -44,7 +44,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
         this.keycloakAdmin = keycloakAdmin;
     }
     @Override
-    public Mono<UserAccessData> authorizeUser(Mono<UserAuthorizeData> userAuthorizeData) {
+    public Mono<UserAccessData> authorizeUser(Mono<LoginData> userAuthorizeData) {
 
         return userAuthorizeData
                 .map(authorizeData -> {
