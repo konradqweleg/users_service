@@ -23,16 +23,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Mono<ResponseEntity<String>> registerUser(@RequestBody @Valid UserRegisterDataDTO registerData) {
-        return userPort.registerUser(registerData)
-                .then(Mono.just(ResponseEntity.status(HttpStatus.CREATED).body("User registered successfully")))
-                .onErrorResume(ex -> Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("User registration failed")));
+    public Mono<ResponseEntity<Void>> registerUser(@RequestBody @Valid UserRegisterDataDTO registerData) {
+        return ResponseUtil.toResponseEntity(userPort.registerUser(registerData), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public Mono<ResponseEntity<UserAccessData>> authorizeUser(@RequestBody @Valid LoginData loginData) {
         return ResponseUtil.toResponseEntity(userPort.login(loginData), HttpStatus.OK);
     }
-
 
 }
