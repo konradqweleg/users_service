@@ -1,8 +1,0 @@
-FROM postgres:latest
-
-ENV POSTGRES_USER=x
-ENV POSTGRES_PASSWORD=x
-ENV POSTGRES_DB=db-user-service
-
-EXPOSE 5432
-

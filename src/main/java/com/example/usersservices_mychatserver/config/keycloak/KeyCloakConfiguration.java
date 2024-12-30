@@ -22,9 +22,8 @@ public class KeyCloakConfiguration {
     public Keycloak keycloak() {
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrlKeycloak)
-                .realm("master")
-                .clientId("admin-cli")
-                .clientSecret("client-secret")
+                .realm("my-chat-realm")
+                .clientId("mychat-client")
                 .username(usernameKeycloakAdmin)
                 .password(passwordKeycloakAdmin)
                 .grantType("password")

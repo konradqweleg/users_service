@@ -29,8 +29,8 @@ import org.springframework.http.HttpStatus;
 @Service
 public class UserKeyCloakAdapter implements UserAuthPort {
 
-    private final String keycloakClientId = "mychatclient";
-    private final String realName = "MyChatApp";
+    private final String keycloakClientId = "mychat-client";
+    private final String realName = "my-chat-realm";
     private final String keycloakGrantType = "password";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Keycloak keycloakAdmin;

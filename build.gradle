@@ -6,6 +6,7 @@ plugins {
 
 java {
     sourceCompatibility = '17'
+    targetCompatibility = '17'
 }
 
 repositories {
@@ -41,6 +42,11 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-tasks.withType(org.springframework.boot.gradle.tasks.bundling.BootJar) {
+bootJar {
     archiveFileName = 'mychat-user-service.jar'
 }
+
+tasks.jar {
+    enabled = false
+}
+
