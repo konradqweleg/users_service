@@ -63,7 +63,7 @@ public class ResendActiveUserAccountCodeTestsMyChat {
         CodeVerification codeVerification = new CodeVerification(null, userMyChat.id(), "123456");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(false));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(false));
         when(userRepositoryPort.deleteUserActiveAccountCode(userMyChat.id())).thenReturn(Mono.empty());
         when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.just(codeVerification));
 
@@ -101,7 +101,7 @@ public class ResendActiveUserAccountCodeTestsMyChat {
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(true));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
 
         // when
         Mono<Result<Status>> result = userPort.resendActiveUserAccountCode(Mono.just(emailData));
@@ -120,7 +120,7 @@ public class ResendActiveUserAccountCodeTestsMyChat {
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(false));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(false));
         when(userRepositoryPort.deleteUserActiveAccountCode(userMyChat.id())).thenReturn(Mono.error(new RuntimeException("Delete code error")));
 
         // when
@@ -140,7 +140,7 @@ public class ResendActiveUserAccountCodeTestsMyChat {
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.just(false));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(false));
         when(userRepositoryPort.deleteUserActiveAccountCode(userMyChat.id())).thenReturn(Mono.empty());
         when(userRepositoryPort.saveVerificationCode(any())).thenReturn(Mono.error(new RuntimeException("Save verification code error")));
 
@@ -161,7 +161,7 @@ public class ResendActiveUserAccountCodeTestsMyChat {
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isActivatedUserAccount(any())).thenReturn(Mono.error(new RuntimeException("Activation check error")));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.error(new RuntimeException("Activation check error")));
 
         // when
         Mono<Result<Status>> result = userPort.resendActiveUserAccountCode(Mono.just(emailData));

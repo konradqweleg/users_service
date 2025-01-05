@@ -2,12 +2,13 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.entity.request.*;
 import com.example.usersservices_mychatserver.entity.response.*;
+import com.example.usersservices_mychatserver.exception.UnexpectedInternalException;
+import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
+import com.example.usersservices_mychatserver.exception.activation.ActivationCodeNotFoundException;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.exception.SendVerificationCodeException;
-import com.example.usersservices_mychatserver.exception.UnexpectedError;
 import com.example.usersservices_mychatserver.model.CodeVerification;
-import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
@@ -20,8 +21,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.NoSuchElementException;
 
 
 @Service
@@ -98,7 +97,6 @@ public class UserService implements UserPort {
     public Mono<Void> registerUser(UserRegisterDataDTO userRegisterDataDTO) {
         return userAuthPort.register(userRegisterDataDTO)
                 .then(Mono.defer(() -> {
-
                     UserMyChat newUserMyChat = mapToUser(userRegisterDataDTO);
                     return userRepositoryPort.saveUser(newUserMyChat)
                             .doOnSuccess(user -> logger.info("User saved in repository with ID: {}", user.id()))
@@ -115,16 +113,12 @@ public class UserService implements UserPort {
 
                 }))
                 .then()
-                .onErrorResume(ex -> {
-                    logger.error("Unexpected error during user registration", ex);
-                    return Mono.error(new UnexpectedError("Unexpected error during user registration", ex));
-                })
                 .doOnSuccess(user -> logger.info("User registration successful for email: {}", userRegisterDataDTO.email()));
     }
 
     @Override
     public Mono<UserAccessData> login(LoginData loginData) {
-        return userAuthPort.isActivatedUserAccount(loginData.email())
+        return userAuthPort.isEmailAlreadyActivatedUserAccount(loginData.email())
                 .flatMap(isActive -> {
                     if (!isActive) {
                         logger.warn("User account is inactive: {}", loginData.email());
@@ -134,9 +128,7 @@ public class UserService implements UserPort {
                             .doOnError(ex -> logger.error("Error during user authorization", ex))
                             .onErrorResume(ex -> Mono.error(new AuthServiceException("Error during user authorization", ex)))
                             .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginData.email()));
-                })
-                .doOnError(ex -> logger.error("Error during user authorization", ex))
-                .onErrorResume(Mono::error);
+                });
     }
 
 
@@ -326,40 +318,35 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono) {
-
-        Mono<ActiveAccountCodeData> cacheActiveAccountCodeDataMono = codeVerificationMono.cache();
-
-        return cacheActiveAccountCodeDataMono.flatMap(codeActiveAccount -> {
-                    logger.info("Received activation code for email: {}", codeActiveAccount.email());
-                    return userRepositoryPort.findUserWithEmail(codeActiveAccount.email()).flatMap(
-                                    userActiveAccountData -> {
-                                        logger.info("User found with email: {}", userActiveAccountData.email());
-                                        return userRepositoryPort.findActiveUserAccountCodeForUserWithId(userActiveAccountData.id()).flatMap(
-                                                codeVerificationSavedInDb -> {
-                                                    logger.info("Verification code found for user ID: {}", userActiveAccountData.id());
-                                                    return cacheActiveAccountCodeDataMono.flatMap(userActiveAccountCodeFromRequest -> {
-                                                        if (codeVerificationSavedInDb.code().equals(userActiveAccountCodeFromRequest.code())) {
-                                                            logger.info("Verification code matches for user ID: {}", userActiveAccountData.id());
-                                                            return userAuthPort.activateUserAccount(Mono.just(userActiveAccountData.email()))
-                                                                    .then(Mono.defer(() -> userRepositoryPort.deleteUserActiveAccountCode(codeVerificationSavedInDb)
-                                                                            .thenReturn(Result.success(new Status(true)))))
-                                                                    .doOnError(ex -> logger.error("Failed to activate user account for email: {}", userActiveAccountData.email(), ex));
-                                                        } else {
-                                                            logger.warn("Bad code for user: {}", userActiveAccountData.email());
-                                                            return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                                        }
-                                                    });
-                                                });
-                                    })
+    public Mono<Void> activateUserAccount(ActiveAccountCodeData codeVerificationMono) {
+        return userRepositoryPort.findUserWithEmail(codeVerificationMono.email())
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.info("User to active not found with email: {}", codeVerificationMono.email());
+                    return Mono.error(new ActivationCodeNotFoundException("User not found"));
+                }))
+                .flatMap(userActiveAccountData -> {
+                    logger.info("User to active found with email: {}", userActiveAccountData.email());
+                    return userRepositoryPort.findActiveUserAccountCodeForUserWithId(userActiveAccountData.id())
                             .switchIfEmpty(Mono.defer(() -> {
-                                logger.info("Code not found for user with email: {}", codeActiveAccount.email());
-                                return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                            }));
+                                logger.info("Activation code not found for user ID: {}", userActiveAccountData.id());
+                                return Mono.error(new ActivationCodeNotFoundException("Activation code not found"));
+                            }))
+                            .flatMap(codeVerificationSavedInDb -> {
+                                logger.info("Verification code found for user ID: {}", userActiveAccountData.id());
+                                if (codeVerificationSavedInDb.code().equals(codeVerificationMono.code())) {
+                                    logger.info("Verification code matches for user ID: {}", userActiveAccountData.id());
+                                    return userAuthPort.activateUserAccount(Mono.just(userActiveAccountData.email()))
+                                            .then(Mono.defer(() -> userRepositoryPort.deleteUserActiveAccountCode(codeVerificationSavedInDb)))
+                                            .doOnError(ex -> logger.error("Failed to activate user account for email: {}", userActiveAccountData.email(), ex));
+                                } else {
+                                    logger.warn("Bad activation code for user: {}", userActiveAccountData.email());
+                                    return Mono.error(new BadActiveAccountCodeException("Bad code to activate user account"));
+                                }
+                            });
                 })
                 .onErrorResume(RuntimeException.class, ex -> {
                     logger.error("Error during user account activation", ex);
-                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+                    return Mono.error(new UnexpectedInternalException("Error during user account activation", ex));
                 });
     }
 

@@ -12,7 +12,7 @@ public interface UserAuthPort {
 
     Mono<Status> activateUserAccount(Mono<String> email);
 
-    Mono<Boolean> isActivatedUserAccount(String email);
+    Mono<Boolean> isEmailAlreadyActivatedUserAccount(String email);
 
     Mono<Status> changeUserPassword(Mono<String> email,String newPassword);
 

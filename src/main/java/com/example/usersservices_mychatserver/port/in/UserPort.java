@@ -6,7 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserPort {
-    Mono<Result<Status>> activateUserAccount(Mono<ActiveAccountCodeData> codeVerificationMono);
+    Mono<Void> activateUserAccount(ActiveAccountCodeData codeVerificationMono);
 
     Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> user);
 

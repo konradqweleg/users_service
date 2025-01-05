@@ -146,7 +146,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     }
 
     @Override
-    public Mono<Boolean> isActivatedUserAccount(String email) {
+    public Mono<Boolean> isEmailAlreadyActivatedUserAccount(String email) {
         try {
             List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
             if (!users.isEmpty()) {

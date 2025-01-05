@@ -53,10 +53,10 @@ public class UserController {
         return userPort.resendActiveUserAccountCode(emailDataMono).flatMap(ConvertToJSON::convert);
     }
 
-    @PostMapping("/activate")
-    public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
-        return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
-    }
+//    @PostMapping("/activate")
+//    public Mono<ResponseEntity<String>> activeUserAccount(@RequestBody Mono<ActiveAccountCodeData> codeVerificationMono) {
+//        return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
+//    }
 
     @GetMapping("/{id}")
     public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long id) {
