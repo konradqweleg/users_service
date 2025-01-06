@@ -1,39 +1,47 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
+import com.example.usersservices_mychatserver.entity.request.LoginData;
+import com.example.usersservices_mychatserver.entity.response.UserAccessData;
+import com.example.usersservices_mychatserver.port.in.UserPort;
+import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class LoginTests {
 
-//    @MockBean
-//    private UserRepositoryPort userRepositoryPort;
-//
-//
-//
-//    @MockBean
-//    HashPasswordPort hashPasswordPort;
-//
-//    @Autowired
-//    private UserPort userPort;
-//
-//    @Test
-//    public void ifCorrectCredentialsShouldReturnTrue() {
-//
-//        //given
-//        EmailAndPasswordData correctLoginData = new EmailAndPasswordData("mail@mail.pl", "password");
-//        when(userRepositoryPort.findUserWithEmail(correctLoginData.email())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
-//        when(hashPasswordPort.checkPassword(correctLoginData.password(), "password")).thenReturn(true);
-//        //when
-//        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(correctLoginData));
-//
-//        //then
-//        StepVerifier
-//                .create(isCorrectCredentialsResult)
-//                .expectNextMatches(result -> result.isSuccess() && result.getValue().isCorrectCredentials())
-//                .expectComplete()
-//                .verify();
-//    }
-//
+    @MockBean
+    private UserAuthPort userAuthPort;
+
+    @Autowired
+    private UserPort userPort;
+
+    @Test
+    public void ifCorrectLoginDataRequestShouldReturnAuthTokens() {
+
+        //given
+        LoginData correctLoginData = new LoginData("mail@mail.pl", "password");
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(correctLoginData.email())).thenReturn(Mono.just(true));
+
+        UserAccessData userTokens = new UserAccessData("accessToken", "refreshToken", "sessionState");
+        when(userAuthPort.authorizeUser(correctLoginData)).thenReturn(Mono.just(userTokens));
+
+        //when
+        Mono<UserAccessData> loginResponse = userPort.login(correctLoginData);
+
+        //then
+        StepVerifier
+                .create(loginResponse)
+                .expectNextMatches(result -> result.equals(userTokens))
+                .expectComplete()
+                .verify();
+    }
+
 //
 //    @Test
 //    public void ifWrongCredentialsShouldReturnFalse() {

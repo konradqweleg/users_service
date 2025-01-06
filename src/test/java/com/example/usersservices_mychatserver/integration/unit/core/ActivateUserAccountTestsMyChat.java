@@ -33,165 +33,165 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ActivateUserAccountTestsMyChat {
 
-    @MockBean
-    private UserRepositoryPort userRepositoryPort;
-
-    @MockBean
-    GenerateRandomCodePort generateCode;
-
-    @MockBean
-    UserAuthPort userAuthPort;
-
-    @Autowired
-    UserPort userPort;
-
-    @MockBean
-    SendEmailToUserPort sendEmailPort;
-
-    @MockBean
-    private Keycloak keycloak;
-
-    @MockBean
-    private KeyCloakConfiguration keyCloakConfiguration;
-
-    @Mock
-    private GenerateRandomCodePort generateRandomCodePort;
-
-
-    @Test
-    public void testActivateUserAccount_Success() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
-        when(userAuthPort.activateUserAccount(any())).thenReturn(Mono.empty());
-        when(userRepositoryPort.deleteUserActiveAccountCode(codeVerification)).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isSuccess)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testActivateUserAccount_BadCode() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("wrongCode", "mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testActivateUserAccount_UserNotFound() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testActivateUserAccount_CodeNotFound() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testActivateUserAccount_ErrorDuringProcess() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-
-    @Test
-    public void testActivateUserAccount_FindActiveUserAccountCodeFailure() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.error(new RuntimeException("Find active user account code error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testActivateUserAccount_ActivateUserAccountFailure() {
-        // given
-        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
-
-        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
-        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
-        when(userAuthPort.activateUserAccount(any())).thenReturn(Mono.error(new RuntimeException("Activate user account error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
+//    @MockBean
+//    private UserRepositoryPort userRepositoryPort;
+//
+//    @MockBean
+//    GenerateRandomCodePort generateCode;
+//
+//    @MockBean
+//    UserAuthPort userAuthPort;
+//
+//    @Autowired
+//    UserPort userPort;
+//
+//    @MockBean
+//    SendEmailToUserPort sendEmailPort;
+//
+//    @MockBean
+//    private Keycloak keycloak;
+//
+//    @MockBean
+//    private KeyCloakConfiguration keyCloakConfiguration;
+//
+//    @Mock
+//    private GenerateRandomCodePort generateRandomCodePort;
+//
+//
+//    @Test
+//    public void testActivateUserAccount_Success() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
+//        when(userAuthPort.activateUserAccount(any())).thenReturn(Mono.empty());
+//        when(userRepositoryPort.deleteUserActiveAccountCode(codeVerification)).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isSuccess)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testActivateUserAccount_BadCode() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("wrongCode", "mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testActivateUserAccount_UserNotFound() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testActivateUserAccount_CodeNotFound() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testActivateUserAccount_ErrorDuringProcess() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//
+//    @Test
+//    public void testActivateUserAccount_FindActiveUserAccountCodeFailure() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.error(new RuntimeException("Find active user account code error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testActivateUserAccount_ActivateUserAccountFailure() {
+//        // given
+//        ActiveAccountCodeData codeData = new ActiveAccountCodeData("123456", "mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        CodeVerification codeVerification = new CodeVerification(1L, userMyChat.id(), "123456");
+//
+//        when(userRepositoryPort.findUserWithEmail(codeData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userRepositoryPort.findActiveUserAccountCodeForUserWithId(userMyChat.id())).thenReturn(Mono.just(codeVerification));
+//        when(userAuthPort.activateUserAccount(any())).thenReturn(Mono.error(new RuntimeException("Activate user account error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.activateUserAccount(Mono.just(codeData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
 
 }

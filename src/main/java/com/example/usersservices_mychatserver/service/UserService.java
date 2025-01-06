@@ -2,12 +2,13 @@ package com.example.usersservices_mychatserver.service;
 
 import com.example.usersservices_mychatserver.entity.request.*;
 import com.example.usersservices_mychatserver.entity.response.*;
-import com.example.usersservices_mychatserver.exception.UnexpectedInternalException;
 import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
 import com.example.usersservices_mychatserver.exception.activation.ActivationCodeNotFoundException;
-import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
-import com.example.usersservices_mychatserver.exception.SendVerificationCodeException;
+import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
+import com.example.usersservices_mychatserver.exception.auth.SendVerificationCodeException;
+import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
+import com.example.usersservices_mychatserver.exception.auth.UserAlreadyRegisteredException;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
@@ -105,11 +106,7 @@ public class UserService implements UserPort {
                                         logger.error("Error saving verification code for user ID: {}", savedUser.id(), ex);
                                         return Mono.error(new SaveDataInRepositoryException("Error saving verification code", ex));
                                     })
-                            )
-                            .onErrorResume(ex -> {
-                                logger.error("Error saving user in repository", ex);
-                                return Mono.error(new SaveDataInRepositoryException("Error saving user in repository", ex));
-                            });
+                            );
 
                 }))
                 .then()
@@ -122,12 +119,19 @@ public class UserService implements UserPort {
                 .flatMap(isActive -> {
                     if (!isActive) {
                         logger.warn("User account is inactive: {}", loginData.email());
-                        return Mono.error(new AuthServiceException("User account is inactive"));
+                        return Mono.error(new UserAlreadyRegisteredException("User account is inactive"));
                     }
+                    logger.info("User account is active: {}", loginData.email());
                     return userAuthPort.authorizeUser(loginData)
                             .doOnError(ex -> logger.error("Error during user authorization", ex))
-                            .onErrorResume(ex -> Mono.error(new AuthServiceException("Error during user authorization", ex)))
                             .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginData.email()));
+                })
+                .onErrorResume(AuthServiceException.class, ex -> {
+                    if(ex.getMessage().contains("User not found")) {
+                        logger.warn("User not found for auth with email: {}", loginData.email());
+                        return Mono.error(new UnauthorizedException("User not found"));
+                    }
+                    return Mono.error(ex);
                 });
     }
 
@@ -343,11 +347,8 @@ public class UserService implements UserPort {
                                     return Mono.error(new BadActiveAccountCodeException("Bad code to activate user account"));
                                 }
                             });
-                })
-                .onErrorResume(RuntimeException.class, ex -> {
-                    logger.error("Error during user account activation", ex);
-                    return Mono.error(new UnexpectedInternalException("Error during user account activation", ex));
                 });
+
     }
 
     @Override

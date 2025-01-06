@@ -13,7 +13,7 @@ import org.springframework.r2dbc.core.DatabaseClient;
 
 @Configuration
 @EnableR2dbcRepositories
-class DbConfig {
+public class DbConfig {
 
     @Bean
     public ConnectionFactoryInitializer initializer(ConnectionFactory connectionFactory) {

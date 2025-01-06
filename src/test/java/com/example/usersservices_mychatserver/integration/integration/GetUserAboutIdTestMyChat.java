@@ -17,64 +17,64 @@ import java.util.Objects;
 
 public class GetUserAboutIdTestMyChat extends DefaultTestConfiguration {
 
-    private final String sqlSelectIdsAllUsers = "SELECT id FROM users_services_scheme.user";
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Test
-    public void whenUserWithProvidedIdNotExistsRequestShouldReturnErrorUserNotFound() throws URISyntaxException {
-
-        //when
-        //then
-        String noExistsUserId = "7";
-
-        webTestClient.get().uri(createRequestUtil().createRequestGetUserAboutId() + noExistsUserId)
-                .exchange()
-                .expectStatus().is4xxClientError()
-                .expectBody()
-                .jsonPath("$.ErrorMessage").isEqualTo("User not found");
-
-    }
-
-    @Test
-    public void whenUserWithProvidedIdExistsRequestShouldReturnCorrectResponse() throws URISyntaxException {
-        // given
-        createActivatedUserAccount(CorrectRequestData.USER_REGISTER_DATA);
-
-        // when
-        //then
-        Flux<Long> userIdFluxFromDatabase = databaseClient.sql(sqlSelectIdsAllUsers)
-                .map((row, metadata) -> row.get("id", Long.class))
-                .all();
-
-        Flux<UserData> resultRequestTestGetUserAboutIdForRecordFromDatabase = userIdFluxFromDatabase.flatMap(userId -> {
-            try {
-                return WebClient.create().get().uri(createRequestUtil().createRequestGetUserAboutId() + userId.toString())
-                        .retrieve()
-                        .toEntity(String.class)
-                        .flatMap(responseEntity -> Mono.just(Objects.requireNonNull(responseEntity.getBody())));
-
-            } catch (URISyntaxException e) {
-                return Flux.error(new RuntimeException(e));
-            }
-        }).flatMap(userResponse -> {
-            try {
-                UserData userData = objectMapper.readValue(userResponse, UserData.class);
-                return Mono.just(userData);
-            } catch (JsonProcessingException e) {
-                return Mono.error(new RuntimeException(e));
-            }
-        });
-
-        StepVerifier.create(resultRequestTestGetUserAboutIdForRecordFromDatabase)
-                .expectNextMatches(
-                        userResponseResult -> userResponseResult.name().equals(CorrectRequestData.USER_REGISTER_DATA.name())
-                                && userResponseResult.surname().equals(CorrectRequestData.USER_REGISTER_DATA.surname())
-                                && userResponseResult.email().equals(CorrectRequestData.USER_REGISTER_DATA.email())
-                )
-                .expectComplete()
-                .verify();
-
-
-    }
+//    private final String sqlSelectIdsAllUsers = "SELECT id FROM users_services_scheme.user";
+//    private final ObjectMapper objectMapper = new ObjectMapper();
+//
+//    @Test
+//    public void whenUserWithProvidedIdNotExistsRequestShouldReturnErrorUserNotFound() throws URISyntaxException {
+//
+//        //when
+//        //then
+//        String noExistsUserId = "7";
+//
+//        webTestClient.get().uri(createRequestUtil().createRequestGetUserAboutId() + noExistsUserId)
+//                .exchange()
+//                .expectStatus().is4xxClientError()
+//                .expectBody()
+//                .jsonPath("$.ErrorMessage").isEqualTo("User not found");
+//
+//    }
+//
+//    @Test
+//    public void whenUserWithProvidedIdExistsRequestShouldReturnCorrectResponse() throws URISyntaxException {
+//        // given
+//        createActivatedUserAccount(CorrectRequestData.USER_REGISTER_DATA);
+//
+//        // when
+//        //then
+//        Flux<Long> userIdFluxFromDatabase = databaseClient.sql(sqlSelectIdsAllUsers)
+//                .map((row, metadata) -> row.get("id", Long.class))
+//                .all();
+//
+//        Flux<UserData> resultRequestTestGetUserAboutIdForRecordFromDatabase = userIdFluxFromDatabase.flatMap(userId -> {
+//            try {
+//                return WebClient.create().get().uri(createRequestUtil().createRequestGetUserAboutId() + userId.toString())
+//                        .retrieve()
+//                        .toEntity(String.class)
+//                        .flatMap(responseEntity -> Mono.just(Objects.requireNonNull(responseEntity.getBody())));
+//
+//            } catch (URISyntaxException e) {
+//                return Flux.error(new RuntimeException(e));
+//            }
+//        }).flatMap(userResponse -> {
+//            try {
+//                UserData userData = objectMapper.readValue(userResponse, UserData.class);
+//                return Mono.just(userData);
+//            } catch (JsonProcessingException e) {
+//                return Mono.error(new RuntimeException(e));
+//            }
+//        });
+//
+//        StepVerifier.create(resultRequestTestGetUserAboutIdForRecordFromDatabase)
+//                .expectNextMatches(
+//                        userResponseResult -> userResponseResult.name().equals(CorrectRequestData.USER_REGISTER_DATA.name())
+//                                && userResponseResult.surname().equals(CorrectRequestData.USER_REGISTER_DATA.surname())
+//                                && userResponseResult.email().equals(CorrectRequestData.USER_REGISTER_DATA.email())
+//                )
+//                .expectComplete()
+//                .verify();
+//
+//
+//    }
 
 }

@@ -4,6 +4,8 @@ import com.example.usersservices_mychatserver.entity.request.LoginData;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
+import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
+import com.example.usersservices_mychatserver.exception.auth.UserAlreadyRegisteredException;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.core.Response;
@@ -54,7 +56,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
         mapAuthData.add("password", userAuthorizeData.password());
         mapAuthData.add("grant_type", keycloakGrantType);
 
-        String uriAuthorizeUser = String.format("%s/realms/MyChatApp/protocol/openid-connect/token", keycloakUrl);
+        String uriAuthorizeUser = String.format("%s/realms/my-chat-realm/protocol/openid-connect/token", keycloakUrl);
 
         return WebClient.create()
                 .post()
@@ -65,6 +67,10 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                 .onStatus(HttpStatus.BAD_REQUEST::equals, clientResponse -> {
                     logger.error("Bad request to register Keycloak API. Status code: {}", clientResponse.statusCode());
                     return Mono.error(new AuthServiceException("Bad request to register Keycloak API."));
+                })
+                .onStatus(HttpStatus.UNAUTHORIZED::equals, clientResponse -> {
+                    logger.error("Unauthorized request to register Keycloak API. Status code: {}", clientResponse.statusCode());
+                    return Mono.error(new UnauthorizedException("User unauthorized."));
                 })
                 .bodyToMono(String.class)
                 .flatMap(response -> {
@@ -108,7 +114,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                             return Mono.empty();
                         } else if (response.getStatus() == HttpStatus.CONFLICT.value()) {
                             logger.error("User already exists in Keycloak: {}.", userRepresentation.getUsername());
-                            return Mono.error(new AuthServiceException("User already exists"));
+                            return Mono.error(new UserAlreadyRegisteredException("User already exists"));
                         } else {
                             logger.error("Failed to register user in Keycloak: {}. Response status: {}", userRepresentation.getUsername(), response.getStatus());
                             return Mono.error(new AuthServiceException("Error during user registration"));

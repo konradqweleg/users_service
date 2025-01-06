@@ -20,8 +20,8 @@ public class ActivationController {
         this.userPort = userPort;
     }
 
-    @PatchMapping
-    public Mono<ResponseEntity<Void>> activeUserAccount(@RequestBody ActiveAccountCodeData codeVerificationMono) {
+    @PostMapping
+    public Mono<ResponseEntity<Void>> activeUserAccount(@RequestBody @Valid ActiveAccountCodeData codeVerificationMono) {
         return ResponseUtil.toResponseEntity(userPort.activateUserAccount(codeVerificationMono), HttpStatus.OK);
     }
 

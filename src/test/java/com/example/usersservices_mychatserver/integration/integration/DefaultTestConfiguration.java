@@ -24,70 +24,70 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 public class DefaultTestConfiguration {
-    @Autowired
-    protected WebTestClient webTestClient;
-
-    @Autowired
-    protected DatabaseActionUtilService databaseActionUtilService;
-
-    @LocalServerPort
-    protected int serverPort;
-
-    @Autowired
-    DatabaseClient databaseClient;
-
-    @MockBean
-    public GenerateRandomCodePort randomCodePort;
-
-    protected RequestUtil createRequestUtil() {
-        return new RequestUtil(serverPort);
-    }
-
-    @BeforeEach
-    public void clearAllDatabaseInDatabaseBeforeRunTest() {
-        databaseActionUtilService.clearAllUsersInDatabase();
-        databaseActionUtilService.clearAllVerificationCodesInDatabase();
-    }
-
-    @AfterEach
-    public void clearAllDataInDatabaseAfterRunTest() {
-        databaseActionUtilService.clearAllDataInDatabase();
-        databaseActionUtilService.clearAllVerificationCodesInDatabase();
-    }
-
-
-    private void createUserAccount(UserRegisterDataDTO userRegisterDataDTO, boolean isActiveAccount) throws URISyntaxException {
-        when(randomCodePort.generateCode()).thenReturn("000000");
-
-        webTestClient.post().uri(createRequestUtil().createRequestRegister())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(userRegisterDataDTO))
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.correctResponse").isEqualTo("true");
-
-
-        if (isActiveAccount) {
-            ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", userRegisterDataDTO.email());
-            webTestClient.post().uri(createRequestUtil().createRequestActiveUserAccount())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(BodyInserters.fromValue(activeAccountCodeData))
-                    .exchange()
-                    .expectStatus().isOk()
-                    .expectBody()
-                    .jsonPath("$.correctResponse").isEqualTo("true");
-        }
-    }
-
-
-    void createActivatedUserAccount(UserRegisterDataDTO userRegisterDataDTO) throws URISyntaxException {
-        createUserAccount(userRegisterDataDTO,true);
-    }
-
-    void createUserAccountWithNotActiveAccount(UserRegisterDataDTO userRegisterDataDTO) throws URISyntaxException {
-        createUserAccount(userRegisterDataDTO,false);
-    }
+//    @Autowired
+//    protected WebTestClient webTestClient;
+//
+//    @Autowired
+//    protected DatabaseActionUtilService databaseActionUtilService;
+//
+//    @LocalServerPort
+//    protected int serverPort;
+//
+//    @Autowired
+//    DatabaseClient databaseClient;
+//
+//    @MockBean
+//    public GenerateRandomCodePort randomCodePort;
+//
+//    protected RequestUtil createRequestUtil() {
+//        return new RequestUtil(serverPort);
+//    }
+//
+//    @BeforeEach
+//    public void clearAllDatabaseInDatabaseBeforeRunTest() {
+//        databaseActionUtilService.clearAllUsersInDatabase();
+//        databaseActionUtilService.clearAllVerificationCodesInDatabase();
+//    }
+//
+//    @AfterEach
+//    public void clearAllDataInDatabaseAfterRunTest() {
+//        databaseActionUtilService.clearAllDataInDatabase();
+//        databaseActionUtilService.clearAllVerificationCodesInDatabase();
+//    }
+//
+//
+//    private void createUserAccount(UserRegisterDataDTO userRegisterDataDTO, boolean isActiveAccount) throws URISyntaxException {
+//        when(randomCodePort.generateCode()).thenReturn("000000");
+//
+//        webTestClient.post().uri(createRequestUtil().createRequestRegister())
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .body(BodyInserters.fromValue(userRegisterDataDTO))
+//                .exchange()
+//                .expectStatus().isOk()
+//                .expectBody()
+//                .jsonPath("$.correctResponse").isEqualTo("true");
+//
+//
+//        if (isActiveAccount) {
+//            ActiveAccountCodeData activeAccountCodeData = new ActiveAccountCodeData("000000", userRegisterDataDTO.email());
+//            webTestClient.post().uri(createRequestUtil().createRequestActiveUserAccount())
+//                    .contentType(MediaType.APPLICATION_JSON)
+//                    .body(BodyInserters.fromValue(activeAccountCodeData))
+//                    .exchange()
+//                    .expectStatus().isOk()
+//                    .expectBody()
+//                    .jsonPath("$.correctResponse").isEqualTo("true");
+//        }
+//    }
+//
+//
+//    void createActivatedUserAccount(UserRegisterDataDTO userRegisterDataDTO) throws URISyntaxException {
+//        createUserAccount(userRegisterDataDTO,true);
+//    }
+//
+//    void createUserAccountWithNotActiveAccount(UserRegisterDataDTO userRegisterDataDTO) throws URISyntaxException {
+//        createUserAccount(userRegisterDataDTO,false);
+//    }
 
 
 

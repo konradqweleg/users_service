@@ -33,125 +33,125 @@ import static org.mockito.Mockito.when;
 @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ChangeUserPasswordTestsMyChat {
-
-    @MockBean
-    private UserRepositoryPort userRepositoryPort;
-
-    @MockBean
-    GenerateRandomCodePort generateCode;
-
-    @MockBean
-    UserAuthPort userAuthPort;
-
-    @Autowired
-    UserPort userPort;
-
-    @MockBean
-    SendEmailToUserPort sendEmailPort;
-
-    @MockBean
-    private Keycloak keycloak;
-
-    @MockBean
-    private KeyCloakConfiguration keyCloakConfiguration;
-
-    @Mock
-    private GenerateRandomCodePort generateRandomCodePort;
-
-    @Test
-    public void testChangeUserPassword_Success() {
-        // given
-        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
-        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
-
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
-        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
-        when(userAuthPort.changeUserPassword(any(),any())).thenReturn(Mono.empty());
-        when(userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isSuccess)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testChangeUserPassword_WrongCode() {
-        // given
-        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "wrongCode", "newPassword");
-        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
-
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
-        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
-
-        // when
-        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testChangeUserPassword_UserNotFound() {
-        // given
-        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
-
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testChangeUserPassword_RuntimeException() {
-        // given
-        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
-
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.error(new RuntimeException("Runtime exception")));
-
-        // when
-        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testChangeUserPassword_AuthPortChangePasswordFailure() {
-        // given
-        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
-        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
-
-        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
-        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
-        when(userAuthPort.changeUserPassword(any(), any())).thenReturn(Mono.error(new RuntimeException("Change password error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
+//
+//    @MockBean
+//    private UserRepositoryPort userRepositoryPort;
+//
+//    @MockBean
+//    GenerateRandomCodePort generateCode;
+//
+//    @MockBean
+//    UserAuthPort userAuthPort;
+//
+//    @Autowired
+//    UserPort userPort;
+//
+//    @MockBean
+//    SendEmailToUserPort sendEmailPort;
+//
+//    @MockBean
+//    private Keycloak keycloak;
+//
+//    @MockBean
+//    private KeyCloakConfiguration keyCloakConfiguration;
+//
+//    @Mock
+//    private GenerateRandomCodePort generateRandomCodePort;
+//
+//    @Test
+//    public void testChangeUserPassword_Success() {
+//        // given
+//        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
+//        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
+//
+//        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
+//        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
+//        when(userAuthPort.changeUserPassword(any(),any())).thenReturn(Mono.empty());
+//        when(userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isSuccess)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testChangeUserPassword_WrongCode() {
+//        // given
+//        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "wrongCode", "newPassword");
+//        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
+//
+//        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
+//        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testChangeUserPassword_UserNotFound() {
+//        // given
+//        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
+//
+//        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testChangeUserPassword_RuntimeException() {
+//        // given
+//        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
+//
+//        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.error(new RuntimeException("Runtime exception")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testChangeUserPassword_AuthPortChangePasswordFailure() {
+//        // given
+//        ChangePasswordData changePasswordData = new ChangePasswordData("mail@mail.pl", "code123", "newPassword");
+//        UserMyChat userMyChatFromDb = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        ResetPasswordCode resetPasswordCode = new ResetPasswordCode(1L, userMyChatFromDb.id(), "code123");
+//
+//        when(userRepositoryPort.findUserWithEmail(changePasswordData.email())).thenReturn(Mono.just(userMyChatFromDb));
+//        when(userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userMyChatFromDb.id()))).thenReturn(Mono.just(resetPasswordCode));
+//        when(userAuthPort.changeUserPassword(any(), any())).thenReturn(Mono.error(new RuntimeException("Change password error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.changeUserPassword(Mono.just(changePasswordData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
 }

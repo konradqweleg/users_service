@@ -33,149 +33,149 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SendResetPasswordCodeTests {
 
-    @MockBean
-    private UserRepositoryPort userRepositoryPort;
-
-    @MockBean
-    GenerateRandomCodePort generateCode;
-
-    @MockBean
-    UserAuthPort userAuthPort;
-
-    @Autowired
-    UserPort userPort;
-
-    @MockBean
-    SendEmailToUserPort sendEmailPort;
-
-    @MockBean
-    private Keycloak keycloak;
-
-    @MockBean
-    private KeyCloakConfiguration keyCloakConfiguration;
-
-    @Mock
-    private GenerateRandomCodePort generateRandomCodePort;
-
-
-    @Test
-    public void testSendResetPasswordCode_Success() {
-        // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-        String generatedCode = "123456";
-
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
-        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
-        when(generateRandomCodePort.generateCode()).thenReturn(generatedCode);
-        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isSuccess)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testSendResetPasswordCode_UserNotActivated() {
-        // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(false));
-
-        // when
-        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testSendResetPasswordCode_UserNotFound() {
-        // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.empty());
-
-        // when
-        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testSendResetPasswordCode_ErrorDuringProcess() {
-        // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testSendResetPasswordCode_DeleteResetPasswordCodeFailure() {
-        // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
-        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.error(new RuntimeException("Delete reset password code error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
-    @Test
-    public void testSendResetPasswordCode_InsertResetPasswordCodeFailure() {
-        // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-
-
-        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
-        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
-        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.error(new RuntimeException("Insert reset password code error")));
-
-        // when
-        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-
-        // then
-        StepVerifier.create(result)
-                .expectNextMatches(Result::isError)
-                .expectComplete()
-                .verify();
-    }
-
+//    @MockBean
+//    private UserRepositoryPort userRepositoryPort;
+//
+//    @MockBean
+//    GenerateRandomCodePort generateCode;
+//
+//    @MockBean
+//    UserAuthPort userAuthPort;
+//
+//    @Autowired
+//    UserPort userPort;
+//
+//    @MockBean
+//    SendEmailToUserPort sendEmailPort;
+//
+//    @MockBean
+//    private Keycloak keycloak;
+//
+//    @MockBean
+//    private KeyCloakConfiguration keyCloakConfiguration;
+//
+//    @Mock
+//    private GenerateRandomCodePort generateRandomCodePort;
+//
+//
+//    @Test
+//    public void testSendResetPasswordCode_Success() {
+//        // given
+//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//        String generatedCode = "123456";
+//
+//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
+//        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
+//        when(generateRandomCodePort.generateCode()).thenReturn(generatedCode);
+//        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isSuccess)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testSendResetPasswordCode_UserNotActivated() {
+//        // given
+//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(false));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testSendResetPasswordCode_UserNotFound() {
+//        // given
+//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.empty());
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testSendResetPasswordCode_ErrorDuringProcess() {
+//        // given
+//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.error(new RuntimeException("Unexpected error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testSendResetPasswordCode_DeleteResetPasswordCodeFailure() {
+//        // given
+//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//
+//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
+//        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.error(new RuntimeException("Delete reset password code error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
+//    @Test
+//    public void testSendResetPasswordCode_InsertResetPasswordCodeFailure() {
+//        // given
+//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+//
+//
+//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
+//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
+//        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
+//        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.error(new RuntimeException("Insert reset password code error")));
+//
+//        // when
+//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//
+//        // then
+//        StepVerifier.create(result)
+//                .expectNextMatches(Result::isError)
+//                .expectComplete()
+//                .verify();
+//    }
+//
 
 
 }

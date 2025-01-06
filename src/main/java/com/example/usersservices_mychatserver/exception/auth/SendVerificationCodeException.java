@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.exception;
+package com.example.usersservices_mychatserver.exception.auth;
 
 public class SendVerificationCodeException extends RuntimeException {
     public SendVerificationCodeException() {
