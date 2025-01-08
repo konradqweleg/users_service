@@ -1,7 +1,9 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.entity.request.LoginData;
+import com.example.usersservices_mychatserver.entity.request.LoginDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
+import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
+import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import org.junit.jupiter.api.Test;
@@ -22,17 +24,18 @@ public class LoginTests {
     private UserPort userPort;
 
     @Test
-    public void ifCorrectLoginDataRequestShouldReturnAuthTokens() {
+    public void whenCorrectLoginDataMethodShouldReturnAuthTokens() {
 
         //given
-        LoginData correctLoginData = new LoginData("mail@mail.pl", "password");
-        when(userAuthPort.isEmailAlreadyActivatedUserAccount(correctLoginData.email())).thenReturn(Mono.just(true));
+        LoginDataDTO correctLoginDataDTO = new LoginDataDTO("mail@mail.pl", "password");
+        when(userAuthPort.isEmailAlreadyRegistered(correctLoginDataDTO.email())).thenReturn(Mono.just(true));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(correctLoginDataDTO.email())).thenReturn(Mono.just(true));
 
         UserAccessData userTokens = new UserAccessData("accessToken", "refreshToken", "sessionState");
-        when(userAuthPort.authorizeUser(correctLoginData)).thenReturn(Mono.just(userTokens));
+        when(userAuthPort.authorizeUser(correctLoginDataDTO)).thenReturn(Mono.just(userTokens));
 
         //when
-        Mono<UserAccessData> loginResponse = userPort.login(correctLoginData);
+        Mono<UserAccessData> loginResponse = userPort.login(correctLoginDataDTO);
 
         //then
         StepVerifier
@@ -42,62 +45,65 @@ public class LoginTests {
                 .verify();
     }
 
-//
-//    @Test
-//    public void ifWrongCredentialsShouldReturnFalse() {
-//
-//        //given
-//        EmailAndPasswordData correctLoginData = new EmailAndPasswordData("mail@mail.pl", "WrongPassword");
-//        when(userRepositoryPort.findUserWithEmail(correctLoginData.email())).thenReturn(Mono.just(new UserMyChat(1L, "root", "surname", "mail@mail.pl", "password", 1, true)));
-//        when(hashPasswordPort.checkPassword(correctLoginData.password(), "WrongPassword")).thenReturn(false);
-//        //when
-//        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(correctLoginData));
-//
-//        //then
-//        StepVerifier
-//                .create(isCorrectCredentialsResult)
-//                .expectNextMatches(result -> result.isSuccess() && !result.getValue().isCorrectCredentials())
-//                .expectComplete()
-//                .verify();
-//    }
-//
-//    @Test
-//    public void ifUserDoesNotExistShouldReturnFalse() {
-//        //given
-//        EmailAndPasswordData nonExistingUserData = new EmailAndPasswordData("nonexistent@mail.com", "password");
-//        when(userRepositoryPort.findUserWithEmail(nonExistingUserData.email())).thenReturn(Mono.empty());
-//
-//        //when
-//        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(nonExistingUserData));
-//
-//        //then
-//        StepVerifier
-//                .create(isCorrectCredentialsResult)
-//                .expectNextMatches(Result::isError)
-//                .expectComplete()
-//                .verify();
-//    }
-//
-//
-//    @Test
-//    public void ifRepositoryThrowsExceptionShouldReturnFailureResult() {
-//        //given
-//        EmailAndPasswordData userData = new EmailAndPasswordData("existing@mail.com", "password");
-//        when(userRepositoryPort.findUserWithEmail(anyString())).thenThrow(new RuntimeException("Repository exception"));
-//
-//        //when
-//        Mono<Result<IsCorrectCredentials>> isCorrectCredentialsResult = userPort.isCorrectLoginCredentials(Mono.just(userData));
-//
-//        //then
-//        StepVerifier
-//                .create(isCorrectCredentialsResult)
-//                .expectNextMatches(Result::isError)
-//                .expectComplete()
-//                .verify();
-//    }
 
+    @Test
+    public void whenWrongPasswordMethodShouldReturnUnauthorized() {
+        //given
+        LoginDataDTO loginDataDTOWithBadPassword = new LoginDataDTO("correct@mail.pl","wrongPassword");
+        when(userAuthPort.isEmailAlreadyRegistered(loginDataDTOWithBadPassword.email())).thenReturn(Mono.just(true));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTOWithBadPassword.email())).thenReturn(Mono.just(true));
 
+        when(userAuthPort.authorizeUser(loginDataDTOWithBadPassword)).thenThrow(new UnauthorizedException("User unauthorized."));
 
+        //when
+        Mono<UserAccessData> loginResponse = userPort.login(loginDataDTOWithBadPassword);
 
+        //then
+        StepVerifier
+                .create(loginResponse)
+                .expectErrorMatches(throwable -> throwable instanceof UnauthorizedException &&
+                        throwable.getMessage().equals("User unauthorized."))
+                .verify();
+    }
+
+    @Test
+    public void whenUserWithEmailNoExistsMethodsShouldReturnUnauthorized() {
+        //given
+        LoginDataDTO loginDataDTOWithNoExistsUser = new LoginDataDTO("noexists@mail.pl","password");
+        when(userAuthPort.isEmailAlreadyRegistered(loginDataDTOWithNoExistsUser.email())).thenReturn(Mono.just(false));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTOWithNoExistsUser.email())).thenReturn(Mono.just(false));
+
+        when(userAuthPort.authorizeUser(loginDataDTOWithNoExistsUser)).thenThrow(new UnauthorizedException("User unauthorized."));
+
+        //when
+        Mono<UserAccessData> loginResponse = userPort.login(loginDataDTOWithNoExistsUser);
+
+        //then
+        StepVerifier
+                .create(loginResponse)
+                .expectErrorMatches(throwable -> throwable instanceof UnauthorizedException &&
+                        throwable.getMessage().equals("User not found"))
+                .verify();
+    }
+
+    @Test
+    public void whenAuthorizeUserThrowsAuthServiceExceptionShouldReturnUnauthorized() {
+        //given
+        LoginDataDTO loginDataDTO = new LoginDataDTO("correct@mail.pl", "password");
+        when(userAuthPort.isEmailAlreadyRegistered(loginDataDTO.email())).thenReturn(Mono.just(true));
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTO.email())).thenReturn(Mono.just(true));
+
+        when(userAuthPort.authorizeUser(loginDataDTO)).thenReturn(Mono.error(new AuthServiceException("Authorization failed")));
+
+        //when
+        Mono<UserAccessData> loginResponse = userPort.login(loginDataDTO);
+
+        //then
+        StepVerifier
+                .create(loginResponse)
+                .expectErrorMatches(throwable -> throwable instanceof UnauthorizedException &&
+                        throwable.getMessage().equals("User unauthorized"))
+                .verify();
+    }
 
 }

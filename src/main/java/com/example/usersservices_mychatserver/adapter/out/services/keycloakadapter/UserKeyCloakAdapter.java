@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.out.services.keycloakadapter;
 
-import com.example.usersservices_mychatserver.entity.request.LoginData;
+import com.example.usersservices_mychatserver.entity.request.LoginDataDTO;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
@@ -49,7 +49,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     }
 
     @Override
-    public Mono<UserAccessData> authorizeUser(LoginData userAuthorizeData) {
+    public Mono<UserAccessData> authorizeUser(LoginDataDTO userAuthorizeData) {
         MultiValueMap<String, String> mapAuthData = new LinkedMultiValueMap<>();
         mapAuthData.add("client_id", keycloakClientId);
         mapAuthData.add("username", userAuthorizeData.email());
@@ -197,5 +197,22 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                 return Mono.error(new RuntimeException("Error changing password", e));
             }
         });
+    }
+
+    @Override
+    public Mono<Boolean> isEmailAlreadyRegistered(String email) {
+        try {
+            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+            if (!users.isEmpty()) {
+                logger.info("User with email: {} already registered", email);
+                return Mono.just(true);
+            } else {
+                logger.info("User with email: {} not registered", email);
+                return Mono.just(false);
+            }
+        } catch (Exception e) {
+            logger.error("An error occurred while checking if user with email: {} is already registered", email, e);
+            return Mono.error(new AuthServiceException("Error checking if user is already registered", e));
+        }
     }
 }

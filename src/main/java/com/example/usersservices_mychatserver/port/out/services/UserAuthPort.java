@@ -1,13 +1,13 @@
 package com.example.usersservices_mychatserver.port.out.services;
 
-import com.example.usersservices_mychatserver.entity.request.LoginData;
+import com.example.usersservices_mychatserver.entity.request.LoginDataDTO;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.Status;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import reactor.core.publisher.Mono;
 
 public interface UserAuthPort {
-    Mono<UserAccessData> authorizeUser(LoginData userAuthorizeData);
+    Mono<UserAccessData> authorizeUser(LoginDataDTO userAuthorizeData);
     Mono<Void> register(UserRegisterDataDTO registerData);
 
     Mono<Status> activateUserAccount(Mono<String> email);
@@ -15,5 +15,7 @@ public interface UserAuthPort {
     Mono<Boolean> isEmailAlreadyActivatedUserAccount(String email);
 
     Mono<Status> changeUserPassword(Mono<String> email,String newPassword);
+
+    Mono<Boolean> isEmailAlreadyRegistered(String email);
 
 }

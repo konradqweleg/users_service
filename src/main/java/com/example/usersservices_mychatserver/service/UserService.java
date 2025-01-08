@@ -8,7 +8,6 @@ import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryExce
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.auth.SendVerificationCodeException;
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
-import com.example.usersservices_mychatserver.exception.auth.UserAlreadyRegisteredException;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
@@ -111,27 +110,32 @@ public class UserService implements UserPort {
                 }))
                 .then()
                 .doOnSuccess(user -> logger.info("User registration successful for email: {}", userRegisterDataDTO.email()));
+
     }
 
     @Override
-    public Mono<UserAccessData> login(LoginData loginData) {
-        return userAuthPort.isEmailAlreadyActivatedUserAccount(loginData.email())
-                .flatMap(isActive -> {
-                    if (!isActive) {
-                        logger.warn("User account is inactive: {}", loginData.email());
-                        return Mono.error(new UserAlreadyRegisteredException("User account is inactive"));
-                    }
-                    logger.info("User account is active: {}", loginData.email());
-                    return userAuthPort.authorizeUser(loginData)
-                            .doOnError(ex -> logger.error("Error during user authorization", ex))
-                            .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginData.email()));
-                })
-                .onErrorResume(AuthServiceException.class, ex -> {
-                    if(ex.getMessage().contains("User not found")) {
-                        logger.warn("User not found for auth with email: {}", loginData.email());
+    public Mono<UserAccessData> login(LoginDataDTO loginDataDTO) {
+        return userAuthPort.isEmailAlreadyRegistered(loginDataDTO.email())
+                .flatMap(isRegistered -> {
+                    if (!isRegistered) {
+                        logger.warn("User not found for auth with email: {}", loginDataDTO.email());
                         return Mono.error(new UnauthorizedException("User not found"));
                     }
-                    return Mono.error(ex);
+                    return userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTO.email())
+                            .flatMap(isActive -> {
+                                if (!isActive) {
+                                    logger.warn("User account is inactive: {}", loginDataDTO.email());
+                                    return Mono.error(new UnauthorizedException("User account is inactive"));
+                                }
+                                logger.info("User account is active: {}", loginDataDTO.email());
+                                return userAuthPort.authorizeUser(loginDataDTO)
+                                        .doOnError(ex -> logger.error("Error during user authorization", ex))
+                                        .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginDataDTO.email()));
+                            });
+                })
+                .onErrorResume(AuthServiceException.class, ex -> {
+                    logger.error("Error during user authorization", ex);
+                    return Mono.error(new UnauthorizedException("User unauthorized"));
                 });
     }
 
