@@ -101,6 +101,18 @@ public class RegisterUserTests {
                 .verify();
     }
 
+    private void verifyUserActiveAccountCodeSavedInDb(String email) {
+        String sqlSelectCode = "SELECT code FROM code_verification WHERE id_user = (SELECT id FROM USER_MY_CHAT WHERE email = '" + email + "')";
+        Flux<String> codeFlux = databaseClient.sql(sqlSelectCode)
+                .map((row, metadata) -> row.get("code", String.class))
+                .all();
+
+        StepVerifier.create(codeFlux)
+                .expectNextMatches(code -> !code.isEmpty())
+                .expectComplete()
+                .verify();
+    }
+
     @Test
     public void whenCorrectRegisterDataEmailWithActivationCodeShouldBeSent() {
         // when
@@ -113,5 +125,19 @@ public class RegisterUserTests {
                 .verify();
 
         Mockito.verify(sendEmailPort, Mockito.times(1)).sendVerificationCode(EMAIL, VERIFICATION_CODE);
+    }
+
+    @Test
+    public void whenCorrectRegisterDataActiveAccountCodeShouldBeSavedInDb() {
+        // when
+        Mono<Void> registerUserResult = userPort.registerUser(USER_REGISTER_DATA);
+
+        // then
+        StepVerifier
+                .create(registerUserResult)
+                .expectComplete()
+                .verify();
+
+        verifyUserActiveAccountCodeSavedInDb(USER_REGISTER_DATA.email());
     }
 }

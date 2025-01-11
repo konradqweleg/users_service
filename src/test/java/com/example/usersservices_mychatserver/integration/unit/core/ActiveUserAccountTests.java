@@ -4,6 +4,7 @@ import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeDa
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.exception.activation.ActivationCodeNotFoundException;
 import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
+import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
@@ -70,7 +71,6 @@ public class ActiveUserAccountTests {
         String verificationCode = "123456";
         when(generateRandomCodePort.generateCode()).thenReturn(verificationCode);
 
-        // Register the user
         userPort.registerUser(userRegisterData).block();
 
         // when
@@ -139,5 +139,27 @@ public class ActiveUserAccountTests {
                 .verifyComplete();
 
         Mockito.verify(userAuthPort, Mockito.times(0)).activateUserAccount(userRegisterData.email());
+    }
+
+    @Test
+    public void whenAuthServiceReturnErrorActiveAccountShouldThrowsExceptionAuthServiceException() {
+        // given
+        UserRegisterDataDTO userRegisterData = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
+        when(userAuthPort.register(userRegisterData)).thenReturn(Mono.empty());
+        when(userAuthPort.activateUserAccount(userRegisterData.email())).thenReturn(Mono.error(new Exception("Save verification code error")));
+
+        String verificationCode = "123456";
+        when(generateRandomCodePort.generateCode()).thenReturn(verificationCode);
+
+        userPort.registerUser(userRegisterData).block();
+
+        // when
+        Mono<Void> activateUserAccount = userPort.activateUserAccount(new ActiveAccountCodeData(verificationCode, userRegisterData.email()));
+
+        // then
+        StepVerifier.create(activateUserAccount)
+                .expectError(AuthServiceException.class)
+                .verify();
+
     }
 }
