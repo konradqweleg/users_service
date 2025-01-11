@@ -105,7 +105,10 @@ public class UserService implements UserPort {
                                         logger.error("Error saving verification code for user ID: {}", savedUser.id(), ex);
                                         return Mono.error(new SaveDataInRepositoryException("Error saving verification code", ex));
                                     })
-                            );
+                            ).onErrorResume(ex -> {
+                                logger.error("Error saving user in repository", ex);
+                                return Mono.error(new SaveDataInRepositoryException("Error saving user", ex));
+                            });
 
                 }))
                 .then()
@@ -343,9 +346,10 @@ public class UserService implements UserPort {
                                 logger.info("Verification code found for user ID: {}", userActiveAccountData.id());
                                 if (codeVerificationSavedInDb.code().equals(codeVerificationMono.code())) {
                                     logger.info("Verification code matches for user ID: {}", userActiveAccountData.id());
-                                    return userAuthPort.activateUserAccount(Mono.just(userActiveAccountData.email()))
+                                    return userAuthPort.activateUserAccount(userActiveAccountData.email())
                                             .then(Mono.defer(() -> userRepositoryPort.deleteUserActiveAccountCode(codeVerificationSavedInDb)))
-                                            .doOnError(ex -> logger.error("Failed to activate user account for email: {}", userActiveAccountData.email(), ex));
+                                            .doOnError(ex -> logger.error("Failed to activate user account for email: {}", userActiveAccountData.email(), ex))
+                                            .onErrorResume(ex -> Mono.error(new AuthServiceException("Error during activation process")));
                                 } else {
                                     logger.warn("Bad activation code for user: {}", userActiveAccountData.email());
                                     return Mono.error(new BadActiveAccountCodeException("Bad code to activate user account"));

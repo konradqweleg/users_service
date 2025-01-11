@@ -7,7 +7,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 public interface UserRepository extends ReactiveCrudRepository<UserMyChat, Long>  {
-    @Query("select * from users_services_scheme.user_my_chat t where t.email = :email")
     Mono<UserMyChat> findByEmail(String email);
 
     @Query("select * from users_services_scheme.user_my_chat t where lower(t.name) like lower(concat('%', :patternName, '%')) or lower(t.surname) like lower(concat('%', :patternSurname, '%'))")

@@ -10,7 +10,7 @@ public interface UserAuthPort {
     Mono<UserAccessData> authorizeUser(LoginDataDTO userAuthorizeData);
     Mono<Void> register(UserRegisterDataDTO registerData);
 
-    Mono<Status> activateUserAccount(Mono<String> email);
+    Mono<Void> activateUserAccount(String email);
 
     Mono<Boolean> isEmailAlreadyActivatedUserAccount(String email);
 

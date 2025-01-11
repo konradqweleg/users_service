@@ -127,28 +127,26 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     }
 
     @Override
-    public Mono<Status> activateUserAccount(Mono<String> emailMono) {
-        return emailMono.flatMap(email -> {
-            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+    public Mono<Void> activateUserAccount(String email) {
+        List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
 
-            if (!users.isEmpty()) {
-                UserRepresentation user = users.get(0);
-                user.setEnabled(true);
+        if (!users.isEmpty()) {
+            UserRepresentation user = users.get(0);
+            user.setEnabled(true);
 
-                try {
-                    keycloakAdmin.realm(realName).users().get(user.getId()).update(user);
-                    logger.info("User enabled successfully: {}", user.getUsername());
-                    return Mono.just(new Status(true));
-                } catch (Exception e) {
-                    logger.error("Failed to enable user: {}. Error: {}", user.getUsername(), e.getMessage(), e);
-                    return Mono.error(new RuntimeException("Failed to enable user account"));
-                }
-
-            } else {
-                logger.error("User not found with email: {}", email);
+            try {
+                keycloakAdmin.realm(realName).users().get(user.getId()).update(user);
+                logger.info("User enabled successfully: {}", user.getUsername());
+                return Mono.empty();
+            } catch (Exception e) {
+                logger.error("Failed to enable user: {}. Error: {}", user.getUsername(), e.getMessage(), e);
                 return Mono.error(new RuntimeException("Failed to enable user account"));
             }
-        });
+
+        } else {
+            logger.error("User not found with email: {}", email);
+            return Mono.error(new RuntimeException("Failed to enable user account"));
+        }
     }
 
     @Override
