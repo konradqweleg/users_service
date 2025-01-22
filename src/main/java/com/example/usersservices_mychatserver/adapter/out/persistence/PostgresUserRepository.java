@@ -2,6 +2,7 @@ package com.example.usersservices_mychatserver.adapter.out.persistence;
 
 
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
+import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.model.CodeVerification;
 import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
@@ -9,15 +10,16 @@ import com.example.usersservices_mychatserver.port.out.persistence.UserRepositor
 import com.example.usersservices_mychatserver.repository.CodeVerificationRepository;
 import com.example.usersservices_mychatserver.repository.ResetPasswordCodeRepository;
 import com.example.usersservices_mychatserver.repository.UserRepository;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
-
 @Service
 public class PostgresUserRepository implements UserRepositoryPort {
-
+    private final Logger log = LogManager.getLogger(PostgresUserRepository.class);
     private final UserRepository userRepository;
     private final CodeVerificationRepository codeVerificationRepository;
     private final ResetPasswordCodeRepository resetPasswordCodeRepository;
@@ -35,17 +37,26 @@ public class PostgresUserRepository implements UserRepositoryPort {
 
     @Override
     public Mono<CodeVerification> saveVerificationCode(CodeVerification code) {
-        return codeVerificationRepository.save(code);
+        return codeVerificationRepository.save(code)
+                .doOnError(throwable -> log.error("Error while saving code for user with id: " + code.idUser(), throwable))
+                .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while saving code for user with id: " + code.idUser(), throwable))
+        );
     }
 
     @Override
     public Mono<Void> deleteUserActiveAccountCode(Long idUser) {
-        return codeVerificationRepository.deleteByIdUser(idUser);
+        return codeVerificationRepository.deleteByIdUser(idUser)
+                .doOnError(throwable -> log.error("Error while deleting code for user with id: " + idUser, throwable))
+                .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while deleting code for user with id: " + idUser, throwable))
+        );
     }
 
     @Override
     public Mono<Void> deleteUserActiveAccountCode(CodeVerification codeVerification1) {
-        return codeVerificationRepository.delete(codeVerification1);
+        return codeVerificationRepository.delete(codeVerification1)
+                .doOnError(throwable -> log.error("Error while deleting code for user with id: " + codeVerification1.idUser(), throwable))
+                .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while deleting code for user with id: " + codeVerification1.idUser(), throwable))
+        );
     }
 
     @Override
@@ -56,7 +67,10 @@ public class PostgresUserRepository implements UserRepositoryPort {
 
     @Override
     public Mono<UserMyChat> findUserWithEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email)
+                .doOnError(throwable -> log.error("Error while finding user with email: " + email, throwable))
+                .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while finding user with email: " + email, throwable))
+        );
     }
 
     @Override

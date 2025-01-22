@@ -140,12 +140,12 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                 return Mono.empty();
             } catch (Exception e) {
                 logger.error("Failed to enable user: {}. Error: {}", user.getUsername(), e.getMessage(), e);
-                return Mono.error(new RuntimeException("Failed to enable user account"));
+                return Mono.error(new AuthServiceException("Failed to enable user account"));
             }
 
         } else {
             logger.error("User not found with email: {}", email);
-            return Mono.error(new RuntimeException("Failed to enable user account"));
+            return Mono.error(new AuthServiceException("Failed to enable user account"));
         }
     }
 

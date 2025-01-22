@@ -146,7 +146,7 @@ public class ActiveUserAccountTests {
         // given
         UserRegisterDataDTO userRegisterData = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
         when(userAuthPort.register(userRegisterData)).thenReturn(Mono.empty());
-        when(userAuthPort.activateUserAccount(userRegisterData.email())).thenReturn(Mono.error(new Exception("Save verification code error")));
+        when(userAuthPort.activateUserAccount(userRegisterData.email())).thenReturn(Mono.error(new AuthServiceException("Save verification code error")));
 
         String verificationCode = "123456";
         when(generateRandomCodePort.generateCode()).thenReturn(verificationCode);

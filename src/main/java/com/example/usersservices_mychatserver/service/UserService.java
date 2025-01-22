@@ -5,6 +5,8 @@ import com.example.usersservices_mychatserver.entity.response.*;
 import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
 import com.example.usersservices_mychatserver.exception.activation.ActivationCodeNotFoundException;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
+import com.example.usersservices_mychatserver.exception.activation.UserAlreadyActivatedException;
+import com.example.usersservices_mychatserver.exception.activation.UserToResendActiveAccountCodeNotExistsException;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.auth.SendVerificationCodeException;
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
@@ -132,7 +134,6 @@ public class UserService implements UserPort {
                                 }
                                 logger.info("User account is active: {}", loginDataDTO.email());
                                 return userAuthPort.authorizeUser(loginDataDTO)
-                                        .doOnError(ex -> logger.error("Error during user authorization", ex))
                                         .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginDataDTO.email()));
                             });
                 })
@@ -347,9 +348,8 @@ public class UserService implements UserPort {
                                 if (codeVerificationSavedInDb.code().equals(codeVerificationMono.code())) {
                                     logger.info("Verification code matches for user ID: {}", userActiveAccountData.id());
                                     return userAuthPort.activateUserAccount(userActiveAccountData.email())
-                                            .then(Mono.defer(() -> userRepositoryPort.deleteUserActiveAccountCode(codeVerificationSavedInDb)))
-                                            .doOnError(ex -> logger.error("Failed to activate user account for email: {}", userActiveAccountData.email(), ex))
-                                            .onErrorResume(ex -> Mono.error(new AuthServiceException("Error during activation process")));
+                                            .then(Mono.defer(() -> userRepositoryPort.deleteUserActiveAccountCode(codeVerificationSavedInDb)));
+
                                 } else {
                                     logger.warn("Bad activation code for user: {}", userActiveAccountData.email());
                                     return Mono.error(new BadActiveAccountCodeException("Bad code to activate user account"));
@@ -360,50 +360,38 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> loginUserMono) {
-        return null;
-//        return loginUserMono.flatMap(loginUserData -> {
-//                    logger.info("Received request to resend activation code for email: {}", loginUserData.email());
-//                    return userRepositoryPort.findUserWithEmail(loginUserData.email())
-//                            .switchIfEmpty(Mono.error(new NoSuchElementException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())))
-//                            .flatMap(user -> {
-//                                logger.info("User found with email: {}", user.email());
-//                                return userAuthPort.isActivatedUserAccount(Mono.just(user.email()))
-//                                        .flatMap(isActivated -> {
-//                                            if (isActivated) {
-//                                                logger.warn("User account is already active for email: {}", user.email());
-//                                                return Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                            } else {
-//                                                logger.info("User account is not active for email: {}", user.email());
-//                                                return Mono.just(user);
-//                                            }
-//                                        });
-//                            })
-//                            .flatMap(userMyChat -> {
-//                                logger.info("Deleting existing activation code for user ID: {}", userMyChat.id());
-//                                return userRepositoryPort.deleteUserActiveAccountCode(userMyChat.id())
-//                                        .thenReturn(userMyChat);
-//                            })
-//                            .flatMap(userFromDb -> {
-//                                String generatedCode = generateRandomCodePort.generateCode();
-//                                logger.info("Generated new activation code for user ID: {}", userFromDb.id());
-//
-//                                return userRepositoryPort.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode)).doOnNext(
-//                                                x -> {
-//                                                    logger.info("Sending verification code to email: {}", userFromDb.email());
-//                                                    sendEmail.sendVerificationCode(userFromDb.email(), generatedCode);
-//                                                }
-//                                        )
-//                                        .thenReturn(Result.success(new Status(true)));
-//                            })
-//                            .onErrorResume(NoSuchElementException.class, ex -> {
-//                                logger.error("User not found: {}", ex.getMessage());
-//                                return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                            });
-//                })
-//                .onErrorResume(ex -> {
-//                    logger.error("Error during resendActiveUserAccountCode process: {}", ex.getMessage(), ex);
-//                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage() + " " + ex.getMessage()));
-//                });
+    public Mono<Void> resendActiveUserAccountCode(UserEmailData emailData) {
+        return userRepositoryPort.findUserWithEmail(emailData.email())
+                .switchIfEmpty(Mono.error(new UserToResendActiveAccountCodeNotExistsException("Not found user to resend activation code")))
+                .flatMap(user -> {
+                    logger.info("User to resend activation code found with email: {}", user.email());
+                    return userAuthPort.isEmailAlreadyActivatedUserAccount(user.email())
+                            .flatMap(isActivated -> {
+                                if (isActivated) {
+                                    logger.warn("User account is already active for email: {}", user.email());
+                                    return Mono.error(new UserAlreadyActivatedException("User account is already active"));
+                                } else {
+                                    logger.info("User account is not active for email: {}", user.email());
+                                    return Mono.just(user);
+                                }
+                            });
+                })
+                .flatMap(userMyChat -> {
+                    logger.info("Deleting existing activation code for user ID: {}", userMyChat.id());
+                    return userRepositoryPort.deleteUserActiveAccountCode(userMyChat.id())
+                            .thenReturn(userMyChat);
+                })
+                .flatMap(userFromDb -> {
+                    String generatedCode = generateRandomCodePort.generateCode();
+                    logger.info("Generated new activation code for user ID: {}", userFromDb.id());
+
+                    return userRepositoryPort.saveVerificationCode(new CodeVerification(null, userFromDb.id(), generatedCode)).doOnNext(
+                                    ignore -> {
+                                        logger.info("Sending verification code to email: {}", userFromDb.email());
+                                        sendEmail.sendVerificationCode(userFromDb.email(), generatedCode);
+                                    }
+                            )
+                            .thenReturn(Result.success(new Status(true)));
+                }).then();
     }
 }

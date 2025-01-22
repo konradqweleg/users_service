@@ -8,7 +8,7 @@ import reactor.core.publisher.Mono;
 public interface UserPort {
     Mono<Void> activateUserAccount(ActiveAccountCodeData codeVerificationMono);
 
-    Mono<Result<Status>> resendActiveUserAccountCode(Mono<UserEmailData> user);
+    Mono<Void> resendActiveUserAccountCode(UserEmailData user);
 
     Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono);
 

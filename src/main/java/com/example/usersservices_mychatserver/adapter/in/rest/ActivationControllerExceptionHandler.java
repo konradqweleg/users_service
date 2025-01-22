@@ -4,6 +4,8 @@ import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorRespons
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
 import com.example.usersservices_mychatserver.exception.activation.ActivationCodeNotFoundException;
 import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
+import com.example.usersservices_mychatserver.exception.activation.UserAlreadyActivatedException;
+import com.example.usersservices_mychatserver.exception.activation.UserToResendActiveAccountCodeNotExistsException;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,4 +26,16 @@ public class ActivationControllerExceptionHandler extends ResponseStatusExceptio
     public Mono<ResponseEntity<ErrorResponse>> handleBadActivationCode(BadActiveAccountCodeException ex, ServerWebExchange exchange) {
         return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(UserAlreadyActivatedException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleUserAlreadyActivated(UserAlreadyActivatedException ex, ServerWebExchange exchange) {
+        return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserToResendActiveAccountCodeNotExistsException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleUserToResendActiveAccountCodeNotExists(UserToResendActiveAccountCodeNotExistsException ex, ServerWebExchange exchange) {
+        return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.NOT_FOUND);
+    }
+
+
 }

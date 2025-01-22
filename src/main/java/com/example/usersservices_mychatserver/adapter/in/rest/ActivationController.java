@@ -26,7 +26,7 @@ public class ActivationController {
     }
 
     @PostMapping("/resend-activation-code")
-    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {
-        return userPort.resendActiveUserAccountCode(emailDataMono).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<Void>> resendActiveUserAccountCode(@RequestBody @Valid UserEmailData emailData) {
+        return ResponseUtil.toResponseEntity(userPort.resendActiveUserAccountCode(emailData), HttpStatus.OK);
     }
 }
