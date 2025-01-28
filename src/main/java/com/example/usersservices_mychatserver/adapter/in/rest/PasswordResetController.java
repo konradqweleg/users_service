@@ -1,10 +1,12 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
+import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
 import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeData;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,8 +22,8 @@ public class PasswordResetController {
         this.userPort = userPort;
     }
     @PostMapping("/code")
-    public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
-        return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<Void>> sendResetPasswordCode(@RequestBody @Valid UserEmailDataDTO emailData) {
+        return ResponseUtil.toResponseEntity(userPort.sendResetPasswordCode(emailData), HttpStatus.OK);
     }
 
     @PostMapping("/validate-code")

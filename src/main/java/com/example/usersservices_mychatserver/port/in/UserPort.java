@@ -8,9 +8,9 @@ import reactor.core.publisher.Mono;
 public interface UserPort {
     Mono<Void> activateUserAccount(ActiveAccountCodeData codeVerificationMono);
 
-    Mono<Void> resendActiveUserAccountCode(UserEmailData user);
+    Mono<Void> resendActiveUserAccountCode(UserEmailDataDTO user);
 
-    Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono);
+    Mono<Void> sendResetPasswordCode(UserEmailDataDTO emailDataMono);
 
     Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono);
 
@@ -18,14 +18,14 @@ public interface UserPort {
 
     Mono<Void> registerUser(UserRegisterDataDTO user);
 
-    Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> user);
+    Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailDataDTO> user);
 
     Mono<Result<UserData>>  getUserAboutId(Mono<IdUserData> idUserDataMono);
 
     Flux<UserData> getAllUsers();
 
     Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono);
-    Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono);
+    Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailDataDTO> userEmailDataMono);
 
     Mono<UserAccessData> login(LoginDataDTO userAuthorizeData);
 

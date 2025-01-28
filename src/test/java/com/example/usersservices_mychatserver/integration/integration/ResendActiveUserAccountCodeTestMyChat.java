@@ -1,17 +1,5 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
-import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
-import com.example.usersservices_mychatserver.entity.request.UserLoginData;
-import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
-
-import java.net.URISyntaxException;
-
-import static org.mockito.Mockito.when;
-
 public class ResendActiveUserAccountCodeTestMyChat extends  DefaultTestConfiguration{
 //
 //    private static final ActiveAccountCodeData correctResendActiveAccountCode = new ActiveAccountCodeData("000000", CorrectRequestData.USER_REGISTER_DATA.email());

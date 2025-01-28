@@ -10,7 +10,10 @@ import com.example.usersservices_mychatserver.exception.activation.UserToResendA
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.auth.SendVerificationCodeException;
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
+import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
+import com.example.usersservices_mychatserver.exception.password_reset.UserToResetPasswordDoesNotExistsException;
 import com.example.usersservices_mychatserver.model.CodeVerification;
+import com.example.usersservices_mychatserver.model.ResetPasswordCode;
 import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
@@ -126,16 +129,7 @@ public class UserService implements UserPort {
                         logger.warn("User not found for auth with email: {}", loginDataDTO.email());
                         return Mono.error(new UnauthorizedException("User not found"));
                     }
-                    return userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTO.email())
-                            .flatMap(isActive -> {
-                                if (!isActive) {
-                                    logger.warn("User account is inactive: {}", loginDataDTO.email());
-                                    return Mono.error(new UnauthorizedException("User account is inactive"));
-                                }
-                                logger.info("User account is active: {}", loginDataDTO.email());
-                                return userAuthPort.authorizeUser(loginDataDTO)
-                                        .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginDataDTO.email()));
-                            });
+                    return checkAndAuthorizeUserAccount(loginDataDTO);
                 })
                 .onErrorResume(AuthServiceException.class, ex -> {
                     logger.error("Error during user authorization", ex);
@@ -143,15 +137,27 @@ public class UserService implements UserPort {
                 });
     }
 
+    private Mono<UserAccessData> checkAndAuthorizeUserAccount(LoginDataDTO loginDataDTO) {
+        return userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTO.email())
+                .flatMap(isActive -> {
+                    if (!isActive) {
+                        logger.warn("User account is inactive: {}", loginDataDTO.email());
+                        return Mono.error(new UnauthorizedException("User account is inactive"));
+                    }
+                    logger.info("User account is active: {}", loginDataDTO.email());
+                    return userAuthPort.authorizeUser(loginDataDTO)
+                            .doOnSuccess(userAccessData -> logger.info("User authorization successful for user: {}", loginDataDTO.email()));
+                });
+    }
 
-    @Override
-    public Mono<Result<Status>> sendResetPasswordCode(Mono<UserEmailData> emailDataMono) {
-        return null;
-//        return emailDataMono
-//                .flatMap(emailData -> userRepositoryPort.findUserWithEmail(emailData.email())
+
+//    @Override
+//    public Mono<Void> sendResetPasswordCode(UserEmailDataDTO emailData) {
+//        return Mono.just(emailData)
+//                .flatMap(data -> userRepositoryPort.findUserWithEmail(data.email())
 //                        .flatMap(user -> {
 //                            logger.info("User found with email: {}", user.email());
-//                            return userAuthPort.isActivatedUserAccount(Mono.just(user.email()))
+//                            return userAuthPort.isEmailAlreadyActivatedUserAccount(user.email())
 //                                    .flatMap(isActivated -> {
 //                                        if (isActivated) {
 //                                            logger.info("User account is activated for email: {}", user.email());
@@ -159,38 +165,78 @@ public class UserService implements UserPort {
 //                                                    .then(Mono.defer(() -> {
 //                                                        String generatedCode = generateRandomCodePort.generateCode();
 //                                                        logger.info("Generated reset password code for user: {}", user.email());
-//                                                        sendEmail.sendResetPasswordCode(user.email(), generatedCode);
-//                                                        logger.info("Reset password code sent to user email: {}", user.email());
 //                                                        return userRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode))
-//                                                                .thenReturn(Result.success(new Status(true)));
-//                                                    }))
-//                                                    .onErrorResume(ex -> {
-//                                                        logger.error("Error handling reset password code for user: {}", user.email(), ex);
-//                                                        return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                                    });
+//                                                                .then()
+//                                                                .doOnSuccess(ignored -> {
+//                                                                    sendEmail.sendResetPasswordCode(user.email(), generatedCode);
+//                                                                    logger.info("Reset password code sent to user email: {}", user.email());
+//                                                                });
+//                                                    }));
 //                                        } else {
 //                                            logger.warn("User account is not activated for email: {}", user.email());
-//                                            return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                                            return Mono.error(new UserAccountIsNotActivatedException("User account is not activated"));
 //                                        }
-//                                    })
-//                                    .switchIfEmpty(Mono.defer(() -> {
-//                                        logger.warn("User account activation status not found for email: {}", user.email());
-//                                        return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                    }));
+//                                    });
 //                        })
+//                        .switchIfEmpty(Mono.defer(() -> {
+//                            logger.warn("No user found with email: {}", data.email());
+//                            return Mono.error(new UserToResetPasswordDoesNotExistsException("User not found"));
+//                        }))
 //                )
-//                .switchIfEmpty(Mono.defer(() -> {
-//                    logger.warn("No user found with email");
-//                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                }))
 //                .onErrorResume(ex -> {
 //                    logger.error("Unexpected error during reset password code sending process", ex);
-//                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                    return Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
 //                });
+//    }
+
+    @Override
+    public Mono<Void> sendResetPasswordCode(UserEmailDataDTO emailData) {
+        return Mono.just(emailData)
+                .flatMap(this::findUserByEmail)
+                .flatMap(this::checkIfUserAccountIsActivated)
+                .flatMap(this::deleteExistingResetPasswordCode)
+                .flatMap(this::generateAndSaveResetPasswordCode);
+    }
+
+    private Mono<UserMyChat> findUserByEmail(UserEmailDataDTO emailData) {
+        return userRepositoryPort.findUserWithEmail(emailData.email())
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.warn("No user found with email: {}", emailData.email());
+                    return Mono.error(new UserToResetPasswordDoesNotExistsException("User not found"));
+                }));
+    }
+
+    private Mono<UserMyChat> checkIfUserAccountIsActivated(UserMyChat user) {
+        return userAuthPort.isEmailAlreadyActivatedUserAccount(user.email())
+                .flatMap(isActivated -> {
+                    if (isActivated) {
+                        logger.info("User account is activated for email: {}", user.email());
+                        return Mono.just(user);
+                    } else {
+                        logger.warn("User account is not activated for email: {}", user.email());
+                        return Mono.error(new UserAccountIsNotActivatedException("User account is not activated"));
+                    }
+                });
+    }
+
+    private Mono<UserMyChat> deleteExistingResetPasswordCode(UserMyChat user) {
+        return userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id()))
+                .thenReturn(user);
+    }
+
+    private Mono<Void> generateAndSaveResetPasswordCode(UserMyChat user) {
+        String generatedCode = generateRandomCodePort.generateCode();
+        logger.info("Generated reset password code for user: {}", user.email());
+        return userRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode))
+                .then()
+                .doOnSuccess(ignored -> {
+                    sendEmail.sendResetPasswordCode(user.email(), generatedCode);
+                    logger.info("Reset password code sent to user email: {}", user.email());
+                });
     }
 
     @Override
-    public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailData> userEmailDataMono) {
+    public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailDataDTO> userEmailDataMono) {
         return null;
 //        return userEmailDataMono
 //                .flatMap(userEmailData ->
@@ -271,7 +317,7 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailData> userEmailDataMono) {
+    public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailDataDTO> userEmailDataMono) {
         return userEmailDataMono
                 .flatMap(userEmailData -> {
                     String email = userEmailData.email().trim();
@@ -360,7 +406,7 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Void> resendActiveUserAccountCode(UserEmailData emailData) {
+    public Mono<Void> resendActiveUserAccountCode(UserEmailDataDTO emailData) {
         return userRepositoryPort.findUserWithEmail(emailData.email())
                 .switchIfEmpty(Mono.error(new UserToResendActiveAccountCodeNotExistsException("Not found user to resend activation code")))
                 .flatMap(user -> {

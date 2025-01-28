@@ -95,12 +95,21 @@ public class PostgresUserRepository implements UserRepositoryPort {
 
     @Override
     public Mono<Void> insertResetPasswordCode(ResetPasswordCode resetPasswordCode) {
-        return resetPasswordCodeRepository.save(resetPasswordCode).flatMap(resetPasswordCode1 -> Mono.empty());
+        return resetPasswordCodeRepository.save(resetPasswordCode)
+                .then()
+                .onErrorResume(ex -> {
+                    log.error("Error save reset password code for user with ID: {}", resetPasswordCode.idUser(), ex);
+                    return Mono.error(new SaveDataInRepositoryException("Error saving reset password code", ex));
+                });
     }
 
     @Override
     public Mono<Void> deleteResetPasswordCodeForUser(IdUserData idUser) {
-        return resetPasswordCodeRepository.deleteByIdUser(idUser.idUser());
+        return resetPasswordCodeRepository.deleteByIdUser(idUser.idUser())
+                .onErrorResume(ex -> {
+                    log.error("Error delete old reset password code for user with ID: {}", idUser, ex);
+                    return Mono.error(new SaveDataInRepositoryException("Error saving reset password code", ex));
+                });
     }
 
     @Override

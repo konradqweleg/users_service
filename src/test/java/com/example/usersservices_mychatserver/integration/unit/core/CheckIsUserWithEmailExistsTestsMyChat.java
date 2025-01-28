@@ -1,30 +1,13 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.config.keycloak.KeyCloakConfiguration;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
-import com.example.usersservices_mychatserver.entity.response.Result;
-import com.example.usersservices_mychatserver.entity.response.Status;
-import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.UserPort;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
-import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
-import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
-import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.keycloak.admin.client.Keycloak;
-import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")

@@ -1,16 +1,5 @@
 package com.example.usersservices_mychatserver.integration.integration;
 
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
-import com.example.usersservices_mychatserver.integration.integration.exampleDataRequest.CorrectRequestData;
-import com.example.usersservices_mychatserver.integration.integration.responseUtil.ResponseMessageUtil;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.web.reactive.function.BodyInserters;
-
-import java.net.URISyntaxException;
-
-import static org.mockito.Mockito.when;
-
 
 public class SendRestPasswordCodeTests  extends DefaultTestConfiguration {
 

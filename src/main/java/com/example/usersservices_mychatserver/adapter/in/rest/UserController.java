@@ -20,14 +20,14 @@ public class UserController {
     }
 
     @GetMapping("/email-existence")
-    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailData> user) {
+    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailDataDTO> user) {
         return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
     }
 
-    @PostMapping("/password-reset/code")
-    public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailData> user) {
-        return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
-    }
+//    @PostMapping("/password-reset/code")
+//    public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailDataDTO> user) {
+//        return userPort.sendResetPasswordCode(user).flatMap(ConvertToJSON::convert);
+//    }
 
     @GetMapping("/test")
     public Mono<ResponseEntity<String>> test() {
@@ -70,7 +70,7 @@ public class UserController {
 
     @GetMapping("/email")
     public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
-        return userPort.getUserAboutEmail(Mono.just(new UserEmailData(email))).flatMap(ConvertToJSON::convert);
+        return userPort.getUserAboutEmail(Mono.just(new UserEmailDataDTO(email))).flatMap(ConvertToJSON::convert);
     }
 
     @GetMapping("/search")

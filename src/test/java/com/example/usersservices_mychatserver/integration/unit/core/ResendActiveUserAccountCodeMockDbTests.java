@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.model.UserMyChat;
@@ -37,7 +37,7 @@ public class ResendActiveUserAccountCodeMockDbTests {
     @Test
     public void whenDeleteActiveUserAccountCodeFailureShouldReturnExceptionSaveDataInRepositoryException() {
         // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+        UserEmailDataDTO emailData = new UserEmailDataDTO("mail@mail.pl");
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
@@ -56,7 +56,7 @@ public class ResendActiveUserAccountCodeMockDbTests {
     @Test
     public void whenSaveVerificationCodeFailureShouldReturnExceptionSaveDataInRepositoryException() {
         // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+        UserEmailDataDTO emailData = new UserEmailDataDTO("mail@mail.pl");
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
@@ -77,7 +77,7 @@ public class ResendActiveUserAccountCodeMockDbTests {
     @Test
     public void whenIsActivatedUserAccountFailureShouldReturnExceptionAuthServiceException() {
         // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+        UserEmailDataDTO emailData = new UserEmailDataDTO("mail@mail.pl");
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
@@ -95,7 +95,7 @@ public class ResendActiveUserAccountCodeMockDbTests {
     @Test
     public void whenFindUserWithEmailFailureShouldReturnExceptionSaveDataInRepositoryException() {
         // given
-        UserEmailData emailData = new UserEmailData("mail@mail.pl");
+        UserEmailDataDTO emailData = new UserEmailDataDTO("mail@mail.pl");
 
         when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.error(new SaveDataInRepositoryException("Find user error")));
 

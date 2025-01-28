@@ -1,37 +1,23 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.config.keycloak.KeyCloakConfiguration;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
-import com.example.usersservices_mychatserver.entity.response.Result;
-import com.example.usersservices_mychatserver.entity.response.Status;
-import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.UserPort;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
-import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
-import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
-import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
+import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
+import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
+import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.keycloak.admin.client.Keycloak;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 
-@ExtendWith(SpringExtension.class)
-@ActiveProfiles("test")
-@TestPropertySource(locations = "classpath:application-test.properties")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class SendResetPasswordCodeTests {
+public class SendResetPasswordCodeTests extends BaseTests {
+
+    @Autowired
+    private DatabaseClient databaseClient;
+
 
 //    @MockBean
 //    private UserRepositoryPort userRepositoryPort;
@@ -58,47 +44,90 @@ public class SendResetPasswordCodeTests {
 //    private GenerateRandomCodePort generateRandomCodePort;
 //
 //
-//    @Test
-//    public void testSendResetPasswordCode_Success() {
-//        // given
-//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-//        String generatedCode = "123456";
+
+    private Mono<Boolean> isResetPasswordCodePresentForUser(String email, String expectedCode) {
+        return databaseClient.sql("SELECT id FROM user_my_chat WHERE email = :email")
+                .bind("email", email)
+                .map((row, metadata) -> row.get("id", Integer.class))
+                .one()
+                .flatMap(userId -> databaseClient.sql("SELECT COUNT(*) AS count FROM reset_password_code WHERE id_user = :userId AND code = :expectedCode")
+                        .bind("userId", userId)
+                        .bind("expectedCode", expectedCode)
+                        .map((row, metadata) -> row.get("count", Long.class) > 0)
+                        .one());
+    }
+
+    private void fullRegisterAndActivateUserWithSpecificActiveAccountCode(UserRegisterDataDTO userRegisterData, String verificationCode) {
+        when(userAuthPort.register(userRegisterData)).thenReturn(Mono.empty());
+        when(userAuthPort.activateUserAccount(userRegisterData.email())).thenReturn(Mono.empty());
+        when(userAuthPort.isEmailAlreadyActivatedUserAccount(userRegisterData.email())).thenReturn(Mono.just(true));
+
+        userPort.registerUser(userRegisterData).block();
+
+        Mono<Void> activeAccount = userPort.activateUserAccount(new ActiveAccountCodeData(verificationCode, userRegisterData.email()));
+
+        StepVerifier.create(activeAccount)
+                .expectComplete()
+                .verify();
+    }
+
+
+    @Test
+    public void whenCorrectEmailShouldSendResendPasswordCode() {
+        // given
+        UserRegisterDataDTO userRegisterData = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
+        String firstVerificationCode = "123456";
+        String secondVerificationCode = "654321";
+        when(generateRandomCodePort.generateCode()).thenReturn(firstVerificationCode, secondVerificationCode);
+
+        fullRegisterAndActivateUserWithSpecificActiveAccountCode(userRegisterData, firstVerificationCode);
+
+        // when
+        UserEmailDataDTO emailData = new UserEmailDataDTO("mail@mail.pl");
+        Mono<Void> result = userPort.sendResetPasswordCode(emailData);
+
+        // then
+        StepVerifier.create(result)
+                .expectComplete()
+                .verify();
+
+        StepVerifier.create(isResetPasswordCodePresentForUser(userRegisterData.email(), secondVerificationCode))
+                .expectNext(true)
+                .verifyComplete();
+    }
+
+//    private void registerAndActivateUser(UserRegisterDataDTO userRegisterData, String verificationCode) {
+//        when(userAuthPort.register(userRegisterData)).thenReturn(Mono.empty());
+//        when(userAuthPort.activateUserAccount(userRegisterData.email())).thenReturn(Mono.empty());
+//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(userRegisterData.email())).thenReturn(Mono.just(true));
 //
-//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(true));
-//        when(userRepositoryPort.deleteResetPasswordCodeForUser(any())).thenReturn(Mono.empty());
-//        when(generateRandomCodePort.generateCode()).thenReturn(generatedCode);
-//        when(userRepositoryPort.insertResetPasswordCode(any())).thenReturn(Mono.empty());
+//        userPort.registerUser(userRegisterData).block();
 //
-//        // when
-//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
+//        Mono<Void> activeAccount = userPort.activateUserAccount(new ActiveAccountCodeData(verificationCode, userRegisterData.email()));
 //
-//        // then
-//        StepVerifier.create(result)
-//                .expectNextMatches(Result::isSuccess)
+//        StepVerifier.create(activeAccount)
 //                .expectComplete()
 //                .verify();
 //    }
-//
-//    @Test
-//    public void testSendResetPasswordCode_UserNotActivated() {
-//        // given
-//        UserEmailData emailData = new UserEmailData("mail@mail.pl");
-//        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
-//
-//        when(userRepositoryPort.findUserWithEmail(emailData.email())).thenReturn(Mono.just(userMyChat));
-//        when(userAuthPort.isEmailAlreadyActivatedUserAccount(any())).thenReturn(Mono.just(false));
-//
-//        // when
-//        Mono<Result<Status>> result = userPort.sendResetPasswordCode(Mono.just(emailData));
-//
-//        // then
-//        StepVerifier.create(result)
-//                .expectNextMatches(Result::isError)
-//                .expectComplete()
-//                .verify();
-//    }
+
+    @Test
+    public void whenUserNotActivatedShouldReturnExceptionUserAccountIsNotActivated() {
+        // given
+        UserRegisterDataDTO userRegisterData = new UserRegisterDataDTO("root", "surname", "mail@mail.pl", "password");
+        String verificationCode = "123456";
+        when(generateRandomCodePort.generateCode()).thenReturn(verificationCode);
+
+        registerUserWithoutActivateAccountWithSpecificActiveAccountCode(userRegisterData, verificationCode);
+
+        // when
+        UserEmailDataDTO emailData = new UserEmailDataDTO(userRegisterData.email());
+        Mono<Void> result = userPort.sendResetPasswordCode(emailData);
+
+        // then
+        StepVerifier.create(result)
+                .expectError(UserAccountIsNotActivatedException.class)
+                .verify();
+    }
 //
 //    @Test
 //    public void testSendResetPasswordCode_UserNotFound() {

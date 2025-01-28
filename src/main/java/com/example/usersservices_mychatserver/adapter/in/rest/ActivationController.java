@@ -1,9 +1,8 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
 import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
-import com.example.usersservices_mychatserver.entity.request.UserEmailData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ public class ActivationController {
     }
 
     @PostMapping("/resend-activation-code")
-    public Mono<ResponseEntity<Void>> resendActiveUserAccountCode(@RequestBody @Valid UserEmailData emailData) {
+    public Mono<ResponseEntity<Void>> resendActiveUserAccountCode(@RequestBody @Valid UserEmailDataDTO emailData) {
         return ResponseUtil.toResponseEntity(userPort.resendActiveUserAccountCode(emailData), HttpStatus.OK);
     }
 }
