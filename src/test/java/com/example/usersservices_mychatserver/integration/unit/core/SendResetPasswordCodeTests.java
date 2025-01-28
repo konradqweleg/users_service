@@ -4,6 +4,7 @@ import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeDa
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.r2dbc.core.DatabaseClient;
@@ -44,6 +45,17 @@ public class SendResetPasswordCodeTests extends BaseTests {
 //    private GenerateRandomCodePort generateRandomCodePort;
 //
 //
+    private static final String SQL_TRUNCATE_USER_TABLE = "TRUNCATE TABLE USER_MY_CHAT";
+    private static final String SQL_TRUNCATE_CODE_VERIFICATION_TABLE = "TRUNCATE TABLE code_verification";
+    @BeforeEach
+    public void setup() {
+        truncateTables().block();
+    }
+
+    private Mono<Void> truncateTables() {
+        return databaseClient.sql(SQL_TRUNCATE_USER_TABLE).then()
+                .then(databaseClient.sql(SQL_TRUNCATE_CODE_VERIFICATION_TABLE).then());
+    }
 
     private Mono<Boolean> isResetPasswordCodePresentForUser(String email, String expectedCode) {
         return databaseClient.sql("SELECT id FROM user_my_chat WHERE email = :email")
