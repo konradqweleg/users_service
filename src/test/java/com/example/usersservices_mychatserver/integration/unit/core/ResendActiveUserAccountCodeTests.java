@@ -16,8 +16,7 @@ import static org.mockito.Mockito.when;
 
 public class ResendActiveUserAccountCodeTests extends BaseTests{
 
-    private static final String SQL_TRUNCATE_USER_TABLE = "TRUNCATE TABLE USER_MY_CHAT";
-    private static final String SQL_TRUNCATE_CODE_VERIFICATION_TABLE = "TRUNCATE TABLE code_verification";
+
     private static final String SQL_GET_USER_ID = "SELECT id FROM user_my_chat WHERE email = :email";
 
     private static final String SQL_CHECK_IF_CODE_MATCH_TO_EXPECTED = "SELECT COUNT(*) AS count FROM code_verification WHERE id_user = :userId AND code = :expectedCode";
@@ -28,13 +27,9 @@ public class ResendActiveUserAccountCodeTests extends BaseTests{
 
     @BeforeEach
     public void setup() {
-        truncateTables().block();
+        cleanAllDatabase(databaseClient);
     }
 
-    private Mono<Void> truncateTables() {
-        return databaseClient.sql(SQL_TRUNCATE_USER_TABLE).then()
-                .then(databaseClient.sql(SQL_TRUNCATE_CODE_VERIFICATION_TABLE).then());
-    }
 
 
     private Mono<Boolean> isActivationCodeMatchingForUser(String email, String expectedCode) {

@@ -12,7 +12,7 @@ public interface UserPort {
 
     Mono<Void> sendResetPasswordCode(UserEmailDataDTO emailDataMono);
 
-    Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono);
+    Mono<IsCorrectResetPasswordCode> checkIsCorrectResetPasswordCode(UserEmailAndCodeDTO emailAndCode);
 
     Mono<Result<Status>> changeUserPassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono);
 
@@ -25,7 +25,7 @@ public interface UserPort {
     Flux<UserData> getAllUsers();
 
     Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono);
-    Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailDataDTO> userEmailDataMono);
+    Mono<UserData> getUserAboutEmail(UserEmailDataDTO userEmailDataMono);
 
     Mono<UserAccessData> login(LoginDataDTO userAuthorizeData);
 

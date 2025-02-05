@@ -1,10 +1,13 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
+import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
+import com.example.usersservices_mychatserver.entity.response.UserData;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -34,8 +37,9 @@ public class UserInformationController {
     }
 
     @GetMapping("/email")
-    public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
-        return userPort.getUserAboutEmail(Mono.just(new UserEmailDataDTO(email))).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<UserData>> getUserAboutEmail(@RequestParam String email) {
+        UserEmailDataDTO userEmailData = new UserEmailDataDTO(email);
+        return ResponseUtil.toResponseEntity(userPort.getUserAboutEmail(userEmailData), HttpStatus.OK);
     }
 
     @GetMapping("/existence")

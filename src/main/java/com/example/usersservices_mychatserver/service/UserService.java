@@ -10,6 +10,7 @@ import com.example.usersservices_mychatserver.exception.activation.UserToResendA
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.auth.SendVerificationCodeException;
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
+import com.example.usersservices_mychatserver.exception.get_user.UserDoesNotExistsException;
 import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
 import com.example.usersservices_mychatserver.exception.password_reset.UserToResetPasswordDoesNotExistsException;
 import com.example.usersservices_mychatserver.model.CodeVerification;
@@ -317,62 +318,75 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<UserData>> getUserAboutEmail(Mono<UserEmailDataDTO> userEmailDataMono) {
-        return userEmailDataMono
-                .flatMap(userEmailData -> {
-                    String email = userEmailData.email().trim();
-                    logger.info("Fetching user with email: {}", email);
-                    return userRepositoryPort.findUserWithEmail(email)
-                            .flatMap(userFromDb -> {
-                                logger.info("User found with email: {}", email);
-                                UserData userData = new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email());
-                                return Mono.just(Result.success(userData));
-                            })
-                            .switchIfEmpty(Mono.defer(() -> {
-                                logger.info("No user found with email: {}", email);
-                                return Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                            }))
-                            .doOnError(ex -> logger.error("Error occurred while fetching user with email: {}", email, ex));
+    public Mono<UserData> getUserAboutEmail(UserEmailDataDTO userEmailData) {
+        String email = userEmailData.email().trim();
+        logger.info("Fetching user with email: {}", email);
+        return userRepositoryPort.findUserWithEmail(email)
+                .flatMap(userFromDb -> {
+                    logger.info("User found with email: {}", email);
+                    UserData userData = new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email());
+                    return Mono.just(userData);
                 })
-                .onErrorResume(ex -> {
-                    logger.error("Unexpected error occurred", ex);
-                    return Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                });
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.info("No user found with email: {}", email);
+                    return Mono.error(new UserDoesNotExistsException("User not found"));
+                }));
     }
 
 
-    @Override
-    public Mono<Result<Status>> checkIsCorrectResetPasswordCode(Mono<UserEmailAndCodeData> emailAndCodeMono) {
+//    @Override
+//    public Mono<IsCorrectResetPasswordCode> checkIsCorrectResetPasswordCode(UserEmailAndCodeDTO emailAndCodeData) {
+//
+//        return emailAndCodeMono
+//                .flatMap(emailAndCode ->
+//                        userRepositoryPort.findUserWithEmail(emailAndCode.email())
+//                                .flatMap(userFromDb ->
+//                                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
+//                                                .flatMap(codeFromDb -> {
+//                                                    if (codeFromDb.code().equals(emailAndCode.code())) {
+//                                                        logger.info("Reset password code is correct for email: {}", emailAndCode.email());
+//                                                        return Mono.just(Result.<Status>success(new Status(true)));
+//                                                    } else {
+//                                                        logger.warn("Incorrect reset password code for email: {}", emailAndCode.email());
+//                                                        return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                                                    }
+//                                                })
+//                                                .onErrorResume(ex -> {
+//                                                    logger.error("Error occurred while checking reset password code for user: ", ex);
+//                                                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                                                })
+//                                )
+//                )
+//                .switchIfEmpty(Mono.defer(() -> {
+//                    logger.info("No user found");
+//                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                }))
+//                .onErrorResume(ex -> {
+//                    logger.error("Unexpected error occurred during code check", ex);
+//                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
+//                });
+//
+//    }
 
-        return emailAndCodeMono
-                .flatMap(emailAndCode ->
-                        userRepositoryPort.findUserWithEmail(emailAndCode.email())
-                                .flatMap(userFromDb ->
-                                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
-                                                .flatMap(codeFromDb -> {
-                                                    if (codeFromDb.code().equals(emailAndCode.code())) {
-                                                        logger.info("Reset password code is correct for email: {}", emailAndCode.email());
-                                                        return Mono.just(Result.<Status>success(new Status(true)));
-                                                    } else {
-                                                        logger.warn("Incorrect reset password code for email: {}", emailAndCode.email());
-                                                        return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                                    }
-                                                })
-                                                .onErrorResume(ex -> {
-                                                    logger.error("Error occurred while checking reset password code for user: ", ex);
-                                                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                                })
-                                )
+    @Override
+    public Mono<IsCorrectResetPasswordCode> checkIsCorrectResetPasswordCode(UserEmailAndCodeDTO emailAndCodeData) {
+        return userRepositoryPort.findUserWithEmail(emailAndCodeData.email())
+                .flatMap(userFromDb ->
+                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
+                                .flatMap(codeFromDb -> {
+                                    if (codeFromDb.code().equals(emailAndCodeData.code())) {
+                                        logger.info("Reset password code is correct for email: {}", emailAndCodeData.email());
+                                        return Mono.just(new IsCorrectResetPasswordCode(true));
+                                    } else {
+                                        logger.warn("Incorrect reset password code for email: {}", emailAndCodeData.email());
+                                        return Mono.just(new IsCorrectResetPasswordCode(false));
+                                    }
+                                })
                 )
                 .switchIfEmpty(Mono.defer(() -> {
                     logger.info("No user found");
-                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                }))
-                .onErrorResume(ex -> {
-                    logger.error("Unexpected error occurred during code check", ex);
-                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                });
-
+                    return Mono.error(new UserToResetPasswordDoesNotExistsException("User not found"));
+                }));
     }
 
     @Override

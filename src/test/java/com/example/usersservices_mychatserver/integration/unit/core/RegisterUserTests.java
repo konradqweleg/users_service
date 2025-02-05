@@ -23,17 +23,12 @@ import java.util.Objects;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RegisterUserTests {
+public class RegisterUserTests extends BaseTests {
 
     private static final String EMAIL = "mail@mail.pl";
     private static final String VERIFICATION_CODE = "123456";
     private static final UserRegisterDataDTO USER_REGISTER_DATA = new UserRegisterDataDTO("root", "surname", EMAIL, "password");
 
-    @MockBean
-    private UserAuthPort userAuthPort;
-
-    @Autowired
-    private UserPort userPort;
 
     @MockBean
     private SendEmailToUserPort sendEmailPort;
@@ -41,19 +36,15 @@ public class RegisterUserTests {
     @Autowired
     private DatabaseClient databaseClient;
 
-    @MockBean
-    private GenerateRandomCodePort generateRandomCodePort;
 
     @BeforeEach
     public void setup() {
-        truncateTables().block();
+        cleanAllDatabase(databaseClient);
         when(userAuthPort.register(USER_REGISTER_DATA)).thenReturn(Mono.empty());
         when(generateRandomCodePort.generateCode()).thenReturn(VERIFICATION_CODE);
     }
 
-    private Mono<Void> truncateTables() {
-        return databaseClient.sql("TRUNCATE TABLE USER_MY_CHAT").then();
-    }
+
 
     @Test
     public void whenUserAuthServiceReturnErrorRegisterUserActionShouldAlsoFail() {

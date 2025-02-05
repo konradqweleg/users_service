@@ -6,6 +6,7 @@ import com.example.usersservices_mychatserver.exception.auth.AuthServiceExceptio
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,13 +16,8 @@ import reactor.test.StepVerifier;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class LoginTests {
+public class LoginTests extends BaseTests {
 
-    @MockBean
-    private UserAuthPort userAuthPort;
-
-    @Autowired
-    private UserPort userPort;
 
     @Test
     public void whenCorrectLoginDataMethodShouldReturnAuthTokens() {

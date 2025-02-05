@@ -21,34 +21,22 @@ import reactor.test.StepVerifier;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ActiveUserAccountTests {
+public class ActiveUserAccountTests extends BaseTests {
 
-    private static final String SQL_TRUNCATE_USER_TABLE = "TRUNCATE TABLE USER_MY_CHAT";
-    private static final String SQL_TRUNCATE_CODE_VERIFICATION_TABLE = "TRUNCATE TABLE code_verification";
+
     private static final String SQL_GET_USER_ID = "SELECT id FROM user_my_chat WHERE email = :email";
     private static final String SQL_CHECK_CODE = "SELECT COUNT(*) AS count FROM code_verification WHERE id_user = :userId";
 
-    @MockBean
-    private UserAuthPort userAuthPort;
-
-    @Autowired
-    private UserPort userPort;
 
     @Autowired
     private DatabaseClient databaseClient;
 
-    @MockBean
-    private GenerateRandomCodePort generateRandomCodePort;
 
     @BeforeEach
     public void setup() {
-        truncateTables().block();
+        cleanAllDatabase(databaseClient);
     }
 
-    private Mono<Void> truncateTables() {
-        return databaseClient.sql(SQL_TRUNCATE_USER_TABLE).then()
-                .then(databaseClient.sql(SQL_TRUNCATE_CODE_VERIFICATION_TABLE).then());
-    }
 
     public Mono<Boolean> isActivationCodePresentForUser(String email) {
         return databaseClient.sql(SQL_GET_USER_ID)

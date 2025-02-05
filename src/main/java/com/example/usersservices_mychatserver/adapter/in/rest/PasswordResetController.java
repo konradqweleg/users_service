@@ -1,9 +1,11 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
+import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
-import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeData;
+import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeDTO;
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
+import com.example.usersservices_mychatserver.entity.response.IsCorrectResetPasswordCode;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -27,7 +29,7 @@ public class PasswordResetController {
     }
 
     @PostMapping("/validate-code")
-    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
-        return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<IsCorrectResetPasswordCode>> isCorrectResetPasswordCode(@RequestBody @Valid UserEmailAndCodeDTO userEmailAndCodeMono) {
+        return ResponseUtil.toResponseEntity(userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono), HttpStatus.OK);
     }
 }

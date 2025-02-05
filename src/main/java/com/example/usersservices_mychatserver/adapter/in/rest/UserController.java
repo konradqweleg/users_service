@@ -34,10 +34,10 @@ public class UserController {
         return Mono.just(ResponseEntity.ok("Test"));
     }
 
-    @PostMapping("/password-reset/validate-code")
-    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeData> userEmailAndCodeMono) {
-        return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
-    }
+//    @PostMapping("/password-reset/validate-code")
+//    public Mono<ResponseEntity<String>> isCorrectResetPasswordCode(@RequestBody @Valid Mono<UserEmailAndCodeDTO> userEmailAndCodeMono) {
+//        return userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono).flatMap(ConvertToJSON::convert);
+//    }
 //    @PostMapping("/register")
 //    public Mono<ResponseEntity<String>> registerUser(@RequestBody @Valid Mono<UserRegisterDataDTO> user) {
 //        return userPort.registerUser(user).flatMap(ConvertToJSON::convert);
@@ -68,10 +68,10 @@ public class UserController {
         return ConvertToJSON.convert(userPort.getAllUsers());
     }
 
-    @GetMapping("/email")
-    public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
-        return userPort.getUserAboutEmail(Mono.just(new UserEmailDataDTO(email))).flatMap(ConvertToJSON::convert);
-    }
+//    @GetMapping("/email")
+//    public Mono<ResponseEntity<String>> getUserAboutEmail(@RequestParam String email) {
+//        return userPort.getUserAboutEmail(Mono.just(new UserEmailDataDTO(email))).flatMap(ConvertToJSON::convert);
+//    }
 
     @GetMapping("/search")
     public Mono<ResponseEntity<String>> getUserMatchingNameAndSurname(@RequestParam String patternName) {

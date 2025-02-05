@@ -114,7 +114,11 @@ public class PostgresUserRepository implements UserRepositoryPort {
 
     @Override
     public Mono<ResetPasswordCode> findResetPasswordCodeForUserById(IdUserData idUser) {
-        return resetPasswordCodeRepository.findResetPasswordCodeByIdUser(idUser.idUser());
+        return resetPasswordCodeRepository.findResetPasswordCodeByIdUser(idUser.idUser())
+                .onErrorResume(ex -> {
+                    log.error("Error find reset password code for user with ID: {}", idUser, ex);
+                    return Mono.error(new SaveDataInRepositoryException("Error saving reset password code", ex));
+                });
     }
 
 
