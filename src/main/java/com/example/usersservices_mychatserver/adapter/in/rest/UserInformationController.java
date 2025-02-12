@@ -10,7 +10,10 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/users")
@@ -27,8 +30,8 @@ public class UserInformationController {
     }
 
     @GetMapping("/search")
-    public Mono<ResponseEntity<String>> getUserMatchingNameAndSurname(@RequestParam String patternName) {
-        return ConvertToJSON.convert(userPort.getUserMatchingNameAndSurname(Mono.just(patternName)));
+    public Mono<ResponseEntity<List<UserData>>> getUserMatchingNameAndSurname(@RequestParam String patternName) {
+        return ResponseUtil.toResponseEntity(userPort.getUserMatchingNameAndSurname(patternName), HttpStatus.OK);
     }
 
     @GetMapping

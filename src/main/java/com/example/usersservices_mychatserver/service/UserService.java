@@ -293,28 +293,22 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Flux<UserData> getUserMatchingNameAndSurname(Mono<String> patternNameMono) {
-        return patternNameMono.flatMapMany(patternName -> {
-                    String[] splitPattern = patternName.split(" ");
-                    if (splitPattern.length > 1) {
-                        String firstName = splitPattern[0].trim();
-                        String lastName = splitPattern[1].trim();
-                        logger.info("Searching for users with name '{}' and surname '{}'", firstName, lastName);
-                        return userRepositoryPort.findUserMatchingNameAndSurname(firstName, lastName)
-                                .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()))
-                                .doOnError(ex -> logger.error("Error occurred while searching for users with name '{}' and surname '{}'", firstName, lastName, ex));
-                    } else {
-                        String trimmedPattern = patternName.trim();
-                        logger.info("Searching for users with name or surname matching '{}'", trimmedPattern);
-                        return userRepositoryPort.findUserMatchingNameOrSurname(trimmedPattern, trimmedPattern)
-                                .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()))
-                                .doOnError(ex -> logger.error("Error occurred while searching for users with name or surname matching '{}'", trimmedPattern, ex));
-                    }
-                })
-                .onErrorResume(ex -> {
-                    logger.error("Error during user search with pattern: {}", ex.getMessage(), ex);
-                    return Flux.empty();
-                });
+    public Flux<UserData> getUserMatchingNameAndSurname(String patternName) {
+        String[] splitPattern = patternName.split(" ");
+        if (splitPattern.length > 1) {
+            String firstName = splitPattern[0].trim();
+            String lastName = splitPattern[1].trim();
+            logger.info("Searching for users with name '{}' and surname '{}'", firstName, lastName);
+            return userRepositoryPort.findUserMatchingNameAndSurname(firstName, lastName)
+                    .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+
+        } else {
+            String trimmedPattern = patternName.trim();
+            logger.info("Searching for users with name or surname matching '{}'", trimmedPattern);
+            return userRepositoryPort.findUserMatchingNameOrSurname(trimmedPattern, trimmedPattern)
+                    .map(user -> new UserData(user.id(), user.name(), user.surname(), user.email()));
+
+        }
     }
 
     @Override

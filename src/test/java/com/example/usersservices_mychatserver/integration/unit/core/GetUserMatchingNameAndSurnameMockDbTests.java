@@ -10,13 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class GetUserWithEmailDbMockTests {
+public class GetUserMatchingNameAndSurnameMockDbTests {
 
     @Autowired
     private UserPort userPort;
@@ -24,23 +25,39 @@ public class GetUserWithEmailDbMockTests {
     @MockBean
     private UserRepositoryPort userRepositoryPort;
 
+
     @Test
-    public void whenFindUserWithEmailFailureShouldReturnSaveDataInRepositoryException() {
+    public void whenFindUserMatchingNameAndSurnameFailureShouldReturnSaveDataInRepositoryException() {
         // given
         UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
 
-        when(userRepositoryPort.findUserWithEmail(userMyChat.email())).thenReturn(Mono.error(new SaveDataInRepositoryException("Find user error")));
-
+        when(userRepositoryPort.findUserMatchingNameAndSurname(userMyChat.name(), userMyChat.surname()))
+                .thenReturn(Flux.error(new SaveDataInRepositoryException("Find user error")));
 
         // when
-        UserEmailDataDTO emailData = new UserEmailDataDTO("mail@mail.pl");
-        Mono<UserData> result = userPort.getUserAboutEmail(emailData);
+        Flux<UserData> result = userPort.getUserMatchingNameAndSurname(userMyChat.name() + " " + userMyChat.surname());
 
         // then
         StepVerifier.create(result)
                 .expectError(SaveDataInRepositoryException.class)
                 .verify();
+    }
 
+    @Test
+    public void whenFindUserMatchingNameOrSurnameFailureShouldReturnSaveDataInRepositoryException() {
+        // given
+        UserMyChat userMyChat = new UserMyChat(1L, "root", "surname", "mail@mail.pl");
+
+        when(userRepositoryPort.findUserMatchingNameOrSurname(userMyChat.name(), userMyChat.name()))
+                .thenReturn(Flux.error(new SaveDataInRepositoryException("Find user error")));
+
+        // when
+        Flux<UserData> result = userPort.getUserMatchingNameAndSurname(userMyChat.name());
+
+        // then
+        StepVerifier.create(result)
+                .expectError(SaveDataInRepositoryException.class)
+                .verify();
     }
 
 }

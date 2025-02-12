@@ -73,10 +73,10 @@ public class UserController {
 //        return userPort.getUserAboutEmail(Mono.just(new UserEmailDataDTO(email))).flatMap(ConvertToJSON::convert);
 //    }
 
-    @GetMapping("/search")
-    public Mono<ResponseEntity<String>> getUserMatchingNameAndSurname(@RequestParam String patternName) {
-        return ConvertToJSON.convert(userPort.getUserMatchingNameAndSurname(Mono.just(patternName)));
-    }
+//    @GetMapping("/search")
+//    public Mono<ResponseEntity<String>> getUserMatchingNameAndSurname(@RequestParam String patternName) {
+//        return ConvertToJSON.convert(userPort.getUserMatchingNameAndSurname(Mono.just(patternName)));
+//    }
 
 //    @PostMapping("/login")
 //    public Mono<ResponseEntity<String>> authorizeUser(@RequestBody @Valid LoginData user) {

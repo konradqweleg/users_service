@@ -61,7 +61,9 @@ public class PostgresUserRepository implements UserRepositoryPort {
 
     @Override
     public Mono<UserMyChat> saveUser(UserMyChat userMyChat) {
-        return userRepository.save(userMyChat);
+        return userRepository.save(userMyChat)
+                .doOnError(throwable -> log.error("Error while saving user with email: " + userMyChat.email(), throwable))
+                .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while saving user with email: " + userMyChat.email(), throwable)));
     }
 
 
@@ -85,12 +87,16 @@ public class PostgresUserRepository implements UserRepositoryPort {
 
     @Override
     public Flux<UserMyChat> findUserMatchingNameOrSurname(String patternName, String patternSurname) {
-        return userRepository.findUsersMatchingNameOrSurname(patternName,patternSurname);
+        return userRepository.findUsersMatchingNameOrSurname(patternName,patternSurname)
+                .doOnError(throwable -> log.error("Error while finding user with name: " + patternName + " or surname: " + patternSurname, throwable))
+                .onErrorResume(throwable -> Flux.error(new SaveDataInRepositoryException("Error while finding user with name: " + patternName + " or surname: " + patternSurname, throwable)));
     }
 
     @Override
     public Flux<UserMyChat> findUserMatchingNameAndSurname(String patternName, String patternSurname) {
-        return userRepository.findUsersMatchingNameAndSurname(patternName,patternSurname);
+        return userRepository.findUsersMatchingNameAndSurname(patternName,patternSurname)
+                .doOnError(throwable -> log.error("Error while finding user with name: " + patternName + " and surname: " + patternSurname, throwable))
+                .onErrorResume(throwable -> Flux.error(new SaveDataInRepositoryException("Error while finding user with name: " + patternName + " and surname: " + patternSurname, throwable)));
     }
 
     @Override

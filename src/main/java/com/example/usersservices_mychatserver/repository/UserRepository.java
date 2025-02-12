@@ -9,10 +9,10 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends ReactiveCrudRepository<UserMyChat, Long>  {
     Mono<UserMyChat> findByEmail(String email);
 
-    @Query("select * from users_services_scheme.user_my_chat t where lower(t.name) like lower(concat('%', :patternName, '%')) or lower(t.surname) like lower(concat('%', :patternSurname, '%'))")
+    @Query("select * from user_my_chat t where lower(t.name) like lower(concat('%', :patternName, '%')) or lower(t.surname) like lower(concat('%', :patternSurname, '%'))")
     Flux<UserMyChat> findUsersMatchingNameOrSurname(String patternName, String patternSurname);
 
-    @Query("select * from users_services_scheme.user_my_chat t where lower(t.name) like lower(concat('%', :patternName, '%')) and lower(t.surname) like lower(concat('%', :patternSurname, '%'))")
+    @Query("select * from user_my_chat t where lower(t.name) like lower(concat('%', :patternName, '%')) and lower(t.surname) like lower(concat('%', :patternSurname, '%'))")
     Flux<UserMyChat> findUsersMatchingNameAndSurname(String patternName, String patternSurname);
 
 }
