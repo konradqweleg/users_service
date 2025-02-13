@@ -25,8 +25,9 @@ public class UserInformationController {
     }
 
     @GetMapping("/{id}")
-    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long id) {
-        return userPort.getUserAboutId(Mono.just(new IdUserData(id))).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<UserData>> getUserAboutId(@PathVariable Long id) {
+        IdUserData idUserData = new IdUserData(id);
+        return ResponseUtil.toResponseEntity(userPort.getUserAboutId(idUserData), HttpStatus.OK);
     }
 
     @GetMapping("/search")
@@ -46,7 +47,7 @@ public class UserInformationController {
     }
 
     @GetMapping("/existence")
-    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailDataDTO> user) {
-        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
+    public Mono<ResponseEntity<Boolean>> checkIsUserWithThisEmailExist(@RequestBody @Valid UserEmailDataDTO userEmail) {
+        return ResponseUtil.toResponseEntity(userPort.checkIsUserWithThisEmailExist(userEmail), HttpStatus.OK);
     }
 }

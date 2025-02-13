@@ -12,7 +12,7 @@ import static org.mockito.ArgumentMatchers.any;
 @ActiveProfiles("test")
 @TestPropertySource(locations = "classpath:application-test.properties")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class CheckIsUserWithEmailExistsTestsMyChat {
+public class CheckIsUserWithEmailExistsTestsTestsMyChat {
 
 //    @MockBean
 //    private UserRepositoryPort userRepositoryPort;

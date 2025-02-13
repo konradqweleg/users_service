@@ -40,7 +40,7 @@ public class PostgresUserRepository implements UserRepositoryPort {
         return codeVerificationRepository.save(code)
                 .doOnError(throwable -> log.error("Error while saving code for user with id: " + code.idUser(), throwable))
                 .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while saving code for user with id: " + code.idUser(), throwable))
-        );
+                );
     }
 
     @Override
@@ -48,7 +48,7 @@ public class PostgresUserRepository implements UserRepositoryPort {
         return codeVerificationRepository.deleteByIdUser(idUser)
                 .doOnError(throwable -> log.error("Error while deleting code for user with id: " + idUser, throwable))
                 .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while deleting code for user with id: " + idUser, throwable))
-        );
+                );
     }
 
     @Override
@@ -56,7 +56,7 @@ public class PostgresUserRepository implements UserRepositoryPort {
         return codeVerificationRepository.delete(codeVerification1)
                 .doOnError(throwable -> log.error("Error while deleting code for user with id: " + codeVerification1.idUser(), throwable))
                 .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while deleting code for user with id: " + codeVerification1.idUser(), throwable))
-        );
+                );
     }
 
     @Override
@@ -72,29 +72,32 @@ public class PostgresUserRepository implements UserRepositoryPort {
         return userRepository.findByEmail(email)
                 .doOnError(throwable -> log.error("Error while finding user with email: " + email, throwable))
                 .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while finding user with email: " + email, throwable))
-        );
+                );
     }
 
     @Override
     public Mono<UserMyChat> findUserById(Long idUser) {
-        return userRepository.findById(idUser);
+        return userRepository.findById(idUser).doOnError(throwable -> log.error("Error while finding user with id: " + idUser, throwable))
+                .onErrorResume(throwable -> Mono.error(new SaveDataInRepositoryException("Error while finding user with id: " + idUser, throwable)));
     }
 
     @Override
     public Flux<UserMyChat> findAllUsers() {
-      return userRepository.findAll();
+        return userRepository.findAll()
+                .doOnError(throwable -> log.error("Error while finding all users", throwable))
+                .onErrorResume(throwable -> Flux.error(new SaveDataInRepositoryException("Error while finding all users", throwable)));
     }
 
     @Override
     public Flux<UserMyChat> findUserMatchingNameOrSurname(String patternName, String patternSurname) {
-        return userRepository.findUsersMatchingNameOrSurname(patternName,patternSurname)
+        return userRepository.findUsersMatchingNameOrSurname(patternName, patternSurname)
                 .doOnError(throwable -> log.error("Error while finding user with name: " + patternName + " or surname: " + patternSurname, throwable))
                 .onErrorResume(throwable -> Flux.error(new SaveDataInRepositoryException("Error while finding user with name: " + patternName + " or surname: " + patternSurname, throwable)));
     }
 
     @Override
     public Flux<UserMyChat> findUserMatchingNameAndSurname(String patternName, String patternSurname) {
-        return userRepository.findUsersMatchingNameAndSurname(patternName,patternSurname)
+        return userRepository.findUsersMatchingNameAndSurname(patternName, patternSurname)
                 .doOnError(throwable -> log.error("Error while finding user with name: " + patternName + " and surname: " + patternSurname, throwable))
                 .onErrorResume(throwable -> Flux.error(new SaveDataInRepositoryException("Error while finding user with name: " + patternName + " and surname: " + patternSurname, throwable)));
     }

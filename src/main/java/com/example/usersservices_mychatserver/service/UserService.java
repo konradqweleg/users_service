@@ -237,54 +237,39 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailDataDTO> userEmailDataMono) {
-        return null;
-//        return userEmailDataMono
-//                .flatMap(userEmailData ->
-//                        userRepositoryPort.findUserWithEmail(userEmailData.email())
-//                                .flatMap(userFromDb -> {
-//                                    logger.info("User found with email: {}", userFromDb.email());
-//                                    return userAuthPort.isActivatedUserAccount(Mono.just(userFromDb.email()))
-//                                            .flatMap(isActivated -> {
-//                                                if (isActivated) {
-//                                                    logger.info("User account is activated: {}", userFromDb.email());
-//                                                    return Mono.just(Result.success(new Status(true)));
-//                                                } else {
-//                                                    logger.warn("User account is not activated: {}", userFromDb.email());
-//                                                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                                }
-//                                            });
-//                                })
-//                                .switchIfEmpty(Mono.defer(() -> {
-//                                    logger.info("User not found for email: {}", userEmailData.email());
-//                                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                }))
-//                )
-//                .onErrorResume(ex -> {
-//                    logger.error("Error occurred while processing user with email: {}", ex.getMessage(), ex);
-//                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                });
+    public Mono<Boolean> checkIsUserWithThisEmailExist(UserEmailDataDTO userEmailDataMono) {
+        return userRepositoryPort.findUserWithEmail(userEmailDataMono.email())
+                .flatMap(userFromDb -> {
+                    logger.info("User found with email: {}", userFromDb.email());
+                    return userAuthPort.isEmailAlreadyActivatedUserAccount(userFromDb.email())
+                            .flatMap(isActivated -> {
+                                if (isActivated) {
+                                    logger.info("User account is activated: {}", userFromDb.email());
+                                    return Mono.just(true);
+                                } else {
+                                    logger.warn("User account is not activated: {}", userFromDb.email());
+                                    return Mono.just(false);
+                                }
+                            });
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.info("User not found for email: {}", userEmailDataMono.email());
+                    return Mono.just(false);
+                }));
     }
 
     @Override
-    public Mono<Result<UserData>> getUserAboutId(Mono<IdUserData> idUserDataMono) {
-        return idUserDataMono
-                .flatMap(idUserData ->
-                        userRepositoryPort.findUserById(idUserData.idUser())
-                                .flatMap(userFromDb -> {
-                                    logger.info("User found with ID: {}", userFromDb.id());
-                                    UserData userData = new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email());
-                                    return Mono.just(Result.success(userData));
-                                })
-                                .switchIfEmpty(Mono.defer(() -> {
-                                    logger.warn("User not found with ID: {}", idUserData.idUser());
-                                    return Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                }))
-                                .onErrorResume(ex -> {
-                                    logger.error("Error retrieving user by ID: {}", idUserData.idUser(), ex);
-                                    return Mono.just(Result.<UserData>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                })
-                );
+    public Mono<UserData> getUserAboutId(IdUserData userId) {
+        return userRepositoryPort.findUserById(userId.idUser())
+                .flatMap(userFromDb -> {
+                    logger.info("User found with ID: {}", userFromDb.id());
+                    UserData userData = new UserData(userFromDb.id(), userFromDb.name(), userFromDb.surname(), userFromDb.email());
+                    return Mono.just(userData);
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    logger.warn("User not found with ID: {}", userId.idUser());
+                    return Mono.error(new UserDoesNotExistsException("User not found"));
+                }));
     }
 
     @Override

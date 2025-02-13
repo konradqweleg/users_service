@@ -18,9 +18,9 @@ public interface UserPort {
 
     Mono<Void> registerUser(UserRegisterDataDTO user);
 
-    Mono<Result<Status>> checkIsUserWithThisEmailExist(Mono<UserEmailDataDTO> user);
+    Mono<Boolean> checkIsUserWithThisEmailExist(UserEmailDataDTO user);
 
-    Mono<Result<UserData>>  getUserAboutId(Mono<IdUserData> idUserDataMono);
+    Mono<UserData>  getUserAboutId(IdUserData idUser);
 
     Flux<UserData> getAllUsers();
 

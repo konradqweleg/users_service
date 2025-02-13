@@ -19,10 +19,10 @@ public class UserController {
         this.userPort = userPort;
     }
 
-    @GetMapping("/email-existence")
-    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailDataDTO> user) {
-        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
-    }
+//    @GetMapping("/email-existence")
+//    public Mono<ResponseEntity<String>> checkIsUserWithThisEmailExist(@RequestBody @Valid Mono<UserEmailDataDTO> user) {
+//        return userPort.checkIsUserWithThisEmailExist(user).flatMap(ConvertToJSON::convert);
+//    }
 
 //    @PostMapping("/password-reset/code")
 //    public Mono<ResponseEntity<String>> sendResetPasswordCode(@RequestBody @Valid Mono<UserEmailDataDTO> user) {
@@ -58,10 +58,10 @@ public class UserController {
 //        return userPort.activateUserAccount(codeVerificationMono).flatMap(ConvertToJSON::convert);
 //    }
 
-    @GetMapping("/{id}")
-    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long id) {
-        return userPort.getUserAboutId(Mono.just(new IdUserData(id))).flatMap(ConvertToJSON::convert);
-    }
+//    @GetMapping("/{id}")
+//    public Mono<ResponseEntity<String>> getUserAboutId(@PathVariable Long id) {
+//        return userPort.getUserAboutId(Mono.just(new IdUserData(id))).flatMap(ConvertToJSON::convert);
+//    }
 
     @GetMapping
     public Mono<ResponseEntity<String>> getAllUsers() {
