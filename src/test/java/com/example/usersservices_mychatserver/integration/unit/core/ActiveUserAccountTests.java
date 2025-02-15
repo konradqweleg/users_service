@@ -5,15 +5,11 @@ import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO
 import com.example.usersservices_mychatserver.exception.activation.ActivationCodeNotFoundException;
 import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
-import com.example.usersservices_mychatserver.port.in.UserPort;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
-import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;

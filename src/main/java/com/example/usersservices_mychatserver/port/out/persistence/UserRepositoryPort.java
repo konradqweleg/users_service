@@ -17,11 +17,13 @@ public interface UserRepositoryPort {
     Mono<Void> deleteUserActiveAccountCode(CodeVerification codeVerification1);
 
     Mono<Void> insertResetPasswordCode(ResetPasswordCode resetPasswordCode);
+
     Mono<Void> deleteResetPasswordCodeForUser(IdUserData idUser);
 
     Mono<ResetPasswordCode> findResetPasswordCodeForUserById(IdUserData idUser);
 
     Mono<UserMyChat> saveUser(UserMyChat userMyChat);
+
     Mono<UserMyChat> findUserWithEmail(String email);
 
     Mono<UserMyChat> findUserById(Long idUser);

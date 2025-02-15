@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.adapter.in.rest.util;
+package com.example.usersservices_mychatserver.adapter.in.rest.response;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

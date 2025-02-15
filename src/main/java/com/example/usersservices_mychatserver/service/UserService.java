@@ -22,7 +22,6 @@ import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodeP
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
 import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
-import com.example.usersservices_mychatserver.service.message.ErrorMessage;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -149,44 +148,6 @@ public class UserService implements UserPort {
     }
 
 
-//    @Override
-//    public Mono<Void> sendResetPasswordCode(UserEmailDataDTO emailData) {
-//        return Mono.just(emailData)
-//                .flatMap(data -> userRepositoryPort.findUserWithEmail(data.email())
-//                        .flatMap(user -> {
-//                            logger.info("User found with email: {}", user.email());
-//                            return userAuthPort.isEmailAlreadyActivatedUserAccount(user.email())
-//                                    .flatMap(isActivated -> {
-//                                        if (isActivated) {
-//                                            logger.info("User account is activated for email: {}", user.email());
-//                                            return userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id()))
-//                                                    .then(Mono.defer(() -> {
-//                                                        String generatedCode = generateRandomCodePort.generateCode();
-//                                                        logger.info("Generated reset password code for user: {}", user.email());
-//                                                        return userRepositoryPort.insertResetPasswordCode(new ResetPasswordCode(null, user.id(), generatedCode))
-//                                                                .then()
-//                                                                .doOnSuccess(ignored -> {
-//                                                                    sendEmail.sendResetPasswordCode(user.email(), generatedCode);
-//                                                                    logger.info("Reset password code sent to user email: {}", user.email());
-//                                                                });
-//                                                    }));
-//                                        } else {
-//                                            logger.warn("User account is not activated for email: {}", user.email());
-//                                            return Mono.error(new UserAccountIsNotActivatedException("User account is not activated"));
-//                                        }
-//                                    });
-//                        })
-//                        .switchIfEmpty(Mono.defer(() -> {
-//                            logger.warn("No user found with email: {}", data.email());
-//                            return Mono.error(new UserToResetPasswordDoesNotExistsException("User not found"));
-//                        }))
-//                )
-//                .onErrorResume(ex -> {
-//                    logger.error("Unexpected error during reset password code sending process", ex);
-//                    return Mono.error(new RuntimeException(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                });
-//    }
-
     @Override
     public Mono<Void> sendResetPasswordCode(UserEmailDataDTO emailData) {
         return Mono.just(emailData)
@@ -310,40 +271,6 @@ public class UserService implements UserPort {
     }
 
 
-//    @Override
-//    public Mono<IsCorrectResetPasswordCode> checkIsCorrectResetPasswordCode(UserEmailAndCodeDTO emailAndCodeData) {
-//
-//        return emailAndCodeMono
-//                .flatMap(emailAndCode ->
-//                        userRepositoryPort.findUserWithEmail(emailAndCode.email())
-//                                .flatMap(userFromDb ->
-//                                        userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
-//                                                .flatMap(codeFromDb -> {
-//                                                    if (codeFromDb.code().equals(emailAndCode.code())) {
-//                                                        logger.info("Reset password code is correct for email: {}", emailAndCode.email());
-//                                                        return Mono.just(Result.<Status>success(new Status(true)));
-//                                                    } else {
-//                                                        logger.warn("Incorrect reset password code for email: {}", emailAndCode.email());
-//                                                        return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                                    }
-//                                                })
-//                                                .onErrorResume(ex -> {
-//                                                    logger.error("Error occurred while checking reset password code for user: ", ex);
-//                                                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                                                })
-//                                )
-//                )
-//                .switchIfEmpty(Mono.defer(() -> {
-//                    logger.info("No user found");
-//                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                }))
-//                .onErrorResume(ex -> {
-//                    logger.error("Unexpected error occurred during code check", ex);
-//                    return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-//                });
-//
-//    }
-
     @Override
     public Mono<IsCorrectResetPasswordCode> checkIsCorrectResetPasswordCode(UserEmailAndCodeDTO emailAndCodeData) {
         return userRepositoryPort.findUserWithEmail(emailAndCodeData.email())
@@ -427,7 +354,7 @@ public class UserService implements UserPort {
                                         sendEmail.sendVerificationCode(userFromDb.email(), generatedCode);
                                     }
                             )
-                            .thenReturn(Result.success(new Status(true)));
+                            .thenReturn(Mono.empty());
                 }).then();
     }
 }

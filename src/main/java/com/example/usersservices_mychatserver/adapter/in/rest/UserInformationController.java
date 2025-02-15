@@ -1,7 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
+import com.example.usersservices_mychatserver.adapter.in.rest.response.ResponseUtil;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserData;
@@ -10,7 +9,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -36,8 +34,8 @@ public class UserInformationController {
     }
 
     @GetMapping
-    public Mono<ResponseEntity<String>> getAllUsers() {
-        return ConvertToJSON.convert(userPort.getAllUsers());
+    public Mono<ResponseEntity<List<UserData>>> getAllUsers() {
+        return ResponseUtil.toResponseEntity(userPort.getAllUsers(), HttpStatus.OK);
     }
 
     @GetMapping("/email")

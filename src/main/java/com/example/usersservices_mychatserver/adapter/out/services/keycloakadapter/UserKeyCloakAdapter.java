@@ -25,20 +25,19 @@ import reactor.core.publisher.Mono;
 import java.util.Collections;
 import java.util.List;
 
-import com.example.usersservices_mychatserver.entity.response.Status;
 import org.springframework.http.HttpStatus;
 
 @Service
 public class UserKeyCloakAdapter implements UserAuthPort {
 
-    private final String keycloakClientId = "mychat-client";
-    private final String realName = "my-chat-realm";
-    private final String keycloakGrantType = "password";
+    @Value("${keycloak.client.id}")
+    private String keycloakClientId;
+
+    @Value("${keycloak.client.realm}")
+    private String realName;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Keycloak keycloakAdmin;
 
-    private final int HTTP_CREATED = 201;
-    private final int HTTP_CONFLICT = 409;
     @Value("${keycloak.server.url}")
     private String keycloakUrl;
 
@@ -54,6 +53,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
         mapAuthData.add("client_id", keycloakClientId);
         mapAuthData.add("username", userAuthorizeData.email());
         mapAuthData.add("password", userAuthorizeData.password());
+        String keycloakGrantType = "password";
         mapAuthData.add("grant_type", keycloakGrantType);
 
         String uriAuthorizeUser = String.format("%s/realms/my-chat-realm/protocol/openid-connect/token", keycloakUrl);

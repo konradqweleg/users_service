@@ -11,7 +11,7 @@ import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class GetUserMatchingNameAndSurnameTests extends BaseTests{
+public class GetUserMatchingNameAndSurnameTests extends BaseTests {
 
     @Autowired
     private DatabaseClient databaseClient;

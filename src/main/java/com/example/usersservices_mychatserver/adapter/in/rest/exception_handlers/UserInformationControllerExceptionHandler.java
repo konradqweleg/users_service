@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.adapter.in.rest;
+package com.example.usersservices_mychatserver.adapter.in.rest.exception_handlers;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponse;
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
@@ -12,7 +12,6 @@ import reactor.core.publisher.Mono;
 
 @ControllerAdvice
 public class UserInformationControllerExceptionHandler {
-
     @ExceptionHandler(UserDoesNotExistsException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleUserUserDoesNotExistsException(UserDoesNotExistsException ex, ServerWebExchange exchange) {
         return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.BAD_REQUEST);

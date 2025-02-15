@@ -4,15 +4,11 @@ import com.example.usersservices_mychatserver.entity.request.LoginDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
-import com.example.usersservices_mychatserver.port.in.UserPort;
-import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -45,7 +41,7 @@ public class LoginTests extends BaseTests {
     @Test
     public void whenWrongPasswordMethodShouldReturnUnauthorized() {
         //given
-        LoginDataDTO loginDataDTOWithBadPassword = new LoginDataDTO("correct@mail.pl","wrongPassword");
+        LoginDataDTO loginDataDTOWithBadPassword = new LoginDataDTO("correct@mail.pl", "wrongPassword");
         when(userAuthPort.isEmailAlreadyRegistered(loginDataDTOWithBadPassword.email())).thenReturn(Mono.just(true));
         when(userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTOWithBadPassword.email())).thenReturn(Mono.just(true));
 
@@ -65,7 +61,7 @@ public class LoginTests extends BaseTests {
     @Test
     public void whenUserWithEmailNoExistsMethodsShouldReturnUnauthorized() {
         //given
-        LoginDataDTO loginDataDTOWithNoExistsUser = new LoginDataDTO("noexists@mail.pl","password");
+        LoginDataDTO loginDataDTOWithNoExistsUser = new LoginDataDTO("noexists@mail.pl", "password");
         when(userAuthPort.isEmailAlreadyRegistered(loginDataDTOWithNoExistsUser.email())).thenReturn(Mono.just(false));
         when(userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTOWithNoExistsUser.email())).thenReturn(Mono.just(false));
 

@@ -3,10 +3,7 @@ package com.example.usersservices_mychatserver.integration.unit.core;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.model.UserMyChat;
-import com.example.usersservices_mychatserver.port.in.UserPort;
-import com.example.usersservices_mychatserver.port.out.logic.GenerateRandomCodePort;
 import com.example.usersservices_mychatserver.port.out.queue.SendEmailToUserPort;
-import com.example.usersservices_mychatserver.port.out.services.UserAuthPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -43,7 +40,6 @@ public class RegisterUserTests extends BaseTests {
         when(userAuthPort.register(USER_REGISTER_DATA)).thenReturn(Mono.empty());
         when(generateRandomCodePort.generateCode()).thenReturn(VERIFICATION_CODE);
     }
-
 
 
     @Test

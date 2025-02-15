@@ -1,6 +1,5 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserData;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.model.UserMyChat;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.when;

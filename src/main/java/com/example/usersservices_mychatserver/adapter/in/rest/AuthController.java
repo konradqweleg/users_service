@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
+import com.example.usersservices_mychatserver.adapter.in.rest.response.ResponseUtil;
 import com.example.usersservices_mychatserver.entity.request.LoginDataDTO;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserAccessData;

@@ -3,7 +3,6 @@ package com.example.usersservices_mychatserver.integration.unit.core;
 import com.example.usersservices_mychatserver.entity.request.IdUserData;
 import com.example.usersservices_mychatserver.entity.response.UserData;
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
-import com.example.usersservices_mychatserver.model.UserMyChat;
 import com.example.usersservices_mychatserver.port.in.UserPort;
 import com.example.usersservices_mychatserver.port.out.persistence.UserRepositoryPort;
 import org.junit.jupiter.api.Test;

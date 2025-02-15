@@ -1,6 +1,5 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.entity.request.ActiveAccountCodeData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.exception.activation.UserAlreadyActivatedException;
@@ -14,7 +13,7 @@ import reactor.test.StepVerifier;
 
 import static org.mockito.Mockito.when;
 
-public class ResendActiveUserAccountCodeTests extends BaseTests{
+public class ResendActiveUserAccountCodeTests extends BaseTests {
 
 
     private static final String SQL_GET_USER_ID = "SELECT id FROM user_my_chat WHERE email = :email";
@@ -29,7 +28,6 @@ public class ResendActiveUserAccountCodeTests extends BaseTests{
     public void setup() {
         cleanAllDatabase(databaseClient);
     }
-
 
 
     private Mono<Boolean> isActivationCodeMatchingForUser(String email, String expectedCode) {

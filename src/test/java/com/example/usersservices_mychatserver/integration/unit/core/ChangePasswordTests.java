@@ -42,18 +42,14 @@ public class ChangePasswordTests extends BaseTests {
 
         Mono<Void> resultSendResetPasswordCode = userPort.sendResetPasswordCode(emailData);
 
-        StepVerifier.create(resultSendResetPasswordCode)
-                .expectComplete()
-                .verify();
+        StepVerifier.create(resultSendResetPasswordCode).expectComplete().verify();
 
         // when
         ChangePasswordData changePasswordData = new ChangePasswordData(userRegisterData.email(), userResetPasswordCode, newPassword);
         Mono<Void> result = userPort.changeUserPassword(changePasswordData);
 
         // then
-        StepVerifier.create(result)
-                .expectComplete()
-                .verify();
+        StepVerifier.create(result).expectComplete().verify();
 
         Mockito.verify(userAuthPort, Mockito.times(1)).changeUserPassword(userRegisterData.email(), newPassword);
 
@@ -66,9 +62,7 @@ public class ChangePasswordTests extends BaseTests {
         Mono<Void> result = userPort.changeUserPassword(changePasswordDataNoExistsUser);
 
         // then
-        StepVerifier.create(result)
-                .expectError(UserToResetPasswordDoesNotExistsException.class)
-                .verify();
+        StepVerifier.create(result).expectError(UserToResetPasswordDoesNotExistsException.class).verify();
     }
 
     @Test
@@ -86,9 +80,7 @@ public class ChangePasswordTests extends BaseTests {
 
         Mono<Void> resultSendResetPasswordCode = userPort.sendResetPasswordCode(emailData);
 
-        StepVerifier.create(resultSendResetPasswordCode)
-                .expectComplete()
-                .verify();
+        StepVerifier.create(resultSendResetPasswordCode).expectComplete().verify();
 
         // when
         String badResetPasswordCode = "badCode";
@@ -96,9 +88,7 @@ public class ChangePasswordTests extends BaseTests {
         Mono<Void> result = userPort.changeUserPassword(changePasswordData);
 
         // then
-        StepVerifier.create(result)
-                .expectError(BadResetPasswordCodeException.class)
-                .verify();
+        StepVerifier.create(result).expectError(BadResetPasswordCodeException.class).verify();
 
         Mockito.verify(userAuthPort, Mockito.never()).changeUserPassword(userRegisterData.email(), newPassword);
     }
@@ -119,18 +109,14 @@ public class ChangePasswordTests extends BaseTests {
 
         Mono<Void> resultSendResetPasswordCode = userPort.sendResetPasswordCode(emailData);
 
-        StepVerifier.create(resultSendResetPasswordCode)
-                .expectComplete()
-                .verify();
+        StepVerifier.create(resultSendResetPasswordCode).expectComplete().verify();
 
         // when
         ChangePasswordData changePasswordData = new ChangePasswordData(userRegisterData.email(), userResetPasswordCode, newPassword);
         Mono<Void> result = userPort.changeUserPassword(changePasswordData);
 
         // then
-        StepVerifier.create(result)
-                .expectError(AuthServiceException.class)
-                .verify();
+        StepVerifier.create(result).expectError(AuthServiceException.class).verify();
 
     }
 

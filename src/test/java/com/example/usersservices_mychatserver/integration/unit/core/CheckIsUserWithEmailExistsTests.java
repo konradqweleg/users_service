@@ -11,11 +11,10 @@ import org.springframework.r2dbc.core.DatabaseClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class CheckIsUserWithEmailExistsTests extends BaseTests{
+public class CheckIsUserWithEmailExistsTests extends BaseTests {
     @Autowired
     private DatabaseClient databaseClient;
 
@@ -43,6 +42,7 @@ public class CheckIsUserWithEmailExistsTests extends BaseTests{
                 .expectError(AuthServiceException.class)
                 .verify();
     }
+
     @Test
     public void testUserExistsWithEmailShouldReturnTrue() {
         // given
@@ -79,6 +79,7 @@ public class CheckIsUserWithEmailExistsTests extends BaseTests{
                 .expectNext(false)
                 .verifyComplete();
     }
+
     @Test
     public void testUserDoesNotExistShouldReturnFalse() {
         // when

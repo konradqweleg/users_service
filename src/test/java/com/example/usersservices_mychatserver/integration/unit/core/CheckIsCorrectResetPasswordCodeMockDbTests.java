@@ -36,7 +36,7 @@ public class CheckIsCorrectResetPasswordCodeMockDbTests {
 
 
         // when
-        UserEmailAndCodeDTO emailAndCode = new UserEmailAndCodeDTO(userMyChat.email(),"123456");
+        UserEmailAndCodeDTO emailAndCode = new UserEmailAndCodeDTO(userMyChat.email(), "123456");
         Mono<IsCorrectResetPasswordCode> result = userPort.checkIsCorrectResetPasswordCode(emailAndCode);
 
         // then
@@ -56,7 +56,7 @@ public class CheckIsCorrectResetPasswordCodeMockDbTests {
 
 
         // when
-        UserEmailAndCodeDTO emailAndCode = new UserEmailAndCodeDTO(userMyChat.email(),"123456");
+        UserEmailAndCodeDTO emailAndCode = new UserEmailAndCodeDTO(userMyChat.email(), "123456");
         Mono<IsCorrectResetPasswordCode> result = userPort.checkIsCorrectResetPasswordCode(emailAndCode);
 
         // then

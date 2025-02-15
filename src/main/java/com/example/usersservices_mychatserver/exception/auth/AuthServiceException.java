@@ -1,10 +1,6 @@
 package com.example.usersservices_mychatserver.exception.auth;
 
 public class AuthServiceException extends RuntimeException {
-    public AuthServiceException() {
-        super();
-    }
-
     public AuthServiceException(String message) {
         super(message);
     }

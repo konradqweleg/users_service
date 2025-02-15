@@ -59,11 +59,10 @@ public class BaseTests {
     }
 
     protected void cleanAllDatabase(DatabaseClient databaseClient) {
-         databaseClient.sql(SQL_TRUNCATE_USER_TABLE).then()
+        databaseClient.sql(SQL_TRUNCATE_USER_TABLE).then()
                 .then(databaseClient.sql(SQL_TRUNCATE_RESET_PASSWORD_CODE_TABLE).then())
                 .then(databaseClient.sql(SQL_TRUNCATE_CODE_VERIFICATION_TABLE).then()).block();
     }
-
 
 
 }

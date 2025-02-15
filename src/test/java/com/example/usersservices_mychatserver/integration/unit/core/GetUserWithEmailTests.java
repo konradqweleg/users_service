@@ -1,6 +1,6 @@
 package com.example.usersservices_mychatserver.integration.unit.core;
 
-import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
+import  com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.entity.request.UserRegisterDataDTO;
 import com.example.usersservices_mychatserver.entity.response.UserData;
 import com.example.usersservices_mychatserver.exception.get_user.UserDoesNotExistsException;

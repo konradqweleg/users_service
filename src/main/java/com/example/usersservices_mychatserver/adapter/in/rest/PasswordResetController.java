@@ -1,8 +1,6 @@
 package com.example.usersservices_mychatserver.adapter.in.rest;
 
-import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
-import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
+import com.example.usersservices_mychatserver.adapter.in.rest.response.ResponseUtil;
 import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeDTO;
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;

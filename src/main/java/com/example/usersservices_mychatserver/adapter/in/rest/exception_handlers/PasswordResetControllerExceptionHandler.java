@@ -1,10 +1,8 @@
-package com.example.usersservices_mychatserver.adapter.in.rest;
+package com.example.usersservices_mychatserver.adapter.in.rest.exception_handlers;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponse;
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
-import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.exception.activation.UserToResendActiveAccountCodeNotExistsException;
-import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import com.example.usersservices_mychatserver.exception.password_reset.BadResetPasswordCodeException;
 import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
 import org.springframework.http.HttpStatus;

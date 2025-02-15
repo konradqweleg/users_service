@@ -21,8 +21,6 @@ public class SendResetPasswordCodeTests extends BaseTests {
     private DatabaseClient databaseClient;
 
 
-
-
     @BeforeEach
     public void setup() {
         cleanAllDatabase(databaseClient);

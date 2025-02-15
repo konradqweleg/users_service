@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class RegisterUserTestMockDb {
+public class RegisterUserMockDbTests {
 
     private static final String EMAIL = "mail@mail.pl";
     private static final String VERIFICATION_CODE = "123456";

@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.adapter.in.rest;
+package com.example.usersservices_mychatserver.adapter.in.rest.exception_handlers;
 
 
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponse;
@@ -20,20 +20,11 @@ public class AuthControllerExceptionHandler extends ResponseStatusExceptionHandl
         return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(SaveDataInRepositoryException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleSaveDataInRepositoryException(SaveDataInRepositoryException ex, ServerWebExchange exchange) {
-        return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
     @ExceptionHandler(UserAlreadyRegisteredException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleUserAlreadyRegisteredException(UserAlreadyRegisteredException ex, ServerWebExchange exchange) {
         return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(InactiveUserAccountException.class)
-    public Mono<ResponseEntity<ErrorResponse>> handleInactiveUserAccountException(InactiveUserAccountException ex, ServerWebExchange exchange) {
-        return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.BAD_REQUEST);
-    }
 
     @ExceptionHandler(SendVerificationCodeException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleSendVerificationCodeException(SendVerificationCodeException ex, ServerWebExchange exchange) {

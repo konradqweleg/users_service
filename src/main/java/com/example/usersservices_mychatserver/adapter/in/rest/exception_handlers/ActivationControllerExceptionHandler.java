@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.adapter.in.rest;
+package com.example.usersservices_mychatserver.adapter.in.rest.exception_handlers;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponse;
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
@@ -6,7 +6,6 @@ import com.example.usersservices_mychatserver.exception.activation.ActivationCod
 import com.example.usersservices_mychatserver.exception.activation.BadActiveAccountCodeException;
 import com.example.usersservices_mychatserver.exception.activation.UserAlreadyActivatedException;
 import com.example.usersservices_mychatserver.exception.activation.UserToResendActiveAccountCodeNotExistsException;
-import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
