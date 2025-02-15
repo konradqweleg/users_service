@@ -34,7 +34,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     private String keycloakClientId;
 
     @Value("${keycloak.client.realm}")
-    private String realName;
+    private String realmName;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Keycloak keycloakAdmin;
 
@@ -108,7 +108,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
 
         return Mono.fromCallable(() -> createUserRepresentation(userRegisterDataDTO))
                 .flatMap(userRepresentation -> {
-                    try (Response response = keycloakAdmin.realm(realName).users().create(userRepresentation)) {
+                    try (Response response = keycloakAdmin.realm(realmName).users().create(userRepresentation)) {
                         if (response.getStatus() == HttpStatus.CREATED.value()) {
                             logger.info("User registered successfully in Keycloak: {}", userRepresentation.getUsername());
                             return Mono.empty();
@@ -128,14 +128,14 @@ public class UserKeyCloakAdapter implements UserAuthPort {
 
     @Override
     public Mono<Void> activateUserAccount(String email) {
-        List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+        List<UserRepresentation> users = keycloakAdmin.realm(realmName).users().search(email);
 
         if (!users.isEmpty()) {
             UserRepresentation user = users.get(0);
             user.setEnabled(true);
 
             try {
-                keycloakAdmin.realm(realName).users().get(user.getId()).update(user);
+                keycloakAdmin.realm(realmName).users().get(user.getId()).update(user);
                 logger.info("User enabled successfully: {}", user.getUsername());
                 return Mono.empty();
             } catch (Exception e) {
@@ -152,7 +152,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     @Override
     public Mono<Boolean> isEmailAlreadyActivatedUserAccount(String email) {
         try {
-            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+            List<UserRepresentation> users = keycloakAdmin.realm(realmName).users().search(email);
             if (!users.isEmpty()) {
                 UserRepresentation user = users.get(0);
                 logger.info("Successfully got user account status: {}", user.isEnabled());
@@ -170,7 +170,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     @Override
     public Mono<Void> changeUserPassword(String email, String newPassword) {
         try {
-            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+            List<UserRepresentation> users = keycloakAdmin.realm(realmName).users().search(email);
 
             if (!users.isEmpty()) {
                 UserRepresentation user = users.get(0);
@@ -180,7 +180,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
                 credential.setValue(newPassword);
                 credential.setTemporary(false);
 
-                keycloakAdmin.realm(realName).users().get(user.getId()).resetPassword(credential);
+                keycloakAdmin.realm(realmName).users().get(user.getId()).resetPassword(credential);
 
                 logger.info("Password successfully changed for user with email: {}", email);
                 return Mono.empty();
@@ -197,7 +197,7 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     @Override
     public Mono<Boolean> isEmailAlreadyRegistered(String email) {
         try {
-            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
+            List<UserRepresentation> users = keycloakAdmin.realm(realmName).users().search(email);
             if (!users.isEmpty()) {
                 logger.info("User with email: {} already registered", email);
                 return Mono.just(true);
