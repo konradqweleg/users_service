@@ -3,6 +3,7 @@ package com.example.usersservices_mychatserver.adapter.in.rest;
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ConvertToJSON;
 import com.example.usersservices_mychatserver.adapter.in.rest.util.ResponseUtil;
+import com.example.usersservices_mychatserver.entity.request.ChangePasswordData;
 import com.example.usersservices_mychatserver.entity.request.UserEmailAndCodeDTO;
 import com.example.usersservices_mychatserver.entity.request.UserEmailDataDTO;
 import com.example.usersservices_mychatserver.entity.response.IsCorrectResetPasswordCode;
@@ -31,5 +32,10 @@ public class PasswordResetController {
     @PostMapping("/validate-code")
     public Mono<ResponseEntity<IsCorrectResetPasswordCode>> isCorrectResetPasswordCode(@RequestBody @Valid UserEmailAndCodeDTO userEmailAndCodeMono) {
         return ResponseUtil.toResponseEntity(userPort.checkIsCorrectResetPasswordCode(userEmailAndCodeMono), HttpStatus.OK);
+    }
+
+    @PostMapping("/password-reset/change")
+    public Mono<ResponseEntity<Void>> changePassword(@RequestBody @Valid ChangePasswordData changePasswordData) {
+        return ResponseUtil.toResponseEntity(userPort.changeUserPassword(changePasswordData), HttpStatus.OK);
     }
 }

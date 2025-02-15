@@ -43,10 +43,10 @@ public class UserController {
 //        return userPort.registerUser(user).flatMap(ConvertToJSON::convert);
 //    }
 
-    @PostMapping("/password-reset/change")
-    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono) {
-        return userPort.changeUserPassword(changePasswordDataMono).flatMap(ConvertToJSON::convert);
-    }
+//    @PostMapping("/password-reset/change")
+//    public Mono<ResponseEntity<String>> changePassword(@RequestBody @Valid Mono<ChangePasswordData> changePasswordDataMono) {
+//        return userPort.changeUserPassword(changePasswordDataMono).flatMap(ConvertToJSON::convert);
+//    }
 
 //    @PostMapping("/activate/resend-activation-code")
 //    public Mono<ResponseEntity<String>> resendActiveUserAccountCode(@RequestBody @Valid Mono<UserEmailData> emailDataMono) {

@@ -11,6 +11,7 @@ import com.example.usersservices_mychatserver.exception.auth.AuthServiceExceptio
 import com.example.usersservices_mychatserver.exception.auth.SendVerificationCodeException;
 import com.example.usersservices_mychatserver.exception.auth.UnauthorizedException;
 import com.example.usersservices_mychatserver.exception.get_user.UserDoesNotExistsException;
+import com.example.usersservices_mychatserver.exception.password_reset.BadResetPasswordCodeException;
 import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
 import com.example.usersservices_mychatserver.exception.password_reset.UserToResetPasswordDoesNotExistsException;
 import com.example.usersservices_mychatserver.model.CodeVerification;
@@ -46,39 +47,35 @@ public class UserService implements UserPort {
     }
 
     @Override
-    public Mono<Result<Status>> changeUserPassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono) {
-        return userEmailAndCodeAndPasswordMono.flatMap(userEmailCodeAndPassword ->
-                userRepositoryPort.findUserWithEmail(userEmailCodeAndPassword.email())
-                        .flatMap(userFromDb -> {
-                            logger.info("User found with email: {}", userFromDb.email());
-                            return userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(userFromDb.id()))
-                                    .flatMap(code -> {
-                                        if (code.code().equals(userEmailCodeAndPassword.code())) {
-                                            logger.info("Reset password code matched for user: {}", userFromDb.email());
-                                            return userAuthPort.changeUserPassword(Mono.just(userFromDb.email()), userEmailCodeAndPassword.password())
-                                                    .then(Mono.defer(() ->
-                                                            userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(userFromDb.id()))
-                                                                    .doOnSuccess(ignored -> logger.info("Reset password code deleted for user: {}", userFromDb.email()))
-                                                                    .thenReturn(Result.success(new Status(true)))
-                                                    ))
-                                                    .doOnError(ex -> logger.error("Error while changing password for user: {}", userFromDb.email(), ex));
-                                        } else {
-                                            logger.warn("Wrong reset password code for user: {}", userFromDb.email());
-                                            return Mono.just(Result.<Status>error(ErrorMessage.BAD_CHANGE_PASSWORD_CODE.getMessage()));
-                                        }
-                                    })
-                                    .doOnError(ex -> logger.error("Error fetching reset password code for user: {}", userFromDb.email(), ex));
-                        })
-                        .onErrorResume(RuntimeException.class, ex -> {
-                            logger.error("Runtime exception during password change process", ex);
-                            return Mono.just(Result.error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                        })
-                        .switchIfEmpty(Mono.defer(() -> {
-                                    logger.warn("No user found with email: {}", userEmailCodeAndPassword.email());
-                                    return Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage()));
-                                })
-                        )
-        ).switchIfEmpty(Mono.just(Result.<Status>error(ErrorMessage.RESPONSE_NOT_AVAILABLE.getMessage())));
+    public Mono<Void> changeUserPassword(ChangePasswordData changePasswordData) {
+        return findUserByEmail(changePasswordData.email())
+                .switchIfEmpty(Mono.error(new UserToResetPasswordDoesNotExistsException("User not found")))
+                .flatMap(userFromDb -> verifyResetPasswordCode(userFromDb, changePasswordData.code())
+                        .flatMap(code -> changePasswordAndDeleteCode(userFromDb, changePasswordData.password())));
+    }
+
+    private Mono<UserMyChat> findUserByEmail(String email) {
+        return userRepositoryPort.findUserWithEmail(email)
+                .doOnNext(user -> logger.info("User found with email: {}", user.email()));
+    }
+
+    private Mono<ResetPasswordCode> verifyResetPasswordCode(UserMyChat user, String code) {
+        return userRepositoryPort.findResetPasswordCodeForUserById(new IdUserData(user.id()))
+                .flatMap(resetPasswordCode -> {
+                    if (resetPasswordCode.code().equals(code)) {
+                        logger.info("Reset password code matched for user: {}", user.email());
+                        return Mono.just(resetPasswordCode);
+                    } else {
+                        logger.warn("Wrong reset password code for user: {}", user.email());
+                        return Mono.error(new BadResetPasswordCodeException("Wrong reset password code"));
+                    }
+                });
+    }
+
+    private Mono<Void> changePasswordAndDeleteCode(UserMyChat user, String newPassword) {
+        return userAuthPort.changeUserPassword(user.email(), newPassword)
+                .then(Mono.defer(() -> userRepositoryPort.deleteResetPasswordCodeForUser(new IdUserData(user.id()))
+                        .doOnSuccess(ignored -> logger.info("Reset password code deleted for user: {}", user.email()))));
     }
 
 

@@ -168,33 +168,30 @@ public class UserKeyCloakAdapter implements UserAuthPort {
     }
 
     @Override
-    public Mono<Status> changeUserPassword(Mono<String> email, String newPassword) {
-        return email.flatMap(emailStr -> {
-            try {
-                List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(emailStr);
+    public Mono<Void> changeUserPassword(String email, String newPassword) {
+        try {
+            List<UserRepresentation> users = keycloakAdmin.realm(realName).users().search(email);
 
-                if (!users.isEmpty()) {
+            if (!users.isEmpty()) {
+                UserRepresentation user = users.get(0);
 
-                    UserRepresentation user = users.get(0);
+                CredentialRepresentation credential = new CredentialRepresentation();
+                credential.setType(CredentialRepresentation.PASSWORD);
+                credential.setValue(newPassword);
+                credential.setTemporary(false);
 
-                    CredentialRepresentation credential = new CredentialRepresentation();
-                    credential.setType(CredentialRepresentation.PASSWORD);
-                    credential.setValue(newPassword);
-                    credential.setTemporary(false);
+                keycloakAdmin.realm(realName).users().get(user.getId()).resetPassword(credential);
 
-                    keycloakAdmin.realm(realName).users().get(user.getId()).resetPassword(credential);
-
-                    logger.info("Password successfully changed for user with email: {}", emailStr);
-                    return Mono.just(new Status(true));
-                } else {
-                    logger.error("User not found with email: {}", emailStr);
-                    return Mono.error(new RuntimeException("User not found for email: " + emailStr));
-                }
-            } catch (Exception e) {
-                logger.error("An error occurred while changing the password for email: {}", emailStr, e);
-                return Mono.error(new RuntimeException("Error changing password", e));
+                logger.info("Password successfully changed for user with email: {}", email);
+                return Mono.empty();
+            } else {
+                logger.error("User not found with email: {}", email);
+                return Mono.error(new AuthServiceException("User not found for email: " + email));
             }
-        });
+        } catch (Exception e) {
+            logger.error("An error occurred while changing the password for email: {}", email, e);
+            return Mono.error(new AuthServiceException("Error changing password", e));
+        }
     }
 
     @Override

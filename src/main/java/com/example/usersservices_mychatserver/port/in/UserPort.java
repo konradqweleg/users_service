@@ -14,17 +14,18 @@ public interface UserPort {
 
     Mono<IsCorrectResetPasswordCode> checkIsCorrectResetPasswordCode(UserEmailAndCodeDTO emailAndCode);
 
-    Mono<Result<Status>> changeUserPassword(Mono<ChangePasswordData> userEmailAndCodeAndPasswordMono);
+    Mono<Void> changeUserPassword(ChangePasswordData changePasswordData);
 
     Mono<Void> registerUser(UserRegisterDataDTO user);
 
     Mono<Boolean> checkIsUserWithThisEmailExist(UserEmailDataDTO user);
 
-    Mono<UserData>  getUserAboutId(IdUserData idUser);
+    Mono<UserData> getUserAboutId(IdUserData idUser);
 
     Flux<UserData> getAllUsers();
 
     Flux<UserData> getUserMatchingNameAndSurname(String patternNameMono);
+
     Mono<UserData> getUserAboutEmail(UserEmailDataDTO userEmailDataMono);
 
     Mono<UserAccessData> login(LoginDataDTO userAuthorizeData);

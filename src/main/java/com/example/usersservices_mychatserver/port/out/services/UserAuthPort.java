@@ -14,7 +14,7 @@ public interface UserAuthPort {
 
     Mono<Boolean> isEmailAlreadyActivatedUserAccount(String email);
 
-    Mono<Status> changeUserPassword(Mono<String> email,String newPassword);
+    Mono<Void> changeUserPassword(String email,String newPassword);
 
     Mono<Boolean> isEmailAlreadyRegistered(String email);
 

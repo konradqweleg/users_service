@@ -5,6 +5,7 @@ import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorRespons
 import com.example.usersservices_mychatserver.exception.SaveDataInRepositoryException;
 import com.example.usersservices_mychatserver.exception.activation.UserToResendActiveAccountCodeNotExistsException;
 import com.example.usersservices_mychatserver.exception.auth.AuthServiceException;
+import com.example.usersservices_mychatserver.exception.password_reset.BadResetPasswordCodeException;
 import com.example.usersservices_mychatserver.exception.password_reset.UserAccountIsNotActivatedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,11 @@ public class PasswordResetControllerExceptionHandler extends ResponseStatusExcep
 
     @ExceptionHandler(UserToResendActiveAccountCodeNotExistsException.class)
     public Mono<ResponseEntity<ErrorResponse>> handleUserToResendActiveAccountCodeNotExistsException(UserToResendActiveAccountCodeNotExistsException ex, ServerWebExchange exchange) {
+        return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadResetPasswordCodeException.class)
+    public Mono<ResponseEntity<ErrorResponse>> handleBadResetPasswordCodeException(BadResetPasswordCodeException ex, ServerWebExchange exchange) {
         return ErrorResponseUtil.generateErrorResponseEntity(ex, exchange, HttpStatus.BAD_REQUEST);
     }
 }
