@@ -1,6 +1,6 @@
 # MyChatServer - User Account Management
 
-User Service is a backend application for managing user accounts, including registration, login, and account activation. It uses Spring WebFlux for reactive programming and integrates with Keycloak for user authentication and authorization.
+User Service is a backend application for managing user accounts, including registration, login, account activation, password reset, and user information retrieval. It uses Spring WebFlux for reactive programming and integrates with Keycloak for user authentication and authorization.
 
 ## Technologies Used
 
@@ -37,6 +37,8 @@ User Service is a backend application for managing user accounts, including regi
     keycloak.server.url=http://localhost:8080/auth
     keycloak.admin.username=admin
     keycloak.admin.password=admin
+    keycloak.client.id=client
+    keycloak.client.realm=realm
     ```
 
 4. Build the project:
@@ -60,7 +62,7 @@ User Service is a backend application for managing user accounts, including regi
 ### User Login
 
 - **POST** `/api/v1/users/login`
-    - Request Body: `LoginData`
+    - Request Body: `LoginDataDTO`
     - Response: `200 OK` with `UserAccessData`
 
 ### Activate User Account
@@ -72,8 +74,43 @@ User Service is a backend application for managing user accounts, including regi
 ### Resend Activation Code
 
 - **POST** `/api/v1/users/activate/resend-activation-code`
-    - Request Body: `UserEmailData`
-    - Response: `200 OK` with activation code
+    - Request Body: `UserEmailDataDTO`
+    - Response: `200 OK`
+
+### Password Reset
+
+- **POST** `/api/v1/users/password-reset/code`
+    - Request Body: `UserEmailDataDTO`
+    - Response: `200 OK`
+
+- **POST** `/api/v1/users/password-reset/validate-code`
+    - Request Body: `UserEmailAndCodeDTO`
+    - Response: `200 OK` with `IsCorrectResetPasswordCode`
+
+- **POST** `/api/v1/users/password-reset/change`
+    - Request Body: `ChangePasswordData`
+    - Response: `200 OK`
+
+### User Information
+
+- **GET** `/api/v1/users/{id}`
+    - Path Variable: `id`
+    - Response: `200 OK` with `UserData`
+
+- **GET** `/api/v1/users/search`
+    - Request Param: `patternName`
+    - Response: `200 OK` with list of `UserData`
+
+- **GET** `/api/v1/users`
+    - Response: `200 OK` with list of `UserData`
+
+- **GET** `/api/v1/users/email`
+    - Request Param: `email`
+    - Response: `200 OK` with `UserData`
+
+- **GET** `/api/v1/users/existence`
+    - Request Body: `UserEmailDataDTO`
+    - Response: `200 OK` with `Boolean`
 
 ## Exception Handling
 

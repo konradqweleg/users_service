@@ -1,4 +1,4 @@
-package com.example.usersservices_mychatserver.adapter.in.rest;
+package com.example.usersservices_mychatserver.adapter.in.rest.exception_handlers;
 
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponse;
 import com.example.usersservices_mychatserver.adapter.in.rest.error.ErrorResponseUtil;
