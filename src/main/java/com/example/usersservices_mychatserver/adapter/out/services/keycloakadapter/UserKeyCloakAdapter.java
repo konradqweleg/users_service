@@ -210,4 +210,41 @@ public class UserKeyCloakAdapter implements UserAuthPort {
             return Mono.error(new AuthServiceException("Error checking if user is already registered", e));
         }
     }
+
+    public Mono<UserAccessData> refreshAccessToken(String refreshToken) {
+        MultiValueMap<String, String> mapAuthData = new LinkedMultiValueMap<>();
+        mapAuthData.add("client_id", keycloakClientId);
+        mapAuthData.add("refresh_token", refreshToken);
+        String keycloakGrantType = "refresh_token";
+        mapAuthData.add("grant_type", keycloakGrantType);
+
+        String uriRefreshToken = String.format("%s/realms/my-chat-realm/protocol/openid-connect/token", keycloakUrl);
+
+        return WebClient.create()
+                .post()
+                .uri(uriRefreshToken)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .bodyValue(mapAuthData)
+                .retrieve()
+                .onStatus(HttpStatus.BAD_REQUEST::equals, clientResponse -> clientResponse.bodyToMono(String.class)
+                        .flatMap(body -> {
+                            logger.error("Bad request to refresh Keycloak token. Status code: {}", clientResponse.statusCode());
+                            logger.error("All request data: {}", body);
+                            if (body.contains("invalid_grant")) {
+                                return Mono.error(new UnauthorizedException("Invalid refresh token."));
+                            }
+                            return Mono.error(new AuthServiceException("Bad request to refresh Keycloak token."));
+                        }))
+                .bodyToMono(String.class)
+                .flatMap(response -> {
+                    try {
+                        UserAccessData userAccessData = objectMapper.readValue(response, UserAccessData.class);
+                        return Mono.just(userAccessData);
+                    } catch (Exception e) {
+                        logger.error("Error parsing response from Keycloak API: {}", e.getMessage());
+                        return Mono.error(new AuthServiceException("Error parsing response from Keycloak API"));
+                    }
+                })
+                .doOnSuccess(userAccessData -> logger.info("Successfully refreshed access token"));
+    }
 }

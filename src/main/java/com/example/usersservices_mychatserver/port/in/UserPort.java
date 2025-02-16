@@ -30,4 +30,6 @@ public interface UserPort {
 
     Mono<UserAccessData> login(LoginDataDTO userAuthorizeData);
 
+    Mono<UserAccessData> refreshAccessToken(RefreshTokenDTO refreshTokenData);
+
 }

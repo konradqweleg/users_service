@@ -53,6 +53,12 @@ User Service is a backend application for managing user accounts, including regi
 
 ## API Endpoints
 
+### Refresh Access Token
+
+- **POST** `/api/v1/users/refresh-token`
+    - Request Body: `RefreshTokenDTO`
+    - Response: `200 OK` with `UserAccessData`
+
 ### User Registration
 
 - **POST** `/api/v1/users/register`

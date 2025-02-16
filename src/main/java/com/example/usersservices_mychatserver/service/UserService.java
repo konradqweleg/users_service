@@ -134,6 +134,11 @@ public class UserService implements UserPort {
                 });
     }
 
+    @Override
+    public Mono<UserAccessData> refreshAccessToken(RefreshTokenDTO refreshTokenData) {
+        return userAuthPort.refreshAccessToken(refreshTokenData.refreshToken());
+    }
+
     private Mono<UserAccessData> checkAndAuthorizeUserAccount(LoginDataDTO loginDataDTO) {
         return userAuthPort.isEmailAlreadyActivatedUserAccount(loginDataDTO.email())
                 .flatMap(isActive -> {

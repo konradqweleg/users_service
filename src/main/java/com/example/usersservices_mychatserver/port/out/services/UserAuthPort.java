@@ -18,4 +18,6 @@ public interface UserAuthPort {
 
     Mono<Boolean> isEmailAlreadyRegistered(String email);
 
+    Mono<UserAccessData> refreshAccessToken(String refreshToken);
+
 }
