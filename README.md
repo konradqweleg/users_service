@@ -1,14 +1,14 @@
-# MyChatServer - User Account Management
+# MyChatServer - Message Service
 
-User Service is a backend application for managing user accounts, including registration, login, account activation, password reset, and user information retrieval. It uses Spring WebFlux for reactive programming and integrates with Keycloak for user authentication and authorization.
+Message Service is a backend application responsible for managing user messages, including sending, retrieving, and filtering messages between users. It is built using Spring WebFlux for reactive programming and integrates with the User Service for user validation.
 
 ## Technologies Used
 
 - Java
 - Spring WebFlux
-- Keycloak
-- Gradle
 - Reactor
+- Gradle
+- PostgreSQL
 
 ## Getting Started
 
@@ -16,7 +16,8 @@ User Service is a backend application for managing user accounts, including regi
 
 - Java 17 or higher
 - Gradle 7.0 or higher
-- Keycloak server
+- PostgreSQL database
+- Running instance of **User Service**
 
 ### Installation
 
@@ -26,101 +27,67 @@ User Service is a backend application for managing user accounts, including regi
     cd mychatserver
     ```
 
-2. Configure Keycloak:
-    - Set up a Keycloak server.
-    - Create a realm named `my-chat-realm`.
-    - Create a client named `mychat-client`.
-    - Configure the client with the necessary credentials and roles.
-
-3. Update the `application.properties` file with your Keycloak server details:
+2. Configure the application:  
+   Update the `application.properties` file with the required database and service connection details:
     ```properties
-    keycloak.server.url=http://localhost:8080/auth
-    keycloak.admin.username=admin
-    keycloak.admin.password=admin
-    keycloak.client.id=client
-    keycloak.client.realm=realm
+    user.service.url=http://user-service:8082/api/v1/users
+    spring.datasource.url=jdbc:postgresql://localhost:5432/message_db
+    spring.datasource.username=postgres
+    spring.datasource.password=root
     ```
 
-4. Build the project:
+3. Build the project:
     ```sh
     ./gradlew build
     ```
 
-5. Run the application:
+4. Run the application:
     ```sh
     ./gradlew bootRun
     ```
 
+---
+
 ## API Endpoints
 
-### Refresh Access Token
+### Create a Message
+- **POST** `/api/v1/messages`
+- Creates a new message between users.
+- Requires a request body containing sender ID, receiver ID, and message content.
+- Returns `201 Created` on success.
 
-- **POST** `/api/v1/users/refresh-token`
-    - Request Body: `RefreshTokenDTO`
-    - Response: `200 OK` with `UserAccessData`
+---
 
-### User Registration
+### Get Last Messages with Friends
+- **GET** `/api/v1/messages/{userId}/friends/last-messages`
+- Retrieves the latest messages between the specified user and their friends.
+- Requires the user ID as a path variable.
+- Returns `200 OK` with a list of recent messages or `404 Not Found` if no messages exist.
 
-- **POST** `/api/v1/users/register`
-    - Request Body: `UserRegisterDataDTO`
-    - Response: `201 Created`
+---
 
-### User Login
+### Get Messages Between Two Users
+- **GET** `/api/v1/messages/{firstUserId}/friends/{friendId}/messages`
+- Fetches the message history between two users.
+- Requires both user IDs as path variables.
+- Returns `200 OK` with a list of messages or `404 Not Found` if no messages exist.
 
-- **POST** `/api/v1/users/login`
-    - Request Body: `LoginDataDTO`
-    - Response: `200 OK` with `UserAccessData`
+---
 
-### Activate User Account
+### Get All Messages with Friends
+- **POST** `/api/v1/messages/{userId}/friends/messages`
+- Retrieves all conversations between the specified user and their friends.
+- Requires the user ID as a path variable and a request body specifying additional filters.
+- Returns `200 OK` with a list of message conversations.
 
-- **POST** `/api/v1/users/activate`
-    - Request Body: `ActiveAccountCodeData`
-    - Response: `200 OK`
-
-### Resend Activation Code
-
-- **POST** `/api/v1/users/activate/resend-activation-code`
-    - Request Body: `UserEmailDataDTO`
-    - Response: `200 OK`
-
-### Password Reset
-
-- **POST** `/api/v1/users/password-reset/code`
-    - Request Body: `UserEmailDataDTO`
-    - Response: `200 OK`
-
-- **POST** `/api/v1/users/password-reset/validate-code`
-    - Request Body: `UserEmailAndCodeDTO`
-    - Response: `200 OK` with `IsCorrectResetPasswordCode`
-
-- **POST** `/api/v1/users/password-reset/change`
-    - Request Body: `ChangePasswordData`
-    - Response: `200 OK`
-
-### User Information
-
-- **GET** `/api/v1/users/{id}`
-    - Path Variable: `id`
-    - Response: `200 OK` with `UserData`
-
-- **GET** `/api/v1/users/search`
-    - Request Param: `patternName`
-    - Response: `200 OK` with list of `UserData`
-
-- **GET** `/api/v1/users`
-    - Response: `200 OK` with list of `UserData`
-
-- **GET** `/api/v1/users/email`
-    - Request Param: `email`
-    - Response: `200 OK` with `UserData`
-
-- **GET** `/api/v1/users/existence`
-    - Request Body: `UserEmailDataDTO`
-    - Response: `200 OK` with `Boolean`
+---
 
 ## Exception Handling
 
-Custom exception handlers are defined to handle various exceptions and return appropriate HTTP status codes.
+Custom exception handlers are implemented to handle various scenarios, including:
+- Invalid request data (`400 Bad Request`)
+- User not found (`404 Not Found`)
+- Database errors (`500 Internal Server Error`)
 
 ## License
 
