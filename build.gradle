@@ -47,7 +47,7 @@ tasks.named('test') {
 }
 
 bootJar {
-    archiveFileName = 'mychat-user-service.jar'
+    archiveFileName = 'user-service.jar'
 }
 
 tasks.jar {
